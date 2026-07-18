@@ -1,0 +1,1 @@
+The quota issue has been fixed by changing the AI model to `gemini-flash-lite-latest`.
