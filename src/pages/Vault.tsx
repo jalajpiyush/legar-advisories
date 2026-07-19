@@ -48,7 +48,7 @@ export function Vault({ activeFolderId }: VaultProps) {
   });
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-white pt-16 md:pt-0">
       {/* Header section */}
       <div className="px-8 py-6 border-b border-gray-100 bg-white sticky top-0 z-10">
         <div className="flex items-center justify-between mb-6">

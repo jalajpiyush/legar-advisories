@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Sidebar, PageId } from './components/Sidebar';
-import { Header } from './components/Header';
 import { Dashboard } from './pages/Dashboard';
 import { LegalChat } from './pages/LegalChat';
 import { ContractReview } from './pages/ContractReview';
@@ -20,6 +19,7 @@ import { ContactSales } from './pages/ContactSales';
 import { Knowledge } from './pages/Knowledge';
 import { auth, logout } from './lib/auth';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { Menu } from 'lucide-react';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId | "landing" | "contact-sales">("landing");
@@ -125,10 +125,14 @@ export default function App() {
       />
       
       <main className="flex-1 flex flex-col min-w-0 bg-white relative overflow-hidden shadow-[-4px_0_24px_rgb(0,0,0,0.02)]">
-        <Header 
-          isSidebarOpen={isSidebarOpen}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
+        {!isSidebarOpen && (
+          <button 
+            onClick={() => setIsSidebarOpen(true)}
+            className="md:hidden absolute top-4 left-4 z-[60] p-2 text-gray-600 hover:text-gray-900 bg-white/90 backdrop-blur rounded-xl shadow-sm border border-gray-100"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
         
         <div className="flex-1 overflow-y-auto z-10 relative custom-scrollbar flex flex-col">
           {renderPage()}

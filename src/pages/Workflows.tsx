@@ -29,13 +29,13 @@ export function Workflows() {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header section */}
-      <div className="px-8 py-6 border-b border-gray-100 bg-white sticky top-0 z-10">
-        <div className="flex items-center justify-between mb-6">
+      <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 bg-white sticky top-0 z-10 pt-16 sm:pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
           <div>
             <h1 className="text-2xl font-serif text-gray-900 mb-1">Workflows</h1>
             <p className="text-[14px] text-gray-500">Automate complex legal tasks with multi-step AI agents.</p>
           </div>
-          <button className="bg-black text-white px-4 py-2 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-colors shadow-sm flex items-center gap-2">
+          <button className="bg-black text-white px-4 py-2 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-colors shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
             <Plus className="w-4 h-4" /> Create Workflow
           </button>
         </div>

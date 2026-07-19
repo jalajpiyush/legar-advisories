@@ -144,7 +144,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center pt-4 sm:pt-8 md:pt-12 px-4 md:px-8 max-w-[1000px] mx-auto min-h-full pb-6 sm:pb-20 w-full">
+    <div className="flex flex-1 flex-col items-center pt-16 sm:pt-8 md:pt-12 px-4 md:px-8 max-w-[1000px] mx-auto min-h-full pb-6 sm:pb-20 w-full">
       {/* Title */}
       {chatHistory.length === 0 && (
         <h1 className="text-[28px] sm:text-[36px] md:text-[44px] font-serif text-gray-900 mb-4 sm:mb-8 md:mb-12 tracking-tight mt-[2vh] md:mt-[5vh] text-center w-full">Legal Advisories</h1>

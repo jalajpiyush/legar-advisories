@@ -29,12 +29,12 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
   return (
     <div className="min-h-screen bg-white font-sans selection:bg-black/10 selection:text-black overflow-x-hidden">
       {/* Top Banner */}
-      <div className="bg-black text-white text-[13px] py-2.5 px-4 flex justify-center items-center gap-1.5 font-medium tracking-wide border-b border-white/10 z-50 relative">
+      <div className="bg-black text-white text-[13px] py-2.5 px-4 flex justify-center items-center gap-1.5 font-medium tracking-wide border-b border-white/10 z-50 relative flex-wrap text-center">
         Legal Advisories Agents execute legal work end-to-end <a href="#" className="underline underline-offset-4 hover:text-gray-300 ml-1">Learn more</a>
       </div>
 
       {/* Navbar */}
-      <nav className={`fixed top-[41px] left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur-md py-4' : 'bg-transparent py-6'}`}>
+      <nav className={`left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'fixed top-0 bg-black/80 backdrop-blur-md py-4' : 'absolute bg-transparent py-4 md:py-6'}`}>
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex items-center justify-between">
           <div className="flex items-center gap-12">
             <div className="text-[32px] font-serif tracking-tight text-white cursor-pointer leading-[1.1]" onClick={onEnter}>
@@ -67,7 +67,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
       </nav>
 
       {/* Hero Section */}
-      <div className="relative min-h-[90vh] pt-32 pb-20 flex flex-col items-center justify-center bg-black overflow-hidden mt-[41px]">
+      <div className="relative min-h-[90vh] pt-32 pb-20 flex flex-col items-center justify-center bg-black overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 w-full h-full">
           <img 
