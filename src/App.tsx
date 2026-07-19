@@ -17,8 +17,7 @@ import { Tips } from './pages/Tips';
 import { Options } from './pages/Options';
 import { ContactSales } from './pages/ContactSales';
 import { Knowledge } from './pages/Knowledge';
-import { auth, logout } from './lib/auth';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth, logout, onAuthStateChanged, User } from './lib/auth';
 import { Menu } from 'lucide-react';
 
 export default function App() {

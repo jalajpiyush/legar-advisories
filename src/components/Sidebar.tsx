@@ -18,7 +18,7 @@ import {
   LogOut
 } from "lucide-react";
 import { cn } from "../lib/utils";
-import { User } from "firebase/auth";
+import { User } from "../lib/auth";
 
 export type PageId = "dashboard" | "vault" | "vault-statements" | "vault-delta" | "vault-supply" | "workflows" | "history" | "library" | "guidance" | "knowledge" | "help" | "create" | "shared-threads" | "tips" | "options";
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Settings, User, Bell, Shield, Key, Database, Globe, Monitor, CreditCard } from 'lucide-react';
-import { User as FirebaseUser } from 'firebase/auth';
+import { User as FirebaseUser } from '../lib/auth';
 
 const optionTabs = [
   { id: "account", label: "Account", icon: User },

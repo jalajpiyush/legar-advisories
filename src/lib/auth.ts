@@ -1,37 +1,44 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User, signOut } from 'firebase/auth';
-import { getAnalytics } from 'firebase/analytics';
-import firebaseConfig from '../../firebase-applet-config.json';
 
-const app = initializeApp(firebaseConfig);
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
-export const auth = getAuth(app);
+export type User = {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL: string;
+};
 
-const provider = new GoogleAuthProvider();
-provider.addScope('https://www.googleapis.com/auth/userinfo.email');
-provider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+let currentUser: User | null = null;
+const listeners: ((user: User | null) => void)[] = [];
+
+export const auth = {} as any;
+export const analytics = null;
+
+export const onAuthStateChanged = (authObj: any, callback: (user: User | null) => void) => {
+  listeners.push(callback);
+  callback(currentUser);
+  return () => {
+    const index = listeners.indexOf(callback);
+    if (index > -1) listeners.splice(index, 1);
+  };
+};
 
 export const googleSignIn = async () => {
   try {
-    const result = await signInWithPopup(auth, provider);
-    return result.user;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    currentUser = {
+      uid: 'mock-12345',
+      email: 'demo@legal-advisories.com',
+      displayName: 'Demo User',
+      photoURL: ''
+    };
+    listeners.forEach(l => l(currentUser));
+    return currentUser;
   } catch (error: any) {
-    if (error?.code === 'auth/popup-closed-by-user') {
-      console.log('Sign in cancelled by user.');
-      alert('Login cancelled or blocked. Since you are in a preview environment, popups may be blocked. Please OPEN THE APP IN A NEW TAB (using the arrow icon in the top right of the preview) to log in successfully.');
-      return null;
-    }
-    if (error?.code === 'auth/unauthorized-domain') {
-      console.error('Unauthorized domain:', error);
-      alert(`Please add this app URL to your Firebase Authorized Domains list. Go to Firebase Console -> Authentication -> Settings -> Authorized domains and add: ${window.location.hostname}`);
-      return null;
-    }
     console.error('Sign in error:', error);
-    alert(`Login failed: ${error?.message || error}`);
     throw error;
   }
 };
 
 export const logout = async () => {
-  await signOut(auth);
+  currentUser = null;
+  listeners.forEach(l => l(currentUser));
 };
