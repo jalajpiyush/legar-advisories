@@ -144,10 +144,10 @@ export function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col items-center pt-[100px] px-8 max-w-[1000px] mx-auto min-h-screen pb-20">
+    <div className="flex flex-1 flex-col items-center pt-4 sm:pt-8 md:pt-12 px-4 md:px-8 max-w-[1000px] mx-auto min-h-full pb-6 sm:pb-20 w-full">
       {/* Title */}
       {chatHistory.length === 0 && (
-        <h1 className="text-[44px] font-serif text-gray-900 mb-12 tracking-tight mt-[5vh]">Legal Advisories</h1>
+        <h1 className="text-[28px] sm:text-[36px] md:text-[44px] font-serif text-gray-900 mb-4 sm:mb-8 md:mb-12 tracking-tight mt-[2vh] md:mt-[5vh] text-center w-full">Legal Advisories</h1>
       )}
       
       {/* Chat History */}
@@ -188,7 +188,7 @@ export function Dashboard() {
       <div className="w-full max-w-[900px] mt-auto">
         {/* Top actions */}
         {chatHistory.length === 0 && (
-          <div className="flex items-center gap-6 mb-3 px-1 text-[14px] font-semibold text-gray-900">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 md:gap-6 mb-3 px-1 text-[14px] font-semibold text-gray-900">
             <div className="relative group">
               <button className="flex items-center gap-2 hover:text-gray-600 transition-colors">
                 <Folder className="w-[18px] h-[18px] opacity-80" /> Choose project
@@ -242,12 +242,12 @@ export function Dashboard() {
               }
             }}
             placeholder="Ask Legal Advisories anything..."
-            className={`w-full bg-transparent resize-none outline-none text-gray-800 placeholder:text-gray-400 ${chatHistory.length > 0 ? 'min-h-[80px]' : 'min-h-[140px]'} text-[16px] leading-relaxed font-medium`}
+            className={`w-full bg-transparent resize-none outline-none text-gray-800 placeholder:text-gray-400 ${chatHistory.length > 0 ? 'min-h-[60px] sm:min-h-[80px]' : 'min-h-[80px] sm:min-h-[140px]'} text-[16px] leading-relaxed font-medium`}
             disabled={isLoading}
           />
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-4">
-            <div className="flex items-center gap-6 text-[14px] font-semibold text-gray-600">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-[14px] font-semibold text-gray-600">
               <div className="relative" ref={sourcesRef}>
                 <input 
                   type="file" 
@@ -338,11 +338,11 @@ export function Dashboard() {
               )}
             </div>
 
-            <div className="flex items-center gap-5">
+            <div className="flex items-center justify-center sm:justify-start gap-5 w-full sm:w-auto mt-2 sm:mt-0">
               <button 
                 onClick={handleAskLegalAdvisories}
                 disabled={isLoading || (!prompt.trim() && uploadedFiles.length === 0)}
-                className="bg-black text-white px-5 py-2.5 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50"
+                className="w-full sm:w-auto bg-black text-white px-5 py-2.5 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-colors shadow-sm disabled:opacity-50"
               >
                 Ask Legal Advisories
               </button>

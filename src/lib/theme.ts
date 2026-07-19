@@ -1,5 +1,5 @@
 export function getTheme(): string {
-  return localStorage.getItem('theme') || 'System Default';
+  return localStorage.getItem('theme') || 'Light';
 }
 
 export function setTheme(theme: string) {

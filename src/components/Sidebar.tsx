@@ -47,7 +47,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
 
   if (!isOpen) {
     return (
-      <aside className="w-[60px] bg-[#F9F9FA] flex flex-col items-center py-4 h-screen text-gray-800 border-r border-gray-200/80 transition-all">
+      <aside className="hidden md:flex w-[60px] bg-[#F9F9FA] flex-col items-center py-4 h-screen text-gray-800 border-r border-gray-200/80 transition-all flex-shrink-0 z-40">
         <button 
           onClick={onToggle}
           className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-lg hover:bg-gray-100"
@@ -60,8 +60,15 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
   }
 
   return (
-    <aside className="w-[260px] bg-[#F9F9FA] flex flex-col h-screen text-gray-800 border-r border-gray-200/80 transition-all">
-      <div className="p-4">
+    <>
+      {/* Mobile overlay */}
+      <div 
+        className="md:hidden fixed inset-0 bg-black/20 z-40"
+        onClick={onToggle}
+      />
+      
+      <aside className="fixed md:static inset-y-0 left-0 z-50 w-[260px] bg-[#F9F9FA] flex flex-col h-screen text-gray-800 border-r border-gray-200/80 transition-all flex-shrink-0">
+        <div className="p-4">
         {/* Top Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="relative" ref={workspaceRef}>
@@ -121,7 +128,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
 
         {/* Create Button */}
         <button 
-          onClick={() => onPageChange("create")}
+          onClick={() => { onPageChange("create"); if (window.innerWidth < 768) onToggle(); }}
           className="w-full flex items-center justify-between bg-white border border-gray-200 shadow-sm hover:shadow transition-shadow rounded-xl px-3 py-2 text-[14px] font-semibold text-gray-800 mb-6"
         >
           <div className="flex items-center gap-2">
@@ -134,7 +141,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
         {/* Navigation */}
         <nav className="space-y-1">
           <button 
-            onClick={() => onPageChange("dashboard")}
+            onClick={() => { onPageChange("dashboard"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
               currentPage === "dashboard" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -146,7 +153,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
 
           <div>
             <button 
-              onClick={() => onPageChange("vault")}
+              onClick={() => { onPageChange("vault"); if (window.innerWidth < 768) onToggle(); }}
               className={cn(
                 "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
                 currentPage.startsWith("vault") ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -158,7 +165,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           </div>
 
           <button 
-            onClick={() => onPageChange("workflows")}
+            onClick={() => { onPageChange("workflows"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
               currentPage === "workflows" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -169,7 +176,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           </button>
 
           <button 
-            onClick={() => onPageChange("history")}
+            onClick={() => { onPageChange("history"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
               currentPage === "history" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -180,7 +187,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           </button>
 
           <button 
-            onClick={() => onPageChange("shared-threads")}
+            onClick={() => { onPageChange("shared-threads"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
               currentPage === "shared-threads" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -191,7 +198,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           </button>
 
           <button 
-            onClick={() => onPageChange("library")}
+            onClick={() => { onPageChange("library"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
               currentPage === "library" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -202,7 +209,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           </button>
 
           <button 
-            onClick={() => onPageChange("knowledge")}
+            onClick={() => { onPageChange("knowledge"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
               currentPage === "knowledge" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -213,7 +220,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           </button>
 
           <button 
-            onClick={() => onPageChange("guidance")}
+            onClick={() => { onPageChange("guidance"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
               currentPage === "guidance" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -224,7 +231,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           </button>
 
           <button 
-            onClick={() => onPageChange("tips")}
+            onClick={() => { onPageChange("tips"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
               currentPage === "tips" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -238,7 +245,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
 
       <div className="mt-auto p-4 space-y-1">
         <button 
-          onClick={() => onPageChange("help")}
+          onClick={() => { onPageChange("help"); onToggle(); }}
           className={cn(
             "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
             currentPage === "help" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -248,7 +255,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           Help
         </button>
         <button 
-          onClick={() => onPageChange("options")}
+          onClick={() => { onPageChange("options"); onToggle(); }}
           className={cn(
             "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
             currentPage === "options" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
@@ -259,5 +266,6 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
         </button>
       </div>
     </aside>
+    </>
   );
 }

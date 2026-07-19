@@ -23,7 +23,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId | "landing" | "contact-sales">("landing");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   React.useEffect(() => {
@@ -130,7 +130,7 @@ export default function App() {
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
         
-        <div className="flex-1 overflow-y-auto z-10 relative custom-scrollbar">
+        <div className="flex-1 overflow-y-auto z-10 relative custom-scrollbar flex flex-col">
           {renderPage()}
         </div>
       </main>
