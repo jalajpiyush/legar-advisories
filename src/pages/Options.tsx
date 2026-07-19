@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Settings, User, Bell, Shield, Key, Database, Globe, Monitor, CreditCard } from 'lucide-react';
 import { User as FirebaseUser } from 'firebase/auth';
-import { getTheme, setTheme } from '../lib/theme';
 
 const optionTabs = [
   { id: "account", label: "Account", icon: User },
-  { id: "appearance", label: "Appearance", icon: Monitor },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "privacy", label: "Privacy & Security", icon: Shield },
   { id: "api", label: "API Keys", icon: Key },
@@ -18,7 +16,6 @@ interface OptionsProps { user?: FirebaseUser | null; }
 export function Options({ user }: OptionsProps) {
   const [activeTab, setActiveTab] = useState("account");
   const [planType, setPlanType] = useState<"personal" | "business">("personal");
-  const [theme, setLocalTheme] = useState(getTheme());
   const [firstName, setFirstName] = useState(user?.displayName?.split(" ")[0] || "Jane");
   const [lastName, setLastName] = useState(user?.displayName?.split(" ").slice(1).join(" ") || "Doe");
   const [email, setEmail] = useState(user?.email || "jane@whitford.com");
