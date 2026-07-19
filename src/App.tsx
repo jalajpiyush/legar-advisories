@@ -21,9 +21,28 @@ import { auth, logout, onAuthStateChanged, User } from './lib/auth';
 import { Menu } from 'lucide-react';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageId | "landing" | "contact-sales">("landing");
+  const [currentPage, setCurrentPage] = useState<PageId | "landing" | "contact-sales">(() => {
+    return (localStorage.getItem("currentPage") as any) || "landing";
+  });
+  const [currentChatId, setCurrentChatId] = useState<string | null>(() => localStorage.getItem("currentChatId"));
+
+  React.useEffect(() => {
+    if (currentPage !== "landing" && currentPage !== "contact-sales") {
+      localStorage.setItem("currentPage", currentPage);
+    }
+  }, [currentPage]);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  React.useEffect(() => {
+    if (currentChatId) {
+      localStorage.setItem("currentChatId", currentChatId);
+    } else {
+      localStorage.removeItem("currentChatId");
+    }
+  }, [currentChatId]);
+
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -47,7 +66,7 @@ export default function App() {
   const renderPage = () => {
     switch (currentPage) {
       case "dashboard":
-        return <Dashboard />;
+        return <Dashboard currentChatId={currentChatId} onChatIdChange={setCurrentChatId} />;
       case "vault":
         return <Vault />;
       case "vault-statements":
@@ -116,7 +135,9 @@ export default function App() {
     <div className="flex h-screen bg-[#F9F9FA] text-gray-900 overflow-hidden font-sans selection:bg-blue-100 selection:text-blue-900">
       <Sidebar 
         currentPage={currentPage} 
-        onPageChange={setCurrentPage} 
+        onPageChange={setCurrentPage}
+        currentChatId={currentChatId}
+        onChatSelect={(id) => { setCurrentChatId(id); setCurrentPage("dashboard"); }} 
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onLogout={logout}

@@ -74,7 +74,7 @@ export function Options({ user }: OptionsProps) {
                 <div className="flex items-center gap-6">
                   <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-2xl font-medium overflow-hidden">
                     <img 
-                      src={user?.photoURL || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"} 
+                      src={user?.photoURL || 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Paul_Graham_%28cropped%29.jpg'} 
                       alt="Profile" 
                       className="w-full h-full object-cover"
                     />

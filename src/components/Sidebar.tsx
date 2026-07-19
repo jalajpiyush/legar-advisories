@@ -1,6 +1,6 @@
 import React from "react";
 import { 
-  Plus,
+  Plus, Search,
   Folder,
   Network,
   Clock,
@@ -19,10 +19,14 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { User } from "../lib/auth";
+import { getHistory, HistoryItem, deleteHistoryItem, renameHistoryItem } from "../lib/history";
+import { MessageSquare, Trash2, Edit2, Check, X } from "lucide-react";
 
 export type PageId = "dashboard" | "vault" | "vault-statements" | "vault-delta" | "vault-supply" | "workflows" | "history" | "library" | "guidance" | "knowledge" | "help" | "create" | "shared-threads" | "tips" | "options";
 
 interface SidebarProps {
+  currentChatId?: string | null;
+  onChatSelect?: (id: string | null) => void;
   currentPage: PageId;
   onPageChange: (page: PageId) => void;
   isOpen: boolean;
@@ -31,7 +35,18 @@ interface SidebarProps {
   user?: User | null;
 }
 
-export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout, user }: SidebarProps) {
+export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout, user, currentChatId, onChatSelect }: SidebarProps) {
+  const [chatHistory, setChatHistory] = React.useState<HistoryItem[]>([]);
+  const [editingChatId, setEditingChatId] = React.useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = React.useState("");
+  const [chatSearchQuery, setChatSearchQuery] = React.useState("");
+
+  React.useEffect(() => {
+    const loadHistory = () => setChatHistory(getHistory().filter(h => h.type === "Chat"));
+    loadHistory();
+    window.addEventListener("history-updated", loadHistory);
+    return () => window.removeEventListener("history-updated", loadHistory);
+  }, []);
   const [isWorkspaceOpen, setIsWorkspaceOpen] = React.useState(false);
   const workspaceRef = React.useRef<HTMLDivElement>(null);
 
@@ -76,11 +91,11 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
               onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
               className="flex items-center gap-2 hover:bg-gray-100 p-1.5 -ml-1.5 rounded-lg transition-colors"
             >
-              <div className="w-6 h-6 bg-gray-800 rounded flex items-center justify-center text-white text-xs font-semibold">
+              <div className="w-7 h-7 bg-[#1C2333] rounded-lg flex items-center justify-center text-white text-[13px] font-bold tracking-wide">
                 {user?.displayName ? user.displayName.substring(0, 2).toUpperCase() : "MW"}
               </div>
-              <span className="text-[14px] font-semibold text-gray-900">{user?.displayName || "My Workspace"}</span>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <span className="text-[16px] font-bold text-[#0F172A] tracking-tight">{user?.displayName || "My Workspace"}</span>
+              <ChevronDown className="w-4 h-4 text-slate-400 stroke-[2.5]" />
             </button>
             
             {/* Workspace Dropdown */}
@@ -128,7 +143,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
 
         {/* Create Button */}
         <button 
-          onClick={() => { onPageChange("create"); if (window.innerWidth < 768) onToggle(); }}
+          onClick={() => { onPageChange("dashboard"); if (onChatSelect) onChatSelect(null); if (window.innerWidth < 768) onToggle(); }}
           className="w-full flex items-center justify-between bg-white border border-gray-200 shadow-sm hover:shadow transition-shadow rounded-xl px-3 py-2 text-[14px] font-semibold text-gray-800 mb-6"
         >
           <div className="flex items-center gap-2">

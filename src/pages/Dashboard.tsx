@@ -6,11 +6,12 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-import { addHistoryItem, updateHistoryItemMessages } from "../lib/history";
+import { addHistoryItem, updateHistoryItemMessages, getHistoryItem, ChatMessage } from "../lib/history";
 
-export function Dashboard() {
+export function Dashboard({ currentChatId, onChatIdChange }: { currentChatId?: string | null, onChatIdChange?: (id: string | null) => void }) {
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const sourcesRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,7 +38,24 @@ export function Dashboard() {
   const [chatHistory, setChatHistory] = useState<{role: 'user' | 'model', content: string}[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (currentChatId) {
+      const item = getHistoryItem(currentChatId);
+      if (item && item.messages) {
+        setChatHistory(item.messages as any[]);
+        setCurrentHistoryId(currentChatId);
+      }
+    } else {
+      setChatHistory([]);
+      setCurrentHistoryId(null);
+    }
+  }, [currentChatId]);
+
   const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+  }, [chatHistory]);
   const [isKbModalOpen, setIsKbModalOpen] = useState(false);
 
   const toggleTag = (tag: string) => {
@@ -111,7 +129,7 @@ export function Dashboard() {
       let hId = currentHistoryId;
       if (!hId) {
         hId = addHistoryItem(currentPrompt.substring(0, 50) + (currentPrompt.length > 50 ? "..." : ""), "Chat", [...chatHistory, userMessage]);
-        setCurrentHistoryId(hId);
+        setCurrentHistoryId(hId); if (onChatIdChange) onChatIdChange(hId);
       } else {
         updateHistoryItemMessages(hId, [...chatHistory, userMessage]);
       }
@@ -167,6 +185,7 @@ export function Dashboard() {
               </div>
             </div>
           ))}
+            <div ref={messagesEndRef} />
           {isLoading && (
             <div className="flex justify-start">
               <div className="flex max-w-[85%] flex-row gap-4">
