@@ -19,10 +19,12 @@ if (!global.memoryPayments) {
  */
 export async function safeGetDoc(collectionName: string, docId: string): Promise<{ exists: boolean; data: any }> {
   try {
-    const docRef = doc(db, collectionName, docId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      return { exists: true, data: snap.data() };
+    if (db) {
+      const docRef = doc(db, collectionName, docId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        return { exists: true, data: snap.data() };
+      }
     }
   } catch (clientErr: any) {
     // proceed to adminDb
@@ -60,9 +62,11 @@ export async function safeSetDoc(collectionName: string, docId: string, data: an
 
   let success = false;
   try {
-    const docRef = doc(db, collectionName, docId);
-    await setDoc(docRef, data, { merge });
-    success = true;
+    if (db) {
+      const docRef = doc(db, collectionName, docId);
+      await setDoc(docRef, data, { merge });
+      success = true;
+    }
   } catch (clientErr: any) {
     // proceed to adminDb
   }

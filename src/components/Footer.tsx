@@ -17,7 +17,7 @@ export function Footer({ onNavigate }: FooterProps) {
             <div className="text-xs text-gray-400">
               <p>Powered by AI</p>
               <p className="mt-1">© {new Date().getFullYear()} Legal Advisories Inc. All rights reserved.</p>
-              <p className="mt-1">123 Legal Tech Park, Bengaluru, Karnataka, India 560001</p>
+              <p className="mt-1">Rajeev Gandhi Nagar, Farrukhabad, Uttar Pradesh, India 209625</p>
             </div>
           </div>
           <div>

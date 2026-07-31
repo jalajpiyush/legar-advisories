@@ -29,13 +29,6 @@ export function ContactSales({ onBack }: ContactSalesProps) {
             Purpose built for the world's most demanding legal workflows. Book a demo to see Legal Advisories in action.
           </p>
 
-          <div className="flex items-center gap-8 md:gap-14 opacity-80 flex-wrap pb-8 grayscale">
-            <span className="font-serif text-xl md:text-2xl font-bold tracking-tight text-black">ReedSmith</span>
-            <span className="font-sans text-2xl md:text-3xl font-bold lowercase tracking-tighter text-black">pwc</span>
-            <span className="font-serif text-xl md:text-2xl font-bold tracking-tight text-black">O'Melveny</span>
-            <span className="font-sans text-lg md:text-xl font-bold uppercase tracking-widest text-black">Bridgewater</span>
-            <span className="font-serif text-lg md:text-xl tracking-[0.2em] text-black">MACFARLANES</span>
-          </div>
         </div>
       </div>
 

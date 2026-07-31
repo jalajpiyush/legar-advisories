@@ -22,7 +22,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
     <div className="min-h-screen bg-white font-sans selection:bg-black/10 selection:text-black overflow-x-hidden">
       {/* Top Banner */}
       <div className="bg-black text-white text-[13px] py-2.5 px-4 flex justify-center items-center gap-1.5 font-medium tracking-wide border-b border-white/10 z-50 relative flex-wrap text-center">
-        Legal Advisories Agents execute legal work end-to-end <a href="#" className="underline underline-offset-4 hover:text-gray-300 ml-1">Learn more</a>
+        Legal Advisories Agents execute legal work end-to-end <a href="#talk-terms" className="underline underline-offset-4 hover:text-gray-300 ml-1">Learn more</a>
       </div>
 
       {/* Navbar */}
@@ -39,12 +39,79 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
             </div>
             
             <div className="hidden lg:flex items-center gap-8 text-[15px] font-medium text-white/90">
-              <a href="#" className="flex items-center gap-1.5 hover:text-white transition-colors">Platform <ChevronDown className="w-3.5 h-3.5" /></a>
-              <a href="#" className="flex items-center gap-1.5 hover:text-white transition-colors">Solutions <ChevronDown className="w-3.5 h-3.5" /></a>
-              <a href="#" className="flex items-center gap-1.5 hover:text-white transition-colors">Customers <ChevronDown className="w-3.5 h-3.5" /></a>
-              <a href="#" className="flex items-center gap-1.5 hover:text-white transition-colors">Security <ChevronDown className="w-3.5 h-3.5" /></a>
-              <a href="#" className="flex items-center gap-1.5 hover:text-white transition-colors">Resources <ChevronDown className="w-3.5 h-3.5" /></a>
-              <a href="#" className="flex items-center gap-1.5 hover:text-white transition-colors">Company <ChevronDown className="w-3.5 h-3.5" /></a>
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Platform <ChevronDown className="w-3.5 h-3.5" /></button>
+                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                  <div className="flex flex-col gap-3">
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">AI Drafting</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Document Automation</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Knowledge Management</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Compliance Engine</a>
+                    <div className="border-t my-1"></div>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Overview</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Agents</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Vault</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Knowledge</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Shared Spaces</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Command Center</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Contract Intelligence</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Harvey Mobile</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Ecosystem</a>
+                  </div>
+                </div>
+              </div>
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Solutions <ChevronDown className="w-3.5 h-3.5" /></button>
+                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                  <div className="flex flex-col gap-3">
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Case Management</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Contract Drafting</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Due Diligence</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">AI Analytics</a>
+                  </div>
+                </div>
+              </div>
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Customers <ChevronDown className="w-3.5 h-3.5" /></button>
+                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                  <div className="flex flex-col gap-3">
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Law Firms</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">In-House Teams</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Government</a>
+                  </div>
+                </div>
+              </div>
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Security <ChevronDown className="w-3.5 h-3.5" /></button>
+                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                  <div className="flex flex-col gap-3">
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">SOC 2 Compliance</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Data Privacy</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Infrastructure</a>
+                  </div>
+                </div>
+              </div>
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Resources <ChevronDown className="w-3.5 h-3.5" /></button>
+                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                  <div className="flex flex-col gap-3">
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Documentation</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Blog</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Webinars</a>
+                  </div>
+                </div>
+              </div>
+              <div className="relative group">
+                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Company <ChevronDown className="w-3.5 h-3.5" /></button>
+                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                  <div className="flex flex-col gap-3">
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">About Us</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Careers</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Contact</a>
+                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Legal</a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -107,27 +174,6 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
             </motion.div>
           </div>
 
-          {/* Customer Logos Strip */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.6 }}
-            className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mt-auto pt-20"
-          >
-            <div className="flex items-center gap-8 md:gap-14 opacity-80 flex-wrap">
-              <span className="font-serif text-2xl md:text-3xl font-bold tracking-tight text-[#e5e5e5]">ReedSmith</span>
-              <span className="font-sans text-3xl md:text-4xl font-bold lowercase tracking-tighter text-[#e5e5e5]">pwc</span>
-              <span className="font-serif text-2xl md:text-3xl font-bold tracking-tight text-[#e5e5e5]">O'Melveny</span>
-              <span className="font-sans text-xl md:text-2xl font-bold uppercase tracking-widest text-[#e5e5e5]">Bridgewater</span>
-              <span className="font-serif text-xl md:text-2xl tracking-[0.2em] text-[#e5e5e5]">MACFARLANES</span>
-              <span className="font-sans text-2xl md:text-3xl font-bold tracking-[0.15em] text-[#e5e5e5]">KKR</span>
-              <span className="font-sans text-xl md:text-2xl font-bold tracking-[0.1em] text-[#e5e5e5]">A&O SHEARMAN</span>
-            </div>
-            
-            <button className="border border-white/50 text-white px-6 py-2.5 rounded-sm text-[15px] font-medium hover:bg-white/10 transition-colors whitespace-nowrap">
-              Our Customers
-            </button>
-          </motion.div>
         </div>
       </div>
 
@@ -186,7 +232,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
         </p>
 
         {/* Talk Terms Section */}
-        <div className="max-w-[1200px] mx-auto px-6 flex flex-col lg:flex-row items-center gap-16 text-left mb-40">
+        <div id="talk-terms" className="max-w-[1200px] mx-auto px-6 flex flex-col lg:flex-row items-center gap-16 text-left mb-40">
           <div className="flex-1">
             <h3 className="text-[2.5rem] md:text-[3rem] font-serif text-[#1F1F1F] mb-6 tracking-tight">Talk Terms.</h3>
             <p className="text-[20px] md:text-[24px] text-[#1F1F1F] font-medium leading-[1.3] mb-6">

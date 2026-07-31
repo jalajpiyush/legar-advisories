@@ -20,7 +20,7 @@ import firebaseConfig from '../../firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = typeof window !== 'undefined' ? getFirestore(app, firebaseConfig.firestoreDatabaseId) : null as any;
 
 const provider = new GoogleAuthProvider();
 provider.addScope('https://www.googleapis.com/auth/userinfo.email');
