@@ -1,9 +1,12 @@
 {
+  "projectId": "legal-advisories",
+  "appId": "1:983471528964:web:5a50ea52189b7ff7926951",
   "apiKey": "AIzaSyDT-npISPYSQk6ixhYK-HKW44_0QxNLgIA",
   "authDomain": "legal-advisories.firebaseapp.com",
-  "projectId": "legal-advisories",
+  "firestoreDatabaseId": "(default)",
   "storageBucket": "legal-advisories.firebasestorage.app",
   "messagingSenderId": "983471528964",
-  "appId": "1:983471528964:web:5a50ea52189b7ff7926951",
-  "measurementId": "G-DSLC3WLVTW"
+  "measurementId": "G-DSLC3WLVTW",
+  "oAuthClientId": "136547279305-mci0e5elvltmh9b8bt17hc7a4v5ae9o5.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
 }

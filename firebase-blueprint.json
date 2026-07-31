@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and subscription data",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "full_name": { "type": "string" },
+        "email": { "type": "string" },
+        "profile_image": { "type": "string" },
+        "plan": { "type": "string", "enum": ["Free", "Starter", "Professional", "Enterprise"] },
+        "email_verified": { "type": "boolean" },
+        "provider": { "type": "string" },
+        "created_at": { "type": "number" },
+        "updated_at": { "type": "number" },
+        "last_login": { "type": "number" },
+        "razorpay_customer_id": { "type": "string" },
+        "razorpay_subscription_id": { "type": "string" },
+        "subscription_status": { "type": "string" }
+      },
+      "required": ["email", "plan"]
+    },
+    "BillingHistory": {
+      "title": "BillingHistory",
+      "description": "Record of past payments",
+      "type": "object",
+      "properties": {
+        "invoice_id": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string" },
+        "plan": { "type": "string" },
+        "created_at": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User documents"
+    },
+    "users/{userId}/billing_history/{invoiceId}": {
+      "schema": { "$ref": "#/entities/BillingHistory" },
+      "description": "Billing history for a user"
+    }
+  }
+}

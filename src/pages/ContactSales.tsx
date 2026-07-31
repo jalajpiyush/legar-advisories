@@ -9,7 +9,12 @@ export function ContactSales({ onBack }: ContactSalesProps) {
     <div className="min-h-screen flex flex-col font-sans bg-white relative overflow-y-auto">
       {/* Top Header section */}
       <div className="w-full flex justify-between items-center px-6 md:px-12 py-6 absolute top-0 left-0 right-0 z-20">
-        <div className="font-serif text-3xl font-medium tracking-tight text-black">Legal Advisories</div>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-black rounded flex items-center justify-center">
+            <span className="text-white font-serif text-[20px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
+          </div>
+          <div className="font-serif text-3xl font-medium tracking-tight text-black">Legal Advisories</div>
+        </div>
         <button onClick={onBack} className="text-gray-500 text-sm hover:text-gray-900 transition-colors font-medium">
           Back to full website
         </button>

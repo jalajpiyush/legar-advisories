@@ -1,22 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ArrowRight, Paperclip, Building2, Sparkles, SlidersHorizontal, Search, MessageSquare, MoreHorizontal, Pause, Plus, X, Edit3, ArrowUp } from 'lucide-react';
+import { Footer } from '../components/Footer';
+import { ChevronDown, ArrowRight, Paperclip, Building2, Sparkles, SlidersHorizontal, Search, MessageSquare, MoreHorizontal, Pause, Plus, X, Edit3, ArrowUp, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { googleSignIn } from '../lib/auth';
+import { AuthModal } from '../components/AuthModal';
 
 export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onContactSales?: () => void }) {
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
-  const handleLogin = async () => {
-    try {
-      setIsLoggingIn(true);
-      await googleSignIn();
-      // App.tsx auth observer will handle redirect
-    } catch (error) {
-      console.error('Login failed:', error);
-      setIsLoggingIn(false);
-    }
-  };
+  const handleLogin = () => setIsAuthOpen(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,8 +29,13 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
       <nav className={`left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'fixed top-0 bg-black/80 backdrop-blur-md py-4' : 'absolute bg-transparent py-4 md:py-6'}`}>
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex items-center justify-between">
           <div className="flex items-center gap-12">
-            <div className="text-[32px] font-serif tracking-tight text-white cursor-pointer leading-[1.1]" onClick={onEnter}>
-              Legal<br/>Advisories
+            <div className="flex items-center gap-4 cursor-pointer" onClick={onEnter}>
+              <div className="w-10 h-10 bg-white rounded flex items-center justify-center">
+                <span className="text-black font-serif text-[22px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
+              </div>
+              <div className="text-[28px] font-serif tracking-tight text-white leading-[1.1]">
+                Legal<br/>Advisories
+              </div>
             </div>
             
             <div className="hidden lg:flex items-center gap-8 text-[15px] font-medium text-white/90">
@@ -55,9 +52,8 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
             <button 
               className="px-5 py-2 border border-white/40 text-white rounded-[4px] text-[15px] font-medium hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleLogin}
-              disabled={isLoggingIn}
             >
-              {isLoggingIn ? 'Logging in...' : 'Login'}
+              Login
             </button>
             <button className="px-6 py-2 bg-white text-black rounded-[4px] text-[15px] font-medium hover:bg-gray-100 transition-colors" onClick={(e) => { e.preventDefault(); if (onContactSales) onContactSales(); else onEnter(); }}>
               Request a Demo
@@ -169,7 +165,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
              <div className="flex flex-wrap items-center gap-3 mt-4 px-2 pb-2">
                <button className="flex items-center gap-2.5 text-[14px] font-medium border border-gray-200 text-gray-700 px-5 py-2 rounded-full hover:bg-gray-50 transition-colors shadow-sm">
                  <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                    <div className="w-2 h-2 bg-white rounded-full-full"></div>
                  </div>
                  Ask LexisNexis® <span className="text-gray-400 font-light ml-1">+</span>
                </button>
@@ -286,7 +282,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
 
             {/* Chat Input */}
             <div className="p-4 bg-transparent border-t border-gray-200/40">
-              <div className="bg-white rounded-full p-2 flex items-center shadow-sm border border-gray-200">
+              <div className="bg-white rounded-full-full p-2 flex items-center shadow-sm border border-gray-200">
                 <div className="w-7 h-7 rounded-full bg-gray-200 ml-1 overflow-hidden flex-shrink-0"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
                 <input type="text" placeholder="Chat with Robin..." className="flex-1 bg-transparent px-3 outline-none text-[14px] text-gray-700" />
                 <div className="flex items-center gap-1.5 mr-1">
@@ -445,6 +441,23 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
           </div>
         </div>
       </div>
+      
+      {/* Home Page Disclaimer */}
+      <div className="max-w-[1000px] mx-auto px-6 pt-12 pb-8">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-4">
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-900 leading-relaxed">
+            <strong>Legal Advisories is an AI-powered legal research and document assistance platform.</strong> It provides informational and educational content only and is not a substitute for advice from a qualified lawyer. Using this platform does not create an advocate-client relationship. Always consult a licensed legal professional before making important legal decisions.
+          </p>
+        </div>
+      </div>
+
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <Footer onNavigate={(page) => {
+        if (page === 'terms') window.dispatchEvent(new CustomEvent('navigate', { detail: 'terms' }));
+        else if (page === 'privacy') window.dispatchEvent(new CustomEvent('navigate', { detail: 'privacy' }));
+        else if (page === 'disclaimer') window.dispatchEvent(new CustomEvent('navigate', { detail: 'disclaimer' }));
+      }} />
     </div>
   );
 }

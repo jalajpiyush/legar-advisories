@@ -1,24 +1,50 @@
 import React, { useState } from 'react';
 import { Settings, User, Bell, Shield, Key, Database, Globe, Monitor, CreditCard } from 'lucide-react';
 import { User as FirebaseUser } from '../lib/auth';
+import { Billing } from './Billing';
 
 const optionTabs = [
   { id: "account", label: "Account", icon: User },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "privacy", label: "Privacy & Security", icon: Shield },
-  { id: "api", label: "API Keys", icon: Key },
-  { id: "integrations", label: "Integrations", icon: Database },
   { id: "plan", label: "Upgrade Plan", icon: CreditCard },
 ];
 
 interface OptionsProps { user?: FirebaseUser | null; }
 
+
+const CheckIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+);
+
 export function Options({ user }: OptionsProps) {
-  const [activeTab, setActiveTab] = useState("account");
+  const [activeTab, setActiveTab] = useState("overview");
+  const [dashboardData, setDashboardData] = useState<any>(null);
+
+  React.useEffect(() => {
+    const fetchDashboard = async () => {
+      if (activeTab === 'overview' && user) {
+        try {
+          const token = await user.getIdToken();
+          const res = await fetch("/api/user/dashboard", {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (res.ok) setDashboardData(data);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    };
+    fetchDashboard();
+  }, [activeTab, user]);
+
   const [planType, setPlanType] = useState<"personal" | "business">("personal");
   const [firstName, setFirstName] = useState(user?.displayName?.split(" ")[0] || "Jane");
   const [lastName, setLastName] = useState(user?.displayName?.split(" ").slice(1).join(" ") || "Doe");
   const [email, setEmail] = useState(user?.email || "jane@whitford.com");
+  const [theme, setTheme] = useState("System Default");
+  const [localTheme, setLocalTheme] = useState("System Default");
   
   React.useEffect(() => {
     if (user) {
@@ -34,7 +60,7 @@ export function Options({ user }: OptionsProps) {
       <div className="px-8 py-6 border-b border-gray-100 bg-white sticky top-0 z-10">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-2xl font-serif text-gray-900 mb-1">Options</h1>
+            <h1 className="text-2xl font-serif text-gray-900 mb-1">Settings</h1>
             <p className="text-[14px] text-gray-500">Manage your account settings and preferences.</p>
           </div>
         </div>
@@ -67,6 +93,85 @@ export function Options({ user }: OptionsProps) {
 
           {/* Tab Content */}
           <div className="flex-1 bg-white border border-gray-200/80 rounded-2xl p-8 shadow-sm">
+                        {activeTab === "overview" && (
+              <div className="space-y-6">
+                <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Account Dashboard</h2>
+                {dashboardData ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Current Plan & Usage */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-4">Current Plan</h3>
+                      <div className="text-3xl font-bold text-blue-600 mb-2">{dashboardData.plan}</div>
+                      <button onClick={() => setActiveTab('plan')} className="text-sm text-blue-500 hover:underline">Manage Subscription</button>
+                    </div>
+
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-4">Today's Usage</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600">AI Chats</span>
+                            <span className="font-medium text-gray-900">
+                              {dashboardData.usage?.chat || 0} / {dashboardData.limits.chat === -1 ? 'Unlimited' : dashboardData.limits.chat}
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-100 rounded-full h-2">
+                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: dashboardData.limits.chat === -1 ? '100%' : `${Math.min(((dashboardData.usage?.chat || 0) / dashboardData.limits.chat) * 100, 100)}%` }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-600">Document Analyses</span>
+                            <span className="font-medium text-gray-900">
+                              {dashboardData.usage?.doc || 0} / {dashboardData.limits.doc === -1 ? 'Unlimited' : dashboardData.limits.doc}
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-100 rounded-full h-2">
+                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: dashboardData.limits.doc === -1 ? '100%' : `${Math.min(((dashboardData.usage?.doc || 0) / dashboardData.limits.doc) * 100, 100)}%` }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Payment History */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm col-span-1 md:col-span-2">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent Payments</h3>
+                      {dashboardData.billingHistory && dashboardData.billingHistory.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left text-gray-500">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                              <tr>
+                                <th className="px-4 py-3">Date</th>
+                                <th className="px-4 py-3">Plan</th>
+                                <th className="px-4 py-3">Amount</th>
+                                <th className="px-4 py-3">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {dashboardData.billingHistory.map((bill: any) => (
+                                <tr key={bill.id} className="border-b">
+                                  <td className="px-4 py-3">{new Date(bill.created_at).toLocaleDateString()}</td>
+                                  <td className="px-4 py-3">{bill.plan}</td>
+                                  <td className="px-4 py-3">₹{bill.amount}</td>
+                                  <td className="px-4 py-3">
+                                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{bill.status}</span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">No payment history found.</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500">Loading dashboard...</div>
+                )}
+              </div>
+            )}
+
             {activeTab === "account" && (
               <div className="space-y-6">
                 <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Account Profile</h2>
@@ -209,334 +314,8 @@ export function Options({ user }: OptionsProps) {
               </div>
             )}
 
-            {activeTab === "api" && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">API Keys</h2>
-                <p className="text-[13px] text-gray-600">Manage your API keys for external services.</p>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[13px] font-medium text-gray-700">OpenAI API Key</label>
-                    <div className="flex gap-2">
-                      <input type="password" placeholder="sk-..." className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 transition-colors bg-gray-50" />
-                      <button className="px-4 py-2 bg-gray-900 text-white text-[13px] font-medium rounded-lg hover:bg-gray-800 transition-colors">Save</button>
-                    </div>
-                    <p className="text-[12px] text-gray-500">Used for generating text and summaries.</p>
-                  </div>
-                  <div className="space-y-2 pt-2 border-t border-gray-50">
-                    <label className="text-[13px] font-medium text-gray-700">Anthropic API Key</label>
-                    <div className="flex gap-2">
-                      <input type="password" placeholder="sk-ant-..." className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 transition-colors bg-gray-50" />
-                      <button className="px-4 py-2 bg-gray-900 text-white text-[13px] font-medium rounded-lg hover:bg-gray-800 transition-colors">Save</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "integrations" && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Connected Apps</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  
-                  <div className="border border-gray-200 p-4 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-                        <Globe className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-[14px] font-medium text-gray-900">Google Drive</h3>
-                        <p className="text-[12px] text-gray-500">Sync your documents.</p>
-                      </div>
-                    </div>
-                    <button className="px-3 py-1.5 bg-gray-100 text-gray-700 text-[12px] font-medium rounded-md hover:bg-gray-200 transition-colors">
-                      Connect
-                    </button>
-                  </div>
-
-                  <div className="border border-gray-200 p-4 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center">
-                        <Database className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-[14px] font-medium text-gray-900">Notion</h3>
-                        <p className="text-[12px] text-gray-500">Export your notes.</p>
-                      </div>
-                    </div>
-                    <button className="px-3 py-1.5 bg-gray-100 text-gray-700 text-[12px] font-medium rounded-md hover:bg-gray-200 transition-colors">
-                      Connect
-                    </button>
-                  </div>
-
-                  <div className="border border-gray-200 p-4 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-100 text-gray-800 rounded-lg flex items-center justify-center">
-                        <Shield className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h3 className="text-[14px] font-medium text-gray-900">GitHub</h3>
-                        <p className="text-[12px] text-gray-500">Import repositories.</p>
-                      </div>
-                    </div>
-                    <button className="px-3 py-1.5 bg-gray-100 text-gray-700 text-[12px] font-medium rounded-md hover:bg-gray-200 transition-colors">
-                      Connect
-                    </button>
-                  </div>
-
-                </div>
-              </div>
-            )}
-
             {activeTab === "plan" && (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">Upgrade your plan</h2>
-                  
-                  <div className="inline-flex bg-gray-100/80 p-1 rounded-full mb-8 border border-gray-200/50">
-                    <button 
-                      onClick={() => setPlanType("personal")}
-                      className={`px-8 py-2 rounded-full text-[14px] font-medium transition-colors ${planType === "personal" ? "bg-white text-gray-900 shadow-sm border border-gray-200/50" : "text-gray-500 hover:text-gray-900"}`}
-                    >
-                      Personal
-                    </button>
-                    <button 
-                      onClick={() => setPlanType("business")}
-                      className={`px-8 py-2 rounded-full text-[14px] font-medium transition-colors ${planType === "business" ? "bg-white text-gray-900 shadow-sm border border-gray-200/50" : "text-gray-500 hover:text-gray-900"}`}
-                    >
-                      Business
-                    </button>
-                  </div>
-                </div>
-
-                {planType === "personal" ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                    {/* Go Plan */}
-                    <div className="border border-gray-200 rounded-2xl p-6 bg-[#FAFAFA] shadow-sm flex flex-col">
-                      <div className="mb-6 mt-[22px]">
-                        <h3 className="text-[20px] font-semibold text-gray-900">Go</h3>
-                        <div className="flex items-baseline gap-1 mt-2">
-                          <span className="text-[32px] font-bold text-gray-900">$8</span>
-                          <span className="text-[14px] text-gray-500">USD / month</span>
-                        </div>
-                        <p className="text-[14px] text-gray-600 mt-4 h-10">Keep chatting with expanded access.</p>
-                      </div>
-                      
-                      <button className="w-full bg-gray-100 border border-gray-200/50 text-gray-500 font-medium py-3 rounded-xl cursor-default mb-8 text-[15px]">
-                        Your current plan
-                      </button>
-                      
-                      <ul className="space-y-4 flex-1">
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Core model
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          More messages and uploads
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          More image creation
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Longer memory
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Expanded voice mode
-                        </li>
-                      </ul>
-                    </div>
-
-                    {/* Plus Plan */}
-                    <div className="border border-gray-200 rounded-2xl p-6 relative bg-white shadow-sm flex flex-col">
-                      <div className="mb-6 mt-[22px]">
-                        <h3 className="text-[20px] font-semibold text-gray-900">Plus</h3>
-                        <div className="flex items-baseline gap-1 mt-2">
-                          <span className="text-[32px] font-bold text-gray-900">$20</span>
-                          <span className="text-[14px] text-gray-500">USD / month</span>
-                        </div>
-                        <p className="text-[14px] text-gray-600 mt-4 h-10">Unlock the full experience and advanced capabilities.</p>
-                      </div>
-                      
-                      <button className="w-full bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm mb-8 text-[15px]">
-                        Upgrade to Plus
-                      </button>
-                      
-                      <ul className="space-y-4 flex-1">
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-blue-600">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Advanced AI models
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-blue-600">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Advanced image creation with Thinking
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-blue-600">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Expanded memory across chats
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-blue-600">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Codex coding agent
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-blue-600">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Expanded deep research
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-blue-600">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Projects and custom GPTs
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-blue-600">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Add my website feature
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                    {/* Business Plan */}
-                    <div className="border-2 border-blue-600 rounded-2xl p-6 relative bg-blue-50/20 shadow-sm flex flex-col">
-                      <div className="absolute top-6 right-6 bg-blue-100 text-blue-700 text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                        Recommended
-                      </div>
-                      <div className="mb-6">
-                        <h3 className="text-[20px] font-semibold text-gray-900">Business</h3>
-                        <div className="flex items-baseline gap-1 mt-2">
-                          <span className="text-[32px] font-bold text-gray-900">$25</span>
-                          <span className="text-[12px] text-gray-500">/ user / month (exclusive of GST)</span>
-                        </div>
-                        <p className="text-[14px] text-gray-600 mt-4 h-10">A secure workspace with company context and tools for teams, built for growing companies</p>
-                      </div>
-                      
-                      <button className="w-full bg-blue-600 text-white font-medium py-3 rounded-xl hover:bg-blue-700 transition-colors shadow-sm mb-8 text-[15px]">
-                        Upgrade
-                      </button>
-                      
-                      <ul className="space-y-4 flex-1">
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-600">
-                            <Globe className="w-[18px] h-[18px]" />
-                          </div>
-                          Access ChatGPT and Codex across desktop and mobile apps
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-600">
-                            <Monitor className="w-[18px] h-[18px]" />
-                          </div>
-                          AI for chat, coding, analysis, and workflows
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-600">
-                            <Database className="w-[18px] h-[18px]" />
-                          </div>
-                          Connect tools like Microsoft 365, Google Drive, Slack, GitHub, Linear, Figma, and more
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-600">
-                            <Settings className="w-[18px] h-[18px]" />
-                          </div>
-                          Build on company knowledge and team context with custom team agent plugins
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-600">
-                            <Shield className="w-[18px] h-[18px]" />
-                          </div>
-                          Secure workspace with SAML SSO and MFA
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-600">
-                            <User className="w-[18px] h-[18px]" />
-                          </div>
-                          No training on your business data by default
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-600">
-                            <Globe className="w-[18px] h-[18px]" />
-                          </div>
-                          Add my website feature
-                        </li>
-                      </ul>
-                    </div>
-
-                    {/* Go Plan */}
-                    <div className="border border-gray-200 rounded-2xl p-6 bg-[#FAFAFA] shadow-sm flex flex-col">
-                      <div className="mb-6 mt-[22px]">
-                        <h3 className="text-[20px] font-semibold text-gray-900">Go</h3>
-                        <div className="flex items-baseline gap-1 mt-2">
-                          <span className="text-[32px] font-bold text-gray-900">$8</span>
-                          <span className="text-[12px] text-gray-500">USD / month (inclusive of GST)</span>
-                        </div>
-                        <p className="text-[14px] text-gray-600 mt-4 h-10">Keep chatting with expanded access</p>
-                      </div>
-                      
-                      <button className="w-full bg-gray-100 border border-gray-200/50 text-gray-500 font-medium py-3 rounded-xl cursor-default mb-8 text-[15px]">
-                        Your current plan
-                      </button>
-                      
-                      <ul className="space-y-4 flex-1">
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Core model
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          More messages and uploads
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          More image creation
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Longer memory
-                        </li>
-                        <li className="flex items-start gap-3 text-[14px] text-gray-700">
-                          <div className="mt-0.5 text-gray-400">
-                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
-                          </div>
-                          Expanded voice mode
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <Billing embedded={true} />
             )}
           </div>
         </div>

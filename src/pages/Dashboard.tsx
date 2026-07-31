@@ -1,14 +1,26 @@
 import React, { useState, useRef, useEffect } from "react";
 import { 
-  Folder, Briefcase, Plus, Search, ChevronDown,
+  Folder, Briefcase, Plus, Search, ChevronDown, AlertTriangle,
   Settings2, Wand2, Globe, Building2, 
   ChevronRight, FileText, ListPlus, SlidersHorizontal, Activity, Users, Bot, User, Check
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 import { addHistoryItem, updateHistoryItemMessages, getHistoryItem, ChatMessage } from "../lib/history";
+import { sendEmailVerification, auth } from '../lib/auth';
 
-export function Dashboard({ currentChatId, onChatIdChange }: { currentChatId?: string | null, onChatIdChange?: (id: string | null) => void }) {
+export function Dashboard({ currentChatId, onChatIdChange, user }: { currentChatId?: string | null, onChatIdChange?: (id: string | null) => void, user?: any }) {
+  const [verificationSent, setVerificationSent] = useState(false);
+  const handleResendVerification = async () => {
+    if (auth.currentUser) {
+      try {
+        await sendEmailVerification(auth.currentUser);
+        setVerificationSent(true);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const sourcesRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -117,9 +129,10 @@ export function Dashboard({ currentChatId, onChatIdChange }: { currentChatId?: s
       setPrompt("");
       setUploadedFiles([]);
 
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           messages: [...chatHistory, userMessage],
           files: fileParts
@@ -140,10 +153,11 @@ export function Dashboard({ currentChatId, onChatIdChange }: { currentChatId?: s
       }
 
       const data = await res.json();
-      const modelMsg = { role: 'model' as const, content: data.reply || "Error parsing response." };
+      const aiContent = data.message?.content || data.reply || "Error parsing response.";
+      const modelMsg = { role: 'model' as const, content: aiContent };
       setChatHistory(prev => {
         const newHistory = [...prev, modelMsg];
-        updateHistoryItemMessages(hId, newHistory);
+        setTimeout(() => updateHistoryItemMessages(hId, newHistory), 0);
         return newHistory;
       });
     } catch (error: any) {
@@ -152,7 +166,7 @@ export function Dashboard({ currentChatId, onChatIdChange }: { currentChatId?: s
       setChatHistory(prev => {
         const newHistory = [...prev, errorMsg];
         if (currentHistoryId) {
-          updateHistoryItemMessages(currentHistoryId, newHistory);
+          setTimeout(() => updateHistoryItemMessages(currentHistoryId, newHistory), 0);
         }
         return newHistory;
       });
@@ -174,8 +188,18 @@ export function Dashboard({ currentChatId, onChatIdChange }: { currentChatId?: s
           {chatHistory.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
               <div className={`flex max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"} gap-4`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-gray-900" : "bg-gray-100 border border-gray-200"}`}>
-                  {msg.role === "user" ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-gray-700" />}
+                <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-gray-100 text-gray-800 rounded-xl" : "bg-black rounded-full"}`}>
+                  {msg.role === "user" ? (
+                    user?.photoURL ? (
+                      <img src={user.photoURL} alt="User" className="w-8 h-8 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                    ) : (
+                      <span className="text-[14px] font-medium leading-none">
+                        {user?.displayName ? user.displayName.substring(0, 1).toUpperCase() : user?.email ? user.email.substring(0, 1).toUpperCase() : "U"}
+                      </span>
+                    )
+                  ) : (
+                    <span className="text-white font-serif text-[18px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
+                  )}
                 </div>
                 <div className={`p-4 rounded-2xl ${msg.role === "user" ? "bg-gray-100 text-gray-900" : "bg-white border border-gray-200/80 shadow-sm text-gray-800"}`}>
                   <div className="text-[15px] prose prose-gray max-w-none prose-p:leading-relaxed">
@@ -189,8 +213,8 @@ export function Dashboard({ currentChatId, onChatIdChange }: { currentChatId?: s
           {isLoading && (
             <div className="flex justify-start">
               <div className="flex max-w-[85%] flex-row gap-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-gray-100 border border-gray-200">
-                  <Bot className="w-4 h-4 text-gray-700" />
+                <div className="w-8 h-8 flex items-center justify-center shrink-0 bg-black rounded-full">
+                  <span className="text-white font-serif text-[18px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
                 </div>
                 <div className="p-4 rounded-2xl bg-white border border-gray-200/80 shadow-sm text-gray-800 flex items-center gap-1.5">
                   <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"></div>

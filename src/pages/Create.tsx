@@ -2,10 +2,13 @@ import React, { useState, useRef } from 'react';
 import { Search, Plus, FileText, Wand2, ArrowRight, Upload, FileCode, CheckCircle2 } from 'lucide-react';
 
 const createTemplates = [
-  { id: 1, title: "New Document", description: "Start from a blank slate or upload an existing file to analyze.", icon: FileText, category: "Document", color: "text-blue-600", bg: "bg-blue-50" },
-  { id: 2, title: "Custom Workflow", description: "Design a new AI workflow by combining different agent steps.", icon: Wand2, category: "Automation", color: "text-purple-600", bg: "bg-purple-50" },
-  { id: 3, title: "Contract Analysis", description: "Upload a contract for automatic risk analysis and term extraction.", icon: FileCode, category: "Review", color: "text-amber-600", bg: "bg-amber-50" },
-  { id: 4, title: "Client Alert Draft", description: "Generate a client alert based on recent regulatory changes.", icon: FileText, category: "Drafting", color: "text-emerald-600", bg: "bg-emerald-50" },
+  { id: 1, title: "Rental Agreement", description: "Draft a legally binding rental agreement for residential or commercial properties.", icon: FileText, category: "Property", color: "text-blue-600", bg: "bg-blue-50" },
+  { id: 2, title: "Non-Disclosure Agreement (NDA)", description: "Protect sensitive information with a comprehensive mutual or one-way NDA.", icon: FileCode, category: "Corporate", color: "text-amber-600", bg: "bg-amber-50" },
+  { id: 3, title: "Employment Contract", description: "Create an employment agreement outlining terms, benefits, and obligations.", icon: Wand2, category: "HR", color: "text-purple-600", bg: "bg-purple-50" },
+  { id: 4, title: "Partnership Agreement", description: "Draft a partnership contract detailing equity, roles, and dissolution.", icon: FileText, category: "Corporate", color: "text-emerald-600", bg: "bg-emerald-50" },
+  { id: 5, title: "Privacy Policy", description: "Generate a GDPR and IT Act compliant privacy policy for websites and apps.", icon: CheckCircle2, category: "Compliance", color: "text-blue-600", bg: "bg-blue-50" },
+  { id: 6, title: "Terms & Conditions", description: "Draft standard terms of service for software, websites, or services.", icon: FileCode, category: "Compliance", color: "text-gray-600", bg: "bg-gray-100" },
+  { id: 7, title: "Legal Notice", description: "Draft a formal legal notice for breach of contract, defamation, or other civil issues.", icon: ArrowRight, category: "Litigation", color: "text-red-600", bg: "bg-red-50" },
 ];
 
 export function Create() {

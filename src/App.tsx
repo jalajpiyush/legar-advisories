@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Sidebar, PageId } from './components/Sidebar';
+import { Cases } from './pages/Cases';
+import { LegalResearch } from './pages/LegalResearch';
+import { Generator } from './pages/Generator';
+import { Compliance } from './pages/Compliance';
 import { Dashboard } from './pages/Dashboard';
 import { LegalChat } from './pages/LegalChat';
 import { ContractReview } from './pages/ContractReview';
 import { Settings } from './pages/Settings';
+import { Billing } from './pages/Billing';
 import { Landing } from './pages/Landing';
 import { Library } from './pages/Library';
+import { DocumentAnalysis } from './pages/DocumentAnalysis';
 import { History } from './pages/History';
 import { Workflows } from './pages/Workflows';
 import { Guidance } from './pages/Guidance';
@@ -16,18 +22,20 @@ import { SharedThreads } from './pages/SharedThreads';
 import { Tips } from './pages/Tips';
 import { Options } from './pages/Options';
 import { ContactSales } from './pages/ContactSales';
+import { Terms, Privacy, Disclaimer } from './pages/LegalPages';
+import { CookieBanner } from './components/Footer';
 import { Knowledge } from './pages/Knowledge';
 import { auth, logout, onAuthStateChanged, User } from './lib/auth';
 import { Menu } from 'lucide-react';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<PageId | "landing" | "contact-sales">(() => {
+  const [currentPage, setCurrentPage] = useState<PageId | "landing" | "contact-sales" | "terms" | "privacy" | "disclaimer">(() => {
     return (localStorage.getItem("currentPage") as any) || "landing";
   });
   const [currentChatId, setCurrentChatId] = useState<string | null>(() => localStorage.getItem("currentChatId"));
 
   React.useEffect(() => {
-    if (currentPage !== "landing" && currentPage !== "contact-sales") {
+    if (currentPage !== "landing" && currentPage !== "contact-sales" && currentPage !== "terms" && currentPage !== "privacy" && currentPage !== "disclaimer") {
       localStorage.setItem("currentPage", currentPage);
     }
   }, [currentPage]);
@@ -45,11 +53,22 @@ export default function App() {
 
 
   React.useEffect(() => {
+    const handleNavigate = (e: any) => {
+      const page = e.detail;
+      if (['terms', 'privacy', 'disclaimer'].includes(page)) {
+        setCurrentPage(page);
+      }
+    };
+    window.addEventListener('navigate', handleNavigate);
+    return () => window.removeEventListener('navigate', handleNavigate);
+  }, []);
+
+  React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       if (user && currentPage === "landing") {
         setCurrentPage("dashboard");
-      } else if (!user && currentPage !== "landing" && currentPage !== "contact-sales") {
+      } else if (!user && currentPage !== "landing" && currentPage !== "contact-sales" && currentPage !== "terms" && currentPage !== "privacy" && currentPage !== "disclaimer") {
         setCurrentPage("landing");
       }
     });
@@ -62,11 +81,20 @@ export default function App() {
   if (currentPage === "contact-sales") {
     return <ContactSales onBack={() => setCurrentPage("landing")} />;
   }
+  if (currentPage === "terms") {
+    return <Terms onBack={() => setCurrentPage("landing")} />;
+  }
+  if (currentPage === "privacy") {
+    return <Privacy onBack={() => setCurrentPage("landing")} />;
+  }
+  if (currentPage === "disclaimer") {
+    return <Disclaimer onBack={() => setCurrentPage("landing")} />;
+  }
 
   const renderPage = () => {
     switch (currentPage) {
       case "dashboard":
-        return <Dashboard currentChatId={currentChatId} onChatIdChange={setCurrentChatId} />;
+        return <Dashboard currentChatId={currentChatId} onChatIdChange={setCurrentChatId} user={currentUser} />;
       case "vault":
         return <Vault />;
       case "vault-statements":
@@ -77,18 +105,24 @@ export default function App() {
         return <Vault activeFolderId="supply-agreements" />;
       case "library":
         return <Library />;
+      case "document-analysis":
+        return <DocumentAnalysis />;
       case "history":
-        return <History />;
+        return <History onResume={(id) => { setCurrentChatId(id); setCurrentPage("dashboard"); }} />;
       case "shared-threads":
         return <SharedThreads />;
       case "workflows":
         return <Workflows />;
+      case "billing":
+        return <Billing />;
       case "guidance":
         return <Guidance />;
       case "knowledge":
         return <Knowledge />;
       case "help":
         return <Help />;
+      case "research": return <LegalResearch />;
+      case "cases": return <Cases />;
       case "create":
         return <Create />;
       case "tips":
@@ -118,15 +152,21 @@ export default function App() {
       case "vault-delta": return "Vault";
       case "vault-supply": return "Vault";
       case "workflows": return "Workflows";
+      case "billing": return "Billing & Subscriptions";
       case "history": return "History";
       case "shared-threads": return "Shared Threads";
       case "library": return "Library";
+      case "document-analysis": return "Document Analysis";
       case "knowledge": return "Knowledge Bases";
       case "guidance": return "Guidance";
       case "help": return "Help & Support";
+      case "research": return "AI Legal Research";
+      case "cases": return "My Cases";
+      case "compliance": return "Compliance Manager";
+      case "generator": return "Contract Generator";
       case "create": return "Create New";
       case "tips": return "Tips & Tricks";
-      case "options": return "Options";
+      case "options": return "Settings";
       default: return "Legal Advisories";
     }
   };
@@ -157,6 +197,7 @@ export default function App() {
         <div className="flex-1 overflow-y-auto z-10 relative custom-scrollbar flex flex-col">
           {renderPage()}
         </div>
+        <CookieBanner onAccept={() => {}} />
       </main>
     </div>
   );

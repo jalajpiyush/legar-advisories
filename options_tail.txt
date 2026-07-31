@@ -1,0 +1,288 @@
+217:            {activeTab === "plan" && (
+218-              <div className="space-y-8">
+219-                <div className="text-center">
+220-                  <h2 className="text-2xl font-semibold text-gray-900 mb-6">Upgrade your plan</h2>
+221-                  
+222-                  <div className="inline-flex bg-gray-100/80 p-1 rounded-full mb-8 border border-gray-200/50">
+223-                    <button 
+224-                      onClick={() => setPlanType("personal")}
+225-                      className={`px-8 py-2 rounded-full text-[14px] font-medium transition-colors ${planType === "personal" ? "bg-white text-gray-900 shadow-sm border border-gray-200/50" : "text-gray-500 hover:text-gray-900"}`}
+226-                    >
+227-                      Personal
+228-                    </button>
+229-                    <button 
+230-                      onClick={() => setPlanType("business")}
+231-                      className={`px-8 py-2 rounded-full text-[14px] font-medium transition-colors ${planType === "business" ? "bg-white text-gray-900 shadow-sm border border-gray-200/50" : "text-gray-500 hover:text-gray-900"}`}
+232-                    >
+233-                      Business
+234-                    </button>
+235-                  </div>
+236-                </div>
+237-                
+238-                <div className="grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-6">
+239-                  {planType === "personal" ? (
+240-                    <>
+241-                      {/* Free Plan */}
+242-                      <div className="border border-gray-200 rounded-2xl p-6 bg-white shadow-sm flex flex-col">
+243-                        <div className="mb-6">
+244-                          <h3 className="text-[20px] font-semibold text-gray-900">Start Free</h3>
+245-                          <div className="flex items-baseline gap-1 mt-2">
+246-                            <span className="text-[32px] font-bold text-gray-900">₹0</span>
+247-                            <span className="text-[12px] text-gray-500">/ month</span>
+248-                          </div>
+249-                          <p className="text-[13px] text-gray-600 mt-4 h-24">Explore AI-powered legal assistance with limited daily usage. Perfect for students and first-time users.</p>
+250-                        </div>
+251-                        
+252-                        <button className="w-full bg-gray-100 border border-gray-200/50 text-gray-500 font-medium py-2.5 rounded-xl cursor-default mb-6 text-[14px]">
+253-                          Current Plan
+254-                        </button>
+255-                        
+256-                        <ul className="space-y-4 flex-1">
+257-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+258-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+259-                            20 AI chats/day
+260-                          </li>
+261-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+262-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+263-                            3 document uploads/day
+264-                          </li>
+265-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+266-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+267-                            Basic legal research
+268-                          </li>
+269-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+270-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+271-                            Document summaries
+272-                          </li>
+273-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+274-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+275-                            Community support
+276-                          </li>
+277-                        </ul>
+278-                      </div>
+279-
+280-                      {/* Starter Plan */}
+281-                      <div className="border border-gray-200 rounded-2xl p-6 bg-white shadow-sm flex flex-col">
+282-                        <div className="mb-6">
+283-                          <h3 className="text-[20px] font-semibold text-gray-900">For Individuals</h3>
+284-                          <div className="flex items-baseline gap-1 mt-2">
+285-                            <span className="text-[32px] font-bold text-gray-900">₹499</span>
+286-                            <span className="text-[12px] text-gray-500">/ month</span>
+287-                          </div>
+288-                          <p className="text-[13px] text-gray-600 mt-4 h-24">Everything you need for personal legal guidance and document analysis.</p>
+289-                        </div>
+290-                        
+291-                        <button className="w-full bg-blue-50 text-blue-700 font-medium py-2.5 rounded-xl hover:bg-blue-100 transition-colors mb-6 text-[14px]">
+292-                          Upgrade
+293-                        </button>
+294-                        
+295-                        <ul className="space-y-4 flex-1">
+296-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+297-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+298-                            500 AI chats/month
+299-                          </li>
+300-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+301-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+302-                            100 document uploads
+303-                          </li>
+304-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+305-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+306-                            Contract analysis
+307-                          </li>
+308-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+309-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+310-                            Legal notice review
+311-                          </li>
+312-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+313-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+314-                            Clause explanation
+315-                          </li>
+316-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+317-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+318-                            Export PDF & Priority support
+319-                          </li>
+320-                        </ul>
+321-                      </div>
+322-                    </>
+323-                  ) : (
+324-                    <>
+325-                      {/* Professional Plan */}
+326-                      <div className="border-2 border-blue-600 rounded-2xl p-6 relative bg-blue-50/10 shadow-sm flex flex-col">
+327-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
+328-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+329-                          Most Popular
+330-                        </div>
+331-                        <div className="mb-6 mt-2">
+332-                          <h3 className="text-[20px] font-semibold text-gray-900">For Lawyers & Professionals</h3>
+333-                          <div className="flex items-baseline gap-1 mt-2">
+334-                            <span className="text-[32px] font-bold text-gray-900">₹1,999</span>
+335-                            <span className="text-[12px] text-gray-500">/ month</span>
+336-                          </div>
+337-                          <p className="text-[13px] text-gray-600 mt-4 h-24">Built for advocates, consultants, startups, and professionals who need advanced legal AI.</p>
+338-                        </div>
+339-                        
+340-                        <button className="w-full bg-blue-600 text-white font-medium py-2.5 rounded-xl hover:bg-blue-700 transition-colors shadow-sm mb-6 text-[14px]">
+341-                          Upgrade
+342-                        </button>
+343-                        
+344-                        <ul className="space-y-4 flex-1">
+345-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+346-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+347-                            Unlimited AI chats & uploads
+348-                          </li>
+349-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+350-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+351-                            OCR for scanned PDFs
+352-                          </li>
+353-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+354-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+355-                            AI contract drafting
+356-                          </li>
+357-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+358-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+359-                            Case law research & Citation
+360-                          </li>
+361-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+362-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+363-                            Client workspace & Team (5)
+364-                          </li>
+365-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+366-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+367-                            API access & Premium support
+368-                          </li>
+369-                        </ul>
+370-                      </div>
+371-
+372-                      {/* Enterprise Plan */}
+373-                      <div className="border border-gray-200 rounded-2xl p-6 bg-[#FAFAFA] shadow-sm flex flex-col">
+374-                        <div className="mb-6">
+375-                          <h3 className="text-[20px] font-semibold text-gray-900">Enterprise</h3>
+376-                          <div className="flex items-baseline gap-1 mt-2">
+377-                            <span className="text-[32px] font-bold text-gray-900">Custom</span>
+378-                          </div>
+379-                          <p className="text-[13px] text-gray-600 mt-4 h-24">Custom AI legal platform for law firms, corporations, and government organizations.</p>
+380-                        </div>
+381-                        
+382-                        <button className="w-full bg-gray-900 text-white font-medium py-2.5 rounded-xl hover:bg-gray-800 transition-colors mb-6 text-[14px]">
+383-                          Contact Sales
+384-                        </button>
+385-                        
+386-                        <ul className="space-y-4 flex-1">
+387-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+388-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+389-                            Everything in Professional
+390-                          </li>
+391-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+392-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+393-                            Unlimited team members
+394-                          </li>
+395-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+396-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+397-                            Dedicated infrastructure
+398-                          </li>
+399-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+400-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+401-                            Private AI & On-premise opt.
+402-                          </li>
+403-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+404-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+405-                            SSO & Custom integrations
+406-                          </li>
+407-                          <li className="flex items-start gap-3 text-[13px] text-gray-700">
+408-                            <div className="mt-0.5 text-blue-600"><CheckIcon /></div>
+409-                            Dedicated account manager
+410-                          </li>
+411-                        </ul>
+412-                      </div>
+413-                    </>
+414-                  )}
+415-                </div>
+416-
+417-                {/* Comparison Table */}   {/* Comparison Table */}
+418-                <div className="mt-12 overflow-hidden border border-gray-200 rounded-2xl bg-white">
+419-                  <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+420-                    <h3 className="text-[16px] font-medium text-gray-900">Compare Plans</h3>
+421-                  </div>
+422-                  <div className="overflow-x-auto">
+423-                    <table className="w-full text-left text-[14px]">
+424-                      <thead>
+425-                        <tr className="border-b border-gray-200 text-gray-500 font-medium">
+426-                          <th className="px-6 py-4">Feature</th>
+427-                          <th className="px-6 py-4 text-center">Free</th>
+428-                          <th className="px-6 py-4 text-center">Starter</th>
+429-                          <th className="px-6 py-4 text-center bg-blue-50/30 text-blue-900">Professional</th>
+430-                          <th className="px-6 py-4 text-center">Enterprise</th>
+431-                        </tr>
+432-                      </thead>
+433-                      <tbody className="divide-y divide-gray-100 text-gray-700">
+434-                        <tr>
+435-                          <td className="px-6 py-4">AI Chat</td>
+436-                          <td className="px-6 py-4 text-center">✓</td>
+437-                          <td className="px-6 py-4 text-center">✓</td>
+438-                          <td className="px-6 py-4 text-center bg-blue-50/30">Unlimited</td>
+439-                          <td className="px-6 py-4 text-center">Unlimited</td>
+440-                        </tr>
+441-                        <tr>
+442-                          <td className="px-6 py-4">Document Upload</td>
+443-                          <td className="px-6 py-4 text-center">3/day</td>
+444-                          <td className="px-6 py-4 text-center">100/month</td>
+445-                          <td className="px-6 py-4 text-center bg-blue-50/30">Unlimited</td>
+446-                          <td className="px-6 py-4 text-center">Unlimited</td>
+447-                        </tr>
+448-                        <tr>
+449-                          <td className="px-6 py-4">Contract Review</td>
+450-                          <td className="px-6 py-4 text-center text-gray-300">✗</td>
+451-                          <td className="px-6 py-4 text-center">✓</td>
+452-                          <td className="px-6 py-4 text-center bg-blue-50/30">✓</td>
+453-                          <td className="px-6 py-4 text-center">✓</td>
+454-                        </tr>
+455-                        <tr>
+456-                          <td className="px-6 py-4">Legal Research</td>
+457-                          <td className="px-6 py-4 text-center">Basic</td>
+458-                          <td className="px-6 py-4 text-center">Advanced</td>
+459-                          <td className="px-6 py-4 text-center bg-blue-50/30">Premium</td>
+460-                          <td className="px-6 py-4 text-center">Premium</td>
+461-                        </tr>
+462-                        <tr>
+463-                          <td className="px-6 py-4">OCR</td>
+464-                          <td className="px-6 py-4 text-center text-gray-300">✗</td>
+465-                          <td className="px-6 py-4 text-center text-gray-300">✗</td>
+466-                          <td className="px-6 py-4 text-center bg-blue-50/30">✓</td>
+467-                          <td className="px-6 py-4 text-center">✓</td>
+468-                        </tr>
+469-                        <tr>
+470-                          <td className="px-6 py-4">Team Members</td>
+471-                          <td className="px-6 py-4 text-center">1</td>
+472-                          <td className="px-6 py-4 text-center">1</td>
+473-                          <td className="px-6 py-4 text-center bg-blue-50/30">5</td>
+474-                          <td className="px-6 py-4 text-center">Unlimited</td>
+475-                        </tr>
+476-                        <tr>
+477-                          <td className="px-6 py-4">API Access</td>
+478-                          <td className="px-6 py-4 text-center text-gray-300">✗</td>
+479-                          <td className="px-6 py-4 text-center text-gray-300">✗</td>
+480-                          <td className="px-6 py-4 text-center bg-blue-50/30">✓</td>
+481-                          <td className="px-6 py-4 text-center">✓</td>
+482-                        </tr>
+483-                        <tr>
+484-                          <td className="px-6 py-4">Priority Support</td>
+485-                          <td className="px-6 py-4 text-center text-gray-300">✗</td>
+486-                          <td className="px-6 py-4 text-center">✓</td>
+487-                          <td className="px-6 py-4 text-center bg-blue-50/30">✓</td>
+488-                          <td className="px-6 py-4 text-center">Dedicated</td>
+489-                        </tr>
+490-                      </tbody>
+491-                    </table>
+492-                  </div>
+493-                </div>
+494-
+495-
+496-
+497-              </div>
+498-            )}
+499-          </div>
+500-        </div>
+501-      </div>
+502-    </div>
+503-  );
+504-}

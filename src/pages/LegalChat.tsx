@@ -2,10 +2,18 @@ import React, { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Shield, RefreshCw } from "lucide-react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { auth } from "../lib/auth";
+import { PdfDocumentCard } from "../components/PdfDocumentCard";
+
+interface PdfData {
+  fileName: string;
+  downloadUrl: string;
+}
 
 interface Message {
   role: "system" | "user" | "assistant";
   content: string;
+  pdf?: PdfData;
 }
 
 export function LegalChat() {
@@ -38,9 +46,13 @@ export function LegalChat() {
       const endpoint = localStorage.getItem("legal_advisories_llm_endpoint") || "http://127.0.0.1:11434/api/chat";
       
       // Call our proxy backend to avoid CORS issues
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          ...(token ? { "Authorization": `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({
           endpoint,
           model: localStorage.getItem("legal_advisories_llm_model") || "llama3",
@@ -55,14 +67,96 @@ export function LegalChat() {
       const data = await res.json();
       
       // Adapt response depending on common local LLM structures (Ollama vs vLLM/OpenAI)
-      let aiContent = "Error parsing response.";
+      let aiContent = "";
       if (data.message?.content) {
         aiContent = data.message.content; // Ollama format
       } else if (data.choices?.[0]?.message?.content) {
         aiContent = data.choices[0].message.content; // OpenAI/vLLM format
       }
 
-      setMessages(prev => [...prev, { role: "assistant", content: aiContent }]);
+      // Check if it's a PDF generation action JSON
+      console.log("--- DEBUG START ---");
+      console.log("Full Response Object:", data);
+      console.log("aiContent value:", aiContent);
+      console.log("typeof aiContent:", typeof aiContent);
+      console.log("JSON.stringify(aiContent):", JSON.stringify(aiContent));
+      
+      let isPdfAction = false;
+      let pdfTitle = "Legal Document";
+
+      try {
+        let jsonResponse;
+        try {
+          jsonResponse = JSON.parse(aiContent.trim());
+          console.log("JSON.parse success:", jsonResponse);
+        } catch (e) {
+          console.log("JSON.parse failed, trying regex match");
+          const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            jsonResponse = JSON.parse(jsonMatch[0]);
+            console.log("Regex JSON.parse success:", jsonResponse);
+          } else {
+             console.log("No JSON structure found");
+          }
+        }
+        
+        if (jsonResponse && jsonResponse.action === "generate_pdf") {
+          console.log("PDF action detected. parsed.action:", jsonResponse.action);
+          isPdfAction = true;
+          pdfTitle = jsonResponse.title || "Legal Document";
+          console.log("PDF action detected. Calling /api/pdf/generate");
+            
+            // Trigger PDF generation
+            // Find the last assistant message that actually had content
+            const docContent = messages.slice().reverse().find(m => m.role === "assistant" && m.content && !m.content.includes("generate_pdf"))?.content || "";
+
+            try {
+              console.log("Attempting POST /api/pdf/generate");
+              const pdfRes = await fetch("/api/pdf/generate", {
+                method: "POST",
+                headers: { 
+                  "Content-Type": "application/json",
+                  ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({
+                  title: pdfTitle,
+                  documentType: "Legal",
+                  content: docContent
+                })
+              });
+
+              console.log("POST /api/pdf/generate status:", pdfRes.status);
+
+              if (!pdfRes.ok) {
+                  const errorText = await pdfRes.text();
+                  throw new Error(`Failed to generate PDF: ${pdfRes.status} ${errorText}`);
+              }
+
+              const pdfData = await pdfRes.json();
+              console.log("PDF generated successfully:", pdfData);
+              setMessages(prev => [...prev, { 
+                role: "assistant", 
+                content: `I have generated the PDF for: ${pdfTitle}`, 
+                pdf: { fileName: pdfData.fileName, downloadUrl: pdfData.downloadUrl } 
+              }]);
+            } catch (pdfError) {
+              console.error("PDF generation error:", pdfError);
+              setMessages(prev => [...prev, { role: "assistant", content: `Failed to generate PDF: ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}` }]);
+            }
+          } else {
+             console.log("Parsed JSON, but action != generate_pdf. Object:", jsonResponse);
+          }
+        }
+      } catch (e) {
+        // Not valid JSON, continue to render as message
+        console.error("JSON parsing entirely failed", e);
+      }
+      console.log("Final isPdfAction status:", isPdfAction);
+
+      if (!isPdfAction) {
+        // Render as normal message
+        setMessages(prev => [...prev, { role: "assistant", content: aiContent }]);
+      }
     } catch (error: any) {
       setMessages(prev => [...prev, { 
         role: "assistant", 
@@ -103,13 +197,27 @@ export function LegalChat() {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div className={`flex max-w-[80%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-indigo-600 ml-3" : "bg-gray-800 mr-3"}`}>
-                  {msg.role === "user" ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-gray-300" />}
+                <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-gray-200 text-gray-800 rounded-xl ml-3" : "bg-black rounded-full mr-3"}`}>
+                  {msg.role === "user" ? (
+                    auth.currentUser?.photoURL ? (
+                      <img src={auth.currentUser.photoURL} alt="User" className="w-8 h-8 rounded-xl object-cover" referrerPolicy="no-referrer" />
+                    ) : (
+                      <span className="text-[14px] font-medium leading-none">
+                        {auth.currentUser?.displayName ? auth.currentUser.displayName.substring(0, 1).toUpperCase() : auth.currentUser?.email ? auth.currentUser.email.substring(0, 1).toUpperCase() : "U"}
+                      </span>
+                    )
+                  ) : <span className="text-white font-serif text-[18px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>}
                 </div>
-                <div className={`p-4 rounded-2xl ${msg.role === "user" ? "bg-indigo-600 text-white" : "bg-gray-800/80 text-gray-200 border border-gray-700/50"}`}>
+                <div 
+                  className={`p-4 rounded-2xl ${msg.role === "user" ? "bg-indigo-600 text-white" : "bg-gray-800/80 text-gray-200 border border-gray-700/50"}`}>
                   <div className="text-sm prose prose-invert max-w-none">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
+                  {msg.pdf && (
+                    <div className="mt-3">
+                      <PdfDocumentCard fileName={msg.pdf.fileName} downloadUrl={msg.pdf.downloadUrl} />
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -117,8 +225,8 @@ export function LegalChat() {
           {isLoading && (
             <div className="flex justify-start">
               <div className="flex max-w-[80%] flex-row">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-gray-800 mr-3">
-                  <Bot className="w-4 h-4 text-gray-300" />
+                <div className="w-8 h-8 flex items-center justify-center shrink-0 bg-black rounded-full mr-3">
+                  <span className="text-white font-serif text-[18px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
                 </div>
                 <div className="p-4 rounded-2xl bg-gray-800/80 text-gray-200 border border-gray-700/50">
                   <div className="flex space-x-2">

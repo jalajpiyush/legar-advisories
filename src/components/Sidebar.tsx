@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, Search,
   Folder,
@@ -22,7 +23,7 @@ import { User } from "../lib/auth";
 import { getHistory, HistoryItem, deleteHistoryItem, renameHistoryItem } from "../lib/history";
 import { MessageSquare, Trash2, Edit2, Check, X } from "lucide-react";
 
-export type PageId = "dashboard" | "vault" | "vault-statements" | "vault-delta" | "vault-supply" | "workflows" | "history" | "library" | "guidance" | "knowledge" | "help" | "create" | "shared-threads" | "tips" | "options";
+export type PageId = "dashboard" | "billing" | "vault" | "vault-statements" | "vault-delta" | "vault-supply" | "workflows" | "cases" | "research" | "history" | "library" | "guidance" | "knowledge" | "help" | "create" | "generator" | "compliance" | "shared-threads" | "tips" | "options" | "document-analysis";
 
 interface SidebarProps {
   currentChatId?: string | null;
@@ -83,18 +84,32 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
       />
       
       <aside className="fixed md:static inset-y-0 left-0 z-50 w-[260px] bg-[#F9F9FA] flex flex-col h-screen text-gray-800 border-r border-gray-200/80 transition-all flex-shrink-0">
-        <div className="p-4">
+        <div className="flex-1 overflow-y-auto min-h-0 p-4 custom-scrollbar">
         {/* Top Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="relative" ref={workspaceRef}>
             <button 
               onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
-              className="flex items-center gap-2 hover:bg-gray-100 p-1.5 -ml-1.5 rounded-lg transition-colors"
+              className="flex items-center gap-2 hover:bg-gray-100 p-1.5 -ml-1.5 rounded-lg transition-colors group"
             >
-              <div className="w-7 h-7 bg-[#1C2333] rounded-lg flex items-center justify-center text-white text-[13px] font-bold tracking-wide">
-                {user?.displayName ? user.displayName.substring(0, 2).toUpperCase() : "MW"}
-              </div>
-              <span className="text-[16px] font-bold text-[#0F172A] tracking-tight">{user?.displayName || "My Workspace"}</span>
+              <motion.div 
+                key={`logo-${currentPage}`}
+                initial={{ opacity: 0, rotate: -10, scale: 0.9 }}
+                animate={{ opacity: 1, rotate: 0, scale: 1 }}
+                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+                className="sidebar-logo w-7 h-7 bg-black rounded flex items-center justify-center"
+              >
+                <span className="text-white font-serif text-[16px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
+              </motion.div>
+              <motion.span 
+                key={`text-${currentPage}`}
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
+                className="text-[16px] font-bold text-[#0F172A] tracking-tight"
+              >
+                Legal Advisories
+              </motion.span>
               <ChevronDown className="w-4 h-4 text-slate-400 stroke-[2.5]" />
             </button>
             
@@ -102,12 +117,12 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             {isWorkspaceOpen && (
               <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-xl py-2 z-50">
                 <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                  <div className="text-[12px] text-gray-500 font-medium mb-1">Current Workspace</div>
+                  <div className="text-[12px] text-gray-500 font-medium mb-1">{user?.email || "Account"}</div>
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 bg-gray-800 rounded flex items-center justify-center text-white text-[10px] font-semibold">
-                      {user?.displayName ? user.displayName.substring(0, 2).toUpperCase() : "MW"}
+                    <div className="w-5 h-5 bg-[#1C2333] rounded flex items-center justify-center text-white text-[10px] font-semibold">
+                      {user?.displayName ? user.displayName.substring(0, 2).toUpperCase() : "U"}
                     </div>
-                    <span className="text-[13px] font-semibold text-gray-900">{user?.displayName || "My Workspace"}</span>
+                    <span className="text-[13px] font-semibold text-gray-900">{user?.displayName || "User"}</span>
                   </div>
                 </div>
                 <div className="px-2">
@@ -222,6 +237,16 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             <BookOpen className={cn("w-[18px] h-[18px]", currentPage === "library" ? "text-gray-900" : "text-gray-500")} />
             Library
           </button>
+          <button 
+            onClick={() => { onPageChange("document-analysis"); if (window.innerWidth < 768) onToggle(); }}
+            className={cn(
+              "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
+              currentPage === "document-analysis" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+            )}
+          >
+            <FileText className={cn("w-[18px] h-[18px]", currentPage === "document-analysis" ? "text-gray-900" : "text-gray-500")} />
+            Document Analysis
+          </button>
 
           <button 
             onClick={() => { onPageChange("knowledge"); if (window.innerWidth < 768) onToggle(); }}
@@ -258,7 +283,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
         </nav>
       </div>
 
-      <div className="mt-auto p-4 space-y-1">
+      <div className="mt-auto p-4 space-y-1 border-t border-gray-200/60">
         <button 
           onClick={() => { onPageChange("help"); onToggle(); }}
           className={cn(
@@ -277,8 +302,15 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           )}
         >
           <Settings className={cn("w-[18px] h-[18px]", currentPage === "options" ? "text-gray-900" : "text-gray-500")} />
-          Options
+          Settings
         </button>
+        
+        <div className="pt-4 mt-4 border-t border-gray-200/60 px-3 flex flex-wrap gap-x-3 gap-y-1">
+          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'terms' }))} className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Terms</button>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'privacy' }))} className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Privacy</button>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'disclaimer' }))} className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Disclaimer</button>
+          <a href="mailto:support@legaladvisories.example.com" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Contact</a>
+        </div>
       </div>
     </aside>
     </>
