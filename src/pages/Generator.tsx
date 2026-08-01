@@ -7,6 +7,7 @@ import {
   X, Check, Plus
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { jsPDF } from 'jspdf';
 
 interface Template {
   id: string;
@@ -265,7 +266,63 @@ export function Generator() {
   };
   
   const downloadAsPdf = () => {
-    window.print(); // Simple fallback since we don't want to wire up html2pdf strictly here
+    const text = isEditing ? editingContent : generatedContent;
+    if (!text) return;
+
+    try {
+      const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 54;
+      const contentWidth = pageWidth - margin * 2;
+      const lineHeight = 17;
+      const normalizedText = text
+        .replace(/\r\n/g, '\n')
+        .replace(/^#{1,6}\s+/gm, '')
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/__(.*?)__/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/_(.*?)_/g, '$1')
+        .replace(/^[-*+]\s+/gm, '• ')
+        .replace(/₹/g, 'Rs. ')
+        .replace(/[“”]/g, '"')
+        .replace(/[‘’]/g, "'")
+        .replace(/[–—]/g, '-');
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(18);
+      const titleLines = pdf.splitTextToSize(docTitle || 'Document', contentWidth);
+      pdf.text(titleLines, margin, margin);
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(11);
+      let cursorY = margin + titleLines.length * 22 + 18;
+
+      normalizedText.split('\n').forEach(paragraph => {
+        const lines = paragraph.trim()
+          ? pdf.splitTextToSize(paragraph, contentWidth)
+          : [''];
+
+        lines.forEach((line: string) => {
+          if (cursorY > pageHeight - margin) {
+            pdf.addPage();
+            cursorY = margin;
+          }
+          pdf.text(line, margin, cursorY);
+          cursorY += lineHeight;
+        });
+        cursorY += 5;
+      });
+
+      const fileName = (docTitle || 'Document')
+        .replace(/[<>:"/\\|?*\x00-\x1F]/g, '')
+        .trim()
+        .replace(/\s+/g, '_') || 'Document';
+      pdf.save(`${fileName}.pdf`);
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      alert('Failed to create the PDF. Please try again.');
+    }
   };
 
   // View: Document Form or Generated
@@ -297,7 +354,7 @@ export function Generator() {
                   <Download className="h-4 w-4" /> Export
                 </button>
                 <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                  <button onClick={downloadAsPdf} className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">PDF (Print)</button>
+                  <button onClick={downloadAsPdf} className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">PDF</button>
                   <button onClick={downloadAsDocx} className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">DOCX</button>
                   <button onClick={downloadAsTxt} className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">TXT</button>
                 </div>
