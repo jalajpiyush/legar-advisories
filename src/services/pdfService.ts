@@ -37,14 +37,17 @@ export async function generateAndStorePdf(
   const storagePath = `documents/${userId}/${fileName}`;
   const file = adminStorage.file(storagePath);
   
+  console.log("Saving PDF to storage path:", storagePath);
   await file.save(Buffer.from(pdfBytes), {
     contentType: 'application/pdf',
   });
+  console.log("PDF saved to storage successfully.");
 
   const [downloadUrl] = await file.getSignedUrl({
     action: 'read',
     expires: '03-01-2500', // Long expiry
   });
+  console.log("Signed URL generated:", downloadUrl);
 
   // 3. Save to Firestore
   const docRef = await adminDb.collection('documents').add({

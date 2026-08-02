@@ -21,7 +21,7 @@ import {
 } from "./src/services/payuBackendService";
 import { generateAndStorePdf } from "./src/services/pdfService";
 
-import { GoogleGenAI } from "@google/genai";
+
 import OpenAI from "openai";
 import multer from "multer";
 import mammoth from "mammoth";
@@ -189,50 +189,25 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
         return res.status(400).json({ error: "Could not extract text from the document" });
       }
 
-      const geminiKey = process.env.GEMINI_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
 
-      if (!geminiKey && !openaiKey) {
-        return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing. Please add at least one to your environment variables." });
+      if (!openaiKey) {
+        return res.status(500).json({ error: "OPENAI_API_KEY is missing. Please add it to your environment variables." });
       }
 
       const systemInstruction = "You are an expert AI Legal Assistant. Your task is to analyze legal documents. Provide the output strictly in JSON format. The JSON should contain the following keys: 'summary' (string), 'risks' (array of strings), 'important_clauses' (array of strings), 'explanations' (array of objects with 'term' and 'explanation'), and 'improvements' (array of strings).";
       let analysisResult = null;
-
-      if (geminiKey) {
-        try {
       
-          const ai = new GoogleGenAI({ apiKey: geminiKey });
-          const response = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
-            contents: `Analyze this legal document:\n\n${text.substring(0, 40000)}`,
-            config: {
-              systemInstruction,
-              responseMimeType: "application/json"
-            }
-          });
-          analysisResult = JSON.parse(response.text || "{}");
-        } catch(e: any) {
-          const isDocRateLimit = e?.message && (e.message.includes("429") || e.message.includes("Quota") || e.message.includes("exhausted") || e.message.includes("Too Many Requests") || e.message.includes("404"));
-          if (!isDocRateLimit) {
-            console.error("Gemini failed for document analysis:", e.message);
-          }
-          if (!openaiKey) throw e;
-        }
-      }
-
-      if (!analysisResult && openaiKey) {
-        const openai = new OpenAI({ apiKey: openaiKey });
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: systemInstruction },
-            { role: "user", content: `Analyze this legal document:\n\n${text.substring(0, 15000)}`}
-          ],
-          response_format: { type: "json_object" }
-        });
-        analysisResult = JSON.parse(response.choices[0].message.content || "{}");
-      }
+      const openai = new OpenAI({ apiKey: openaiKey });
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemInstruction },
+          { role: "user", content: `Analyze this legal document:\n\n${text.substring(0, 15000)}`}
+        ],
+        response_format: { type: "json_object" }
+      });
+      analysisResult = JSON.parse(response.choices[0].message.content || "{}");
 
       if (!analysisResult) analysisResult = {};
       
@@ -271,18 +246,20 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
     try {
       const { document_id, question } = req.body;
 
-      const geminiKey = process.env.GEMINI_API_KEY;
-      if (!geminiKey) {
-        return res.status(500).json({ error: "GEMINI_API_KEY is missing." });
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (!openaiKey) {
+        return res.status(500).json({ error: "OPENAI_API_KEY is missing." });
       }
 
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-flash-lite",
-        contents: `You are an expert AI Legal Assistant. Answer the following question about the uploaded document (ID: ${document_id}):\n\nQuestion: ${question}`
+      const openai = new OpenAI({ apiKey: openaiKey });
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+            { role: "user", content: `You are an expert AI Legal Assistant. Answer the following question about the uploaded document (ID: ${document_id}):\n\nQuestion: ${question}` }
+        ]
       });
 
-      res.json({ answer: response.text });
+      res.json({ answer: response.choices[0].message.content });
     } catch (e: any) {
       console.error("Ask endpoint error:", e);
       res.status(500).json({ error: e.message || "Failed to process question" });
@@ -311,61 +288,31 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
         }
       }
       
-      const geminiKey = process.env.GEMINI_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
       
-      if (!geminiKey && !openaiKey) {
-        return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing. Please add at least one to your environment variables." });
+      if (!openaiKey) {
+        return res.status(500).json({ error: "OPENAI_API_KEY is missing. Please add it to your environment variables." });
       }
 
       const systemInstruction = "You are Legal Advisories, an advanced legal AI assistant designed to help lawyers, legal professionals, and the public. You have a built-in PDF generation capability. When a user asks to generate, make, or download a PDF, you MUST output a JSON object in this exact format: {\"action\": \"generate_pdf\", \"title\": \"[Title of the document]\"}. DO NOT output any other text when responding to a PDF generation request. If you are drafting a document, provide the text as normal.";
 
-      // Try Gemini first if available
-      if (geminiKey) {
-        try {
+      // Try OpenAI
+      const openai = new OpenAI({ apiKey: openaiKey });
       
-          const ai = new GoogleGenAI({ apiKey: geminiKey });
-          
-          const formattedMessages = messages.map((m: any) => ({
-            role: m.role === 'model' || m.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: m.content }]
-          }));
-          
-          const response = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
-            contents: formattedMessages,
-            config: {
-              systemInstruction
-            }
-          });
-          return res.json({ message: { content: response.text } });
-        } catch (e: any) {
-          const isGeminiRateLimit = e?.message && (e.message.includes("429") || e.message.includes("Quota") || e.message.includes("exhausted") || e.message.includes("Too Many Requests") || e.message.includes("404"));
-          if (!isGeminiRateLimit) {
-            console.error("Gemini failed, trying OpenAI if available...", e.message);
-          }
-          if (!openaiKey) throw e;
-        }
-      }
-
-      // Try OpenAI if Gemini failed or isn't available
-      if (openaiKey) {
-        const openai = new OpenAI({ apiKey: openaiKey });
-        
-        const formattedMessages = [
-          { role: "system", content: systemInstruction },
-          ...messages.map((m: any) => ({
-            role: m.role === 'model' ? 'assistant' : m.role,
-            content: m.content
-          }))
-        ];
-        
-        const response = await openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: formattedMessages,
-        });
-        return res.json({ message: { content: response.choices[0].message.content } });
-      }
+      const formattedMessages = [
+        { role: "system", content: systemInstruction },
+        ...messages.map((m: any) => ({
+          role: m.role === 'model' ? 'assistant' : m.role,
+          content: m.content
+        }))
+      ];
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: formattedMessages,
+        // ... (rest of the OpenAI call)
+      });
+      return res.json({ message: { content: response.choices[0].message.content } });
 
     } catch (error: any) {
       const isApiRateLimit = error?.message && (error.message.includes("429") || error.message.includes("Quota") || error.message.includes("exhausted") || error.message.includes("Too Many Requests"));
@@ -598,10 +545,12 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
       const userId = req.user?.uid;
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
+      console.log("Attempting PDF generation for user:", userId, "Title:", title);
       const { downloadUrl, fileName } = await generateAndStorePdf(userId, title, documentType, content);
+      console.log("PDF generated successfully. URL:", downloadUrl);
       res.json({ success: true, downloadUrl, fileName });
     } catch (error: any) {
-      console.error("PDF Generation Error:", error);
+      console.error("PDF Generation Error (details):", error);
       res.status(500).json({ error: error.message || "Failed to generate PDF" });
     }
   });
@@ -712,16 +661,16 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
       
       Provide a highly accurate, structured response focusing on required filings, due dates, penalties, and required documents. Use Markdown.`;
 
-      const geminiKey = process.env.GEMINI_API_KEY;
-      if (!geminiKey) return res.status(500).json({ error: "API key is missing" });
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-flash-lite",
-        contents: prompt
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (!openaiKey) return res.status(500).json({ error: "API key is missing" });
+      const openai = new OpenAI({ apiKey: openaiKey });
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }]
       });
       
-      res.json({ result: response.text });
+      res.json({ result: response.choices[0].message.content });
     } catch (error: any) {
       console.error("Compliance AI Error:", error);
       res.status(500).json({ error: "Failed to process compliance query." });
@@ -743,16 +692,16 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
       
       Format the output cleanly in Markdown, using appropriate headings, clauses, and numbering. Include signature blocks at the end.`;
 
-      const geminiKey = process.env.GEMINI_API_KEY;
-      if (!geminiKey) return res.status(500).json({ error: "API key is missing" });
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-flash-lite",
-        contents: prompt
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (!openaiKey) return res.status(500).json({ error: "API key is missing" });
+      const openai = new OpenAI({ apiKey: openaiKey });
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }]
       });
       
-      res.json({ content: response.text });
+      res.json({ content: response.choices[0].message.content });
     } catch (error: any) {
       console.error("Contract Generation Error:", error);
       res.status(500).json({ error: "Failed to generate contract." });
@@ -774,16 +723,16 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
         return res.status(400).json({ error: "Invalid action" });
       }
 
-      const geminiKey = process.env.GEMINI_API_KEY;
-      if (!geminiKey) return res.status(500).json({ error: "API key missing" });
-      const ai = new GoogleGenAI({ apiKey: geminiKey });
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3.1-flash-lite",
-        contents: prompt
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (!openaiKey) return res.status(500).json({ error: "API key is missing" });
+      const openai = new OpenAI({ apiKey: openaiKey });
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }]
       });
       
-      res.json({ result: response.text });
+      res.json({ result: response.choices[0].message.content });
     } catch (error: any) {
       console.error("Smart Feature Error:", error);
       res.status(500).json({ error: "Failed to process smart feature." });
@@ -874,12 +823,12 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
       
       User Query: "${query}"`;
 
-      const geminiKey = process.env.GEMINI_API_KEY; if (!geminiKey) return res.status(500).json({ error: "API key is missing" }); const ai = new GoogleGenAI({ apiKey: geminiKey }); const response = await ai.models.generateContent({
-        model: "gemini-3.1-flash-lite",
-        contents: prompt
+      const openaiKey = process.env.OPENAI_API_KEY; if (!openaiKey) return res.status(500).json({ error: "API key is missing" }); const openai = new OpenAI({ apiKey: openaiKey }); const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }]
       });
       
-      res.json({ result: response.text });
+      res.json({ result: response.choices[0].message.content });
     } catch (error: any) {
       console.error("Research API Error:", error);
       res.status(500).json({ error: "Failed to perform legal research." });

@@ -9,12 +9,12 @@ import firebaseConfig from '../../firebase-applet-config.json';
 if (!getApps().length) {
   initializeApp({
     projectId: firebaseConfig.projectId,
-    storageBucket: `${firebaseConfig.projectId}.appspot.com`
+    storageBucket: firebaseConfig.storageBucket
   });
 }
 
 export const adminDb = getFirestore(getApps()[0], firebaseConfig.firestoreDatabaseId);
-export const adminStorage = getStorage(getApps()[0]).bucket();
+export const adminStorage = getStorage(getApps()[0]).bucket(firebaseConfig.storageBucket);
 
 // Custom JWT verification using jwks-rsa to maintain existing logic
 const client = jwksClient({

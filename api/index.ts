@@ -1,5 +1,5 @@
 import express from "express";
-import { GoogleGenAI } from "@google/genai";
+import OpenAI from "openai";
 
 const app = express();
 
@@ -14,52 +14,29 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { messages, files } = req.body;
     
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: "GEMINI_API_KEY is missing." });
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) {
+      return res.status(500).json({ error: "OPENAI_API_KEY is missing." });
     }
-    const ai = new GoogleGenAI({ apiKey });
+    const openai = new OpenAI({ apiKey: openaiKey });
     
-    let textPrompt = "";
-    for (let i = 0; i < messages.length - 1; i++) {
-      const m = messages[i];
-      textPrompt += `${m.role === 'user' ? 'User' : 'Legal Advisories'}: ${m.content}\n`;
-    }
+    const formattedMessages = [
+      { role: "system", content: "You are Legal Advisories, an advanced legal AI assistant designed to help lawyers, legal professionals, and the public. By default, you should provide advice, rules, and information based on Indian law and jurisdiction. However, if a user specifically asks about the laws of other countries, you should answer their queries to the best of your ability, but clarify that your primary expertise is Indian law. Provide precise, professional, and well-reasoned answers. You specialize in the following features:\n- Explaining laws in plain language.\n- Drafting legal notices, contracts, and petitions.\n- Analyzing contracts and identifying risky clauses.\n- Summarizing judgments.\n- Searching legal precedents.\n- Answering legal questions with citations to the underlying legal sources.\n- Supporting multiple Indian languages." },
+      ...messages.map((m: any) => ({
+        role: m.role === 'model' ? 'assistant' : m.role,
+        content: m.content
+      }))
+    ];
     
-    const lastMessage = messages[messages.length - 1];
-    textPrompt += `User: ${lastMessage.content}\nLegal Advisories:`;
-    const parts: any[] = [{ text: textPrompt }];
-    
-    if (files && files.length > 0) {
-      for (const file of files) {
-        parts.push({
-          inlineData: {
-            data: file.data,
-            mimeType: file.mimeType
-          }
-        });
-      }
-    }
-
-    const response = await ai.models.generateContent({
-      model: "gemini-flash-lite-latest",
-      contents: [{ role: 'user', parts }],
-      config: {
-        systemInstruction: "You are Legal Advisories, an advanced legal AI assistant designed to help lawyers, legal professionals, and the public. By default, you should provide advice, rules, and information based on Indian law and jurisdiction. However, if a user specifically asks about the laws of other countries, you should answer their queries to the best of your ability, but clarify that your primary expertise is Indian law. Provide precise, professional, and well-reasoned answers. You specialize in the following features:\n- Explaining laws in plain language.\n- Drafting legal notices, contracts, and petitions.\n- Analyzing contracts and identifying risky clauses.\n- Summarizing judgments.\n- Searching legal precedents.\n- Answering legal questions with citations to the underlying legal sources.\n- Supporting multiple Indian languages.",
-      }
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: formattedMessages
     });
 
-    res.json({ reply: response.text });
+    res.json({ reply: response.choices[0].message.content });
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    let errorMessage = "Failed to communicate with AI model";
-    if (error?.status === 429 || error?.message?.includes("429") || error?.message?.includes("Quota exceeded")) {
-      errorMessage = "You have exceeded your free tier quota for the AI model. Please wait a moment and try again.";
-    } else if (error?.message) {
-      errorMessage = error.message;
-    }
-    
-    res.status(500).json({ error: errorMessage });
+    console.error("OpenAI API Error:", error);
+    res.status(500).json({ error: "Failed to communicate with AI model" });
   }
 });
 
