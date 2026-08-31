@@ -42,6 +42,7 @@ export default function App() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userUpdateTrigger, setUserUpdateTrigger] = useState(0);
 
   React.useEffect(() => {
     if (currentChatId) {
@@ -128,7 +129,7 @@ export default function App() {
       case "tips":
         return <Tips />;
       case "options":
-        return <Options user={currentUser} />;
+        return <Options user={currentUser} onUpdate={() => setUserUpdateTrigger(v => v + 1)} />;
       default:
         return (
           <div className="flex-1 h-full flex items-center justify-center">
@@ -182,6 +183,7 @@ export default function App() {
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         onLogout={logout}
         user={currentUser}
+        key={`sidebar-${userUpdateTrigger}`}
       />
       
       <main className="flex-1 flex flex-col min-w-0 bg-white relative overflow-hidden shadow-[-4px_0_24px_rgb(0,0,0,0.02)]">

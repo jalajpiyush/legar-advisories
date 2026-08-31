@@ -52,7 +52,7 @@ export function LegalResearch() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white flex items-center gap-2">
               <Scale className="h-6 w-6 text-[#c6a87c]" />
-              AI Legal Research
+              Legal Advisories Research
             </h1>
             <p className="mt-1 text-sm text-neutral-500">Search laws, analyze cases, and generate comprehensive research reports.</p>
           </div>
@@ -62,7 +62,7 @@ export function LegalResearch() {
               onClick={() => setActiveTab('ai')}
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'ai' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
             >
-              <Sparkles className="h-4 w-4" /> AI Research
+              <Sparkles className="h-4 w-4" /> Research
             </button>
             <button
               onClick={() => setActiveTab('acts')}
@@ -147,7 +147,7 @@ export function LegalResearch() {
                         </div>
                         <h3 className="text-lg font-semibold text-neutral-900 dark:text-white mb-2">Smart Legal Research</h3>
                         <p className="text-sm text-neutral-500">
-                          Enter your legal query on the left. The AI will analyze facts, find applicable laws, cite landmark judgments, and provide a structured conclusion.
+                          Enter your legal query on the left. Legal Advisories will analyze facts, find applicable laws, cite landmark judgments, and provide a structured conclusion.
                         </p>
                       </div>
                     )}

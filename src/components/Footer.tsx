@@ -12,10 +12,10 @@ export function Footer({ onNavigate }: FooterProps) {
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Legal Advisories</h3>
             <p className="text-sm text-gray-500 mb-4 max-w-sm">
-              An AI-powered legal research and document assistance platform.
+              An advanced legal research and document assistance platform.
             </p>
             <div className="text-xs text-gray-400">
-              <p>Powered by AI</p>
+              <p>Powered by Legal Advisories</p>
               <p className="mt-1">© {new Date().getFullYear()} Legal Advisories Inc. All rights reserved.</p>
               <p className="mt-1">Rajeev Gandhi Nagar, Farrukhabad, Uttar Pradesh, India 209625</p>
             </div>
@@ -35,7 +35,7 @@ export function Footer({ onNavigate }: FooterProps) {
               </li>
               <li>
                 <button onClick={() => onNavigate('disclaimer')} className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-                  AI Disclaimer
+                  Legal Disclaimer
                 </button>
               </li>
             </ul>

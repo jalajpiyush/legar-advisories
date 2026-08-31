@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Wand2, Activity, Plus, FileText, ArrowRight, Network } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Search, Wand2, Activity, Plus, FileText, ArrowRight, Network, X, CheckCircle2 } from 'lucide-react';
 
 const workflowCategories = [
   "All", "Drafting", "Extraction", "Analysis", "Compliance", "Due Diligence"
@@ -19,15 +20,45 @@ const workflows = [
 export function Workflows() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [workflowsList, setWorkflowsList] = useState(workflows);
 
-  const filteredWorkflows = workflows.filter(w => {
+  const [newTitle, setNewTitle] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newCategory, setNewCategory] = useState("Drafting");
+
+  const [selectedWorkflow, setSelectedWorkflow] = useState<any>(null);
+  const [workflowRunState, setWorkflowRunState] = useState<'idle' | 'running' | 'success'>('idle');
+
+  const filteredWorkflows = workflowsList.filter(w => {
     const matchesSearch = w.title.toLowerCase().includes(searchQuery.toLowerCase()) || w.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "All" || w.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
+  const handleCreate = () => {
+    if (!newTitle.trim()) return;
+    
+    const newWorkflow = {
+      id: Date.now(),
+      title: newTitle,
+      description: newDescription || "Custom workflow description goes here.",
+      category: newCategory,
+      icon: Plus, // Default icon
+      steps: 1,
+      color: "text-blue-600",
+      bg: "bg-blue-50"
+    };
+
+    setWorkflowsList([newWorkflow, ...workflowsList]);
+    setNewTitle("");
+    setNewDescription("");
+    setNewCategory("Drafting");
+    setIsCreateModalOpen(false);
+  };
+
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-white relative">
       {/* Header section */}
       <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100 bg-white sticky top-0 z-10 pt-16 sm:pt-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-4">
@@ -35,7 +66,10 @@ export function Workflows() {
             <h1 className="text-2xl font-serif text-gray-900 mb-1">Workflows</h1>
             <p className="text-[14px] text-gray-500">Automate complex legal tasks with multi-step AI agents.</p>
           </div>
-          <button className="bg-black text-white px-4 py-2 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-colors shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto">
+          <button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-black text-white px-4 py-2 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-colors shadow-sm flex items-center justify-center gap-2 w-full sm:w-auto"
+          >
             <Plus className="w-4 h-4" /> Create Workflow
           </button>
         </div>
@@ -77,7 +111,11 @@ export function Workflows() {
             filteredWorkflows.map(workflow => {
               const Icon = workflow.icon;
               return (
-                <div key={workflow.id} className="bg-white border border-gray-200/80 rounded-2xl p-6 hover:shadow-md transition-all cursor-pointer group flex flex-col h-full">
+                <div 
+                  key={workflow.id} 
+                  onClick={() => { setSelectedWorkflow(workflow); setWorkflowRunState('idle'); }}
+                  className="bg-white border border-gray-200/80 rounded-2xl p-6 hover:shadow-md transition-all cursor-pointer group flex flex-col h-full"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${workflow.bg} ${workflow.color}`}>
                       <Icon className="w-6 h-6" />
@@ -117,6 +155,168 @@ export function Workflows() {
           )}
         </div>
       </div>
+
+      {/* Run Workflow Modal */}
+      {selectedWorkflow && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => { setSelectedWorkflow(null); setWorkflowRunState('idle'); }} />
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedWorkflow.bg} ${selectedWorkflow.color}`}>
+                  <selectedWorkflow.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">{selectedWorkflow.title}</h2>
+                  <p className="text-[14px] text-gray-500">{selectedWorkflow.category} • {selectedWorkflow.steps} steps</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => { setSelectedWorkflow(null); setWorkflowRunState('idle'); }}
+                className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              {workflowRunState === 'idle' && (
+                <div className="space-y-5">
+                  <p className="text-[14px] text-gray-600">{selectedWorkflow.description}</p>
+                  <div>
+                    <label className="block text-[13px] font-medium text-gray-700 mb-2">Input Documents</label>
+                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors cursor-pointer group">
+                      <FileText className="w-8 h-8 text-gray-400 mx-auto mb-3 group-hover:text-blue-500 transition-colors" />
+                      <p className="text-[14px] font-medium text-gray-900 mb-1">Click to upload or drag and drop</p>
+                      <p className="text-[13px] text-gray-500">PDF, DOCX up to 10MB</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[13px] font-medium text-gray-700 mb-1">Additional Instructions (Optional)</label>
+                    <textarea rows={2} placeholder="Any specific focus areas?" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all custom-scrollbar"></textarea>
+                  </div>
+                </div>
+              )}
+              {workflowRunState === 'running' && (
+                <div className="py-12 flex flex-col items-center justify-center space-y-5 text-center">
+                  <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div>
+                    <p className="text-[16px] font-medium text-gray-900">Executing Workflow...</p>
+                    <p className="text-[14px] text-gray-500 mt-1">Processing {selectedWorkflow.steps} steps sequentially.</p>
+                  </div>
+                </div>
+              )}
+              {workflowRunState === 'success' && (
+                <div className="py-12 flex flex-col items-center justify-center space-y-4 text-center">
+                  <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-2">
+                    <CheckCircle2 className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <p className="text-[18px] font-semibold text-gray-900">Workflow Complete</p>
+                    <p className="text-[14px] text-gray-500 mt-1">All {selectedWorkflow.steps} steps executed successfully.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              {workflowRunState === 'idle' && (
+                <>
+                  <button 
+                    onClick={() => { setSelectedWorkflow(null); setWorkflowRunState('idle'); }}
+                    className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[14px] font-medium hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setWorkflowRunState('running');
+                      setTimeout(() => setWorkflowRunState('success'), 2000);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-[14px] font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2"
+                  >
+                    Run Workflow <ArrowRight className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+              {workflowRunState === 'running' && (
+                <button disabled className="px-4 py-2 bg-blue-300 text-white rounded-lg text-[14px] font-medium cursor-not-allowed flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Processing...
+                </button>
+              )}
+              {workflowRunState === 'success' && (
+                <button 
+                  onClick={() => { setSelectedWorkflow(null); setWorkflowRunState('idle'); }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-[14px] font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                >
+                  View Results
+                </button>
+              )}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Create Workflow Modal */}
+      {isCreateModalOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)} />
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Create Workflow</h2>
+                <p className="text-[14px] text-gray-500">Design a new automated task.</p>
+              </div>
+              <button 
+                onClick={() => setIsCreateModalOpen(false)}
+                className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Workflow Name</label>
+                  <input type="text" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="e.g. Due Diligence Extractor" className="w-full px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Description</label>
+                  <textarea rows={3} value={newDescription} onChange={(e) => setNewDescription(e.target.value)} placeholder="Describe what this workflow does..." className="w-full px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all custom-scrollbar"></textarea>
+                </div>
+                <div>
+                  <label className="block text-[13px] font-medium text-gray-700 mb-1">Category</label>
+                  <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                    {workflowCategories.filter(c => c !== "All").map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+              <button 
+                onClick={() => setIsCreateModalOpen(false)}
+                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-[14px] font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleCreate}
+                disabled={!newTitle.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-[14px] font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

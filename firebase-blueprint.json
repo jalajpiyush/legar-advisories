@@ -33,6 +33,24 @@
         "plan": { "type": "string" },
         "created_at": { "type": "number" }
       }
+    },
+    "DemoRequest": {
+      "title": "DemoRequest",
+      "description": "Information from the contact sales form",
+      "type": "object",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "email": { "type": "string" },
+        "company": { "type": "string" },
+        "job_title": { "type": "string" },
+        "phone": { "type": "string" },
+        "org_type": { "type": "string" },
+        "country": { "type": "string" },
+        "marketing_opt_in": { "type": "boolean" },
+        "created_at": { "type": "number" }
+      },
+      "required": ["first_name", "last_name", "email", "company", "org_type", "country"]
     }
   },
   "firestore": {
@@ -43,6 +61,10 @@
     "users/{userId}/billing_history/{invoiceId}": {
       "schema": { "$ref": "#/entities/BillingHistory" },
       "description": "Billing history for a user"
+    },
+    "demo_requests/{requestId}": {
+      "schema": { "$ref": "#/entities/DemoRequest" },
+      "description": "Contact sales / demo requests"
     }
   }
 }

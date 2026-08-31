@@ -88,5 +88,10 @@ service cloud.firestore {
     match /audit_logs/{docId} {
       allow read, write: if true;
     }
+
+    match /demo_requests/{docId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
   }
 }

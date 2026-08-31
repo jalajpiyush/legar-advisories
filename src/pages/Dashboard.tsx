@@ -70,6 +70,14 @@ export function Dashboard({ currentChatId, onChatIdChange, user }: { currentChat
   }, [chatHistory]);
   const [isKbModalOpen, setIsKbModalOpen] = useState(false);
 
+  const [promptsOpen, setPromptsOpen] = useState(false);
+  const promptsRef = useRef<HTMLDivElement>(null);
+  
+  const [customizeOpen, setCustomizeOpen] = useState(false);
+  const customizeRef = useRef<HTMLDivElement>(null);
+  
+  const [isDeepResearch, setIsDeepResearch] = useState(false);
+
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   };
@@ -82,6 +90,12 @@ export function Dashboard({ currentChatId, onChatIdChange, user }: { currentChat
     function handleClickOutside(event: MouseEvent) {
       if (sourcesRef.current && !sourcesRef.current.contains(event.target as Node)) {
         setSourcesOpen(false);
+      }
+      if (promptsRef.current && !promptsRef.current.contains(event.target as Node)) {
+        setPromptsOpen(false);
+      }
+      if (customizeRef.current && !customizeRef.current.contains(event.target as Node)) {
+        setCustomizeOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -338,12 +352,12 @@ export function Dashboard({ currentChatId, onChatIdChange, user }: { currentChat
                     </div>
                     <div className="px-4 py-2 text-[12px] font-semibold text-gray-500 mb-0.5">Sources</div>
                     <div className="px-1">
-                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleTag('LexisNexis'); }} className={getDropdownSourceClass('LexisNexis', 'justify-between')}>
+                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleTag('Legal Advisories'); }} className={getDropdownSourceClass('Legal Advisories', 'justify-between')}>
                         <div className="flex items-center gap-3">
                           <div className="w-[18px] h-[18px] bg-red-600 rounded-full flex items-center justify-center"><div className="w-2 h-2 bg-white rounded-full"></div></div>
-                          LexisNexis
+                          Legal Advisories
                         </div>
-                        {selectedTags.includes('LexisNexis') && <Check className="w-4 h-4 text-gray-900" />}
+                        {selectedTags.includes('Legal Advisories') && <Check className="w-4 h-4 text-gray-900" />}
                       </button>
                       <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleTag('Web search'); }} className={getDropdownSourceClass('Web search', 'justify-between')}>
                         <div className="flex items-center gap-3">
@@ -362,19 +376,47 @@ export function Dashboard({ currentChatId, onChatIdChange, user }: { currentChat
                 )}
               </div>
 
-              <button className="flex items-center gap-2 hover:text-gray-900 transition-colors">
-                <ListPlus className="w-[18px] h-[18px]" /> Prompts
-              </button>
-              <button className="flex items-center gap-2 hover:text-gray-900 transition-colors">
-                <SlidersHorizontal className="w-[18px] h-[18px]" /> Customize
-              </button>
+              <div className="relative" ref={promptsRef}>
+                <button onClick={(e) => { e.preventDefault(); setPromptsOpen(!promptsOpen); }} className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                  <ListPlus className="w-[18px] h-[18px]" /> Prompts
+                </button>
+                {promptsOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-2">
+                    <div className="px-3 py-1.5 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">Templates</div>
+                    <button onClick={(e) => { e.preventDefault(); setPrompt("Draft a mutual NDA governed by California law."); setPromptsOpen(false); }} className="w-full text-left px-4 py-2 text-[14px] text-gray-700 hover:bg-gray-50 transition-colors">Mutual NDA (CA)</button>
+                    <button onClick={(e) => { e.preventDefault(); setPrompt("Summarize the key indemnification obligations in this agreement."); setPromptsOpen(false); }} className="w-full text-left px-4 py-2 text-[14px] text-gray-700 hover:bg-gray-50 transition-colors">Summarize Indemnification</button>
+                    <button onClick={(e) => { e.preventDefault(); setPrompt("Identify any non-standard representations and warranties."); setPromptsOpen(false); }} className="w-full text-left px-4 py-2 text-[14px] text-gray-700 hover:bg-gray-50 transition-colors">Analyze Reps & Warranties</button>
+                  </div>
+                )}
+              </div>
+
+              <div className="relative" ref={customizeRef}>
+                <button onClick={(e) => { e.preventDefault(); setCustomizeOpen(!customizeOpen); }} className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                  <SlidersHorizontal className="w-[18px] h-[18px]" /> Customize
+                </button>
+                {customizeOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 py-2">
+                    <div className="px-3 py-1.5 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">Output Style</div>
+                    <button onClick={(e) => { e.preventDefault(); setCustomizeOpen(false); }} className="w-full text-left px-4 py-2 text-[14px] text-gray-700 hover:bg-gray-50 transition-colors flex justify-between items-center">
+                      Concise <Check className="w-4 h-4 text-gray-900" />
+                    </button>
+                    <button onClick={(e) => { e.preventDefault(); setCustomizeOpen(false); }} className="w-full text-left px-4 py-2 text-[14px] text-gray-700 hover:bg-gray-50 transition-colors flex justify-between items-center">
+                      Detailed 
+                    </button>
+                    <button onClick={(e) => { e.preventDefault(); setCustomizeOpen(false); }} className="w-full text-left px-4 py-2 text-[14px] text-gray-700 hover:bg-gray-50 transition-colors flex justify-between items-center">
+                      Bullet Points
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {chatHistory.length === 0 && (
-                <button className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                <button onClick={(e) => { e.preventDefault(); setPrompt(prev => prev ? prev + " Please ensure the analysis is legally sound and cites relevant precedents where applicable." : "Please provide a legally sound analysis of the provided context."); }} className="flex items-center gap-2 hover:text-gray-900 transition-colors">
                   <Wand2 className="w-[18px] h-[18px]" /> Improve
                 </button>
               )}
               {chatHistory.length === 0 && (
-                <button className="flex items-center gap-2 hover:text-gray-900 transition-colors">
+                <button onClick={(e) => { e.preventDefault(); setIsDeepResearch(!isDeepResearch); }} className={`flex items-center gap-2 transition-colors ${isDeepResearch ? 'text-blue-600' : 'hover:text-gray-900'}`}>
                   <Activity className="w-[18px] h-[18px]" />
                   Deep research
                 </button>
@@ -397,19 +439,19 @@ export function Dashboard({ currentChatId, onChatIdChange, user }: { currentChat
         {chatHistory.length === 0 && (
           <>
             <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-              <button onClick={() => toggleTag('iManage')} className={getTagClass('iManage')}>
+              <button type="button" onClick={(e) => { e.preventDefault(); toggleTag('iManage'); }} className={getTagClass('iManage')}>
                 <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center text-[9px] text-white font-bold">m</div>
                 iManage {getTagSuffix('iManage')}
               </button>
-              <button onClick={() => toggleTag('LexisNexis')} className={getTagClass('LexisNexis')}>
+              <button type="button" onClick={(e) => { e.preventDefault(); toggleTag('Legal Advisories'); }} className={getTagClass('Legal Advisories')}>
                 <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center"><div className="w-1.5 h-1.5 bg-white rounded-full"></div></div>
-                LexisNexis {getTagSuffix('LexisNexis')}
+                Legal Advisories {getTagSuffix('Legal Advisories')}
               </button>
-              <button onClick={() => toggleTag('Web search')} className={getTagClass('Web search')}>
+              <button type="button" onClick={(e) => { e.preventDefault(); toggleTag('Web search'); }} className={getTagClass('Web search')}>
                 <Globe className="w-4 h-4 text-blue-500" />
                 Web search {getTagSuffix('Web search')}
               </button>
-              <button onClick={() => toggleTag('EDGAR')} className={getTagClass('EDGAR')}>
+              <button type="button" onClick={(e) => { e.preventDefault(); toggleTag('EDGAR'); }} className={getTagClass('EDGAR')}>
                 <Building2 className="w-4 h-4 text-gray-500" />
                 EDGAR {getTagSuffix('EDGAR')}
               </button>

@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { Settings, User, Bell, Shield, Key, Database, Globe, Monitor, CreditCard } from 'lucide-react';
-import { User as FirebaseUser } from '../lib/auth';
+import { User as FirebaseUser, db } from '../lib/auth';
+import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { Billing } from './Billing';
 
 const optionTabs = [
+  { id: "overview", label: "Account Dashboard", icon: Monitor },
   { id: "account", label: "Account", icon: User },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "privacy", label: "Privacy & Security", icon: Shield },
   { id: "plan", label: "Upgrade Plan", icon: CreditCard },
 ];
 
-interface OptionsProps { user?: FirebaseUser | null; }
+interface OptionsProps { user?: FirebaseUser | null; onUpdate?: () => void; }
 
 
 const CheckIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7"/></svg>
 );
 
-export function Options({ user }: OptionsProps) {
+export function Options({ user, onUpdate }: OptionsProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [dashboardData, setDashboardData] = useState<any>(null);
 
@@ -25,14 +27,64 @@ export function Options({ user }: OptionsProps) {
     const fetchDashboard = async () => {
       if (activeTab === 'overview' && user) {
         try {
-          const token = await user.getIdToken();
-          const res = await fetch("/api/user/dashboard", {
-            headers: { Authorization: `Bearer ${token}` }
+          // Fetch user data directly from Firestore client side
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          const userData = userDoc.exists() ? userDoc.data() : { plan: 'Free' };
+          
+          let rawPlan = userData?.plan || 'Free';
+          let plan = 'Free';
+          const str = String(rawPlan).toLowerCase().trim();
+          if (str.includes('lawyer') || str.includes('pro') || str.includes('enterprise')) plan = 'Lawyer';
+          else if (str.includes('individual')) plan = 'Individual';
+          
+          const isLawyer = plan === 'Lawyer';
+          const isIndividual = plan === 'Individual';
+          
+          const now = new Date();
+          const todayStr = now.toISOString().split('T')[0];
+          const monthStr = todayStr.substring(0, 7);
+      
+          let chatUsedToday = Number(userData?.chatUsedToday) || 0;
+          let chatUsedMonth = Number(userData?.chatUsedMonth) || 0;
+          let documentUsedToday = Number(userData?.documentUsedToday) || 0;
+          let documentUsedMonth = Number(userData?.documentUsedMonth) || 0;
+      
+          if (userData?.lastChatDate !== todayStr) chatUsedToday = 0;
+          if (userData?.lastDocDate !== todayStr) documentUsedToday = 0;
+          if (userData?.lastChatMonth !== monthStr) chatUsedMonth = 0;
+          if (userData?.lastDocMonth !== monthStr) documentUsedMonth = 0;
+          
+          let billingHistory: any[] = [];
+          try {
+            const token = await user.getIdToken();
+            const res = await fetch("/api/user/profile", { headers: { Authorization: `Bearer ${token}` } });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.history) billingHistory = data.history.slice(0, 5);
+            }
+          } catch(e) {}
+          
+          let savedDocs: any[] = [];
+          try {
+            const docsSnap = await getDocs(query(collection(db, 'documents'), where('userId', '==', user.uid), orderBy('created_at', 'desc'), limit(5)));
+            savedDocs = docsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+          } catch(e) {}
+          
+          setDashboardData({
+            plan: plan,
+            usage: {
+              chat: isIndividual ? chatUsedMonth : chatUsedToday,
+              doc: isIndividual ? documentUsedMonth : documentUsedToday
+            },
+            billingHistory,
+            savedDocs,
+            limits: {
+              chat: isLawyer ? -1 : (isIndividual ? 500 : 20),
+              doc: isLawyer ? -1 : (isIndividual ? 100 : 3)
+            }
           });
-          const data = await res.json();
-          if (res.ok) setDashboardData(data);
         } catch (err) {
-          console.error(err);
+          console.error('Error fetching dashboard data:', err);
         }
       }
     };
@@ -44,8 +96,39 @@ export function Options({ user }: OptionsProps) {
   const [lastName, setLastName] = useState(user?.displayName?.split(" ").slice(1).join(" ") || "Doe");
   const [email, setEmail] = useState(user?.email || "jane@whitford.com");
   const [theme, setTheme] = useState("System Default");
-  const [localTheme, setLocalTheme] = useState("System Default");
-  
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+
+  const handleSaveChanges = async () => {
+    const { auth, updateProfile } = await import('../lib/auth');
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) return;
+    
+    setIsSaving(true);
+    setSaveMessage(null);
+    
+    try {
+      const fullName = `${firstName} ${lastName}`.trim();
+      
+      await updateProfile(currentUser, {
+        displayName: fullName
+      });
+      
+      if (onUpdate) onUpdate();
+      
+      setSaveMessage({ type: 'success', text: 'Profile updated successfully!' });
+      
+      // Auto-hide message after 3 seconds
+      setTimeout(() => setSaveMessage(null), 3000);
+    } catch (err: any) {
+      console.error("Error updating profile:", err);
+      setSaveMessage({ type: 'error', text: err.message || 'Failed to update profile' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   React.useEffect(() => {
     if (user) {
       setFirstName(user.displayName?.split(" ")[0] || "");
@@ -106,7 +189,9 @@ export function Options({ user }: OptionsProps) {
                     </div>
 
                     <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-4">Today's Usage</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                        {dashboardData.plan === 'Free' ? "Today's Usage" : "Monthly Usage"}
+                      </h3>
                       <div className="space-y-4">
                         <div>
                           <div className="flex justify-between text-sm mb-1">
@@ -165,6 +250,39 @@ export function Options({ user }: OptionsProps) {
                         <p className="text-sm text-gray-500">No payment history found.</p>
                       )}
                     </div>
+
+                    {/* Saved Documents */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm col-span-1 md:col-span-2">
+                      <h3 className="text-sm font-semibold text-gray-900 mb-4">Saved Documents</h3>
+                      {dashboardData.savedDocs && dashboardData.savedDocs.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm text-left text-gray-500">
+                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                              <tr>
+                                <th className="px-4 py-3">Date</th>
+                                <th className="px-4 py-3">Title</th>
+                                <th className="px-4 py-3">Type</th>
+                                <th className="px-4 py-3">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {dashboardData.savedDocs.map((doc: any) => (
+                                <tr key={doc.id} className="border-b">
+                                  <td className="px-4 py-3">{new Date(doc.created_at).toLocaleDateString()}</td>
+                                  <td className="px-4 py-3 font-medium text-gray-900">{doc.title || "Untitled Document"}</td>
+                                  <td className="px-4 py-3">{doc.type || "Analysis"}</td>
+                                  <td className="px-4 py-3">
+                                    <button className="text-blue-600 hover:underline">View</button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">No saved documents found.</p>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="text-sm text-gray-500">Loading dashboard...</div>
@@ -207,9 +325,26 @@ export function Options({ user }: OptionsProps) {
                   </div>
                 </div>
 
-                <div className="pt-6 flex justify-end">
-                  <button className="bg-black text-white px-5 py-2 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-colors shadow-sm">
-                    Save Changes
+                <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  {saveMessage && (
+                    <p className={`text-[13px] font-medium ${saveMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                      {saveMessage.text}
+                    </p>
+                  )}
+                  <div className="flex-1" />
+                  <button 
+                    onClick={handleSaveChanges}
+                    disabled={isSaving}
+                    className="w-full sm:w-auto bg-black text-white px-8 py-2.5 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Changes'
+                    )}
                   </button>
                 </div>
               </div>
@@ -228,7 +363,6 @@ export function Options({ user }: OptionsProps) {
                       value={theme}
                       onChange={(e) => {
                         const newTheme = e.target.value;
-                        setLocalTheme(newTheme);
                         setTheme(newTheme);
                       }}
                       className="px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 bg-white"

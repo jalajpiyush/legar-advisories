@@ -4,6 +4,7 @@ declare global {
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
+import nodemailer from "nodemailer";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { requireAuth, AuthRequest } from "./src/middleware/auth";
@@ -22,6 +23,7 @@ import {
 import { generateAndStorePdf } from "./src/services/pdfService";
 
 
+import { GoogleGenAI } from "@google/genai";
 import OpenAI from "openai";
 import multer from "multer";
 import mammoth from "mammoth";
@@ -76,39 +78,64 @@ const optionalAuth = async (req: AuthRequest, res: express.Response, next: expre
 };
 
 const usageCache = new Map<string, { plan: string, history: Record<string, { chat: number, doc: number }> }>();
-
 const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' | 'doc') => {
   if (!userId) return { allowed: true };
   
   try {
     let userData = usageCache.get(userId);
+    let plan = userData?.plan || 'Free';
+    
+    // Always try to get the real plan from db if possible
+    try {
+      const userDoc = await adminDb.collection("users").doc(userId).get();
+      if (userDoc.exists) {
+         plan = userDoc.data()?.plan || 'Free';
+         if (userData) userData.plan = plan;
+         else userData = { plan, history: {} };
+         usageCache.set(userId, userData);
+      }
+    } catch(e) {
+      // ignore
+    }
+
     if (!userData) {
-      userData = { plan: 'Free', history: {} };
+      userData = { plan, history: {} };
       usageCache.set(userId, userData);
     }
     
-    // We can't fetch the real plan from adminDb, so we'll just assume Free unless memory says otherwise
-    // (In a real app with working admin SDK we'd fetch this from DB)
-    const isPro = userData.plan && userData.plan !== 'Free' && userData.plan !== 'None';
-    if (isPro) return { allowed: true };
+    const isLawyer = plan === 'Lawyer' || plan === 'Pro' || plan === 'Premium'; 
+    if (isLawyer) return { allowed: true };
     
-    const MAX_CHATS = 20;
-    const MAX_DOCS = 3;
-    const today = new Date().toISOString().split('T')[0];
+    const isIndividual = plan === 'Individual';
     
-    if (!userData.history[today]) {
-      userData.history[today] = { chat: 0, doc: 0 };
+    const period = isIndividual ? new Date().toISOString().substring(0, 7) : new Date().toISOString().split('T')[0]; 
+    
+    if (!userData.history[period]) {
+      try {
+         const usageDoc = await adminDb.collection("users").doc(userId).collection("usage").doc(period).get();
+         userData.history[period] = usageDoc.exists ? (usageDoc.data() as any) : { chat: 0, doc: 0 };
+      } catch(e) {
+         userData.history[period] = { chat: 0, doc: 0 };
+      }
     }
     
-    const currentCount = userData.history[today][type];
+    const MAX_CHATS = isIndividual ? 500 : 20;
+    const MAX_DOCS = isIndividual ? 100 : 3;
+    
+    const currentCount = userData.history[period][type] || 0;
     const limit = type === 'chat' ? MAX_CHATS : MAX_DOCS;
     
     if (currentCount >= limit) {
       const feature = type === 'chat' ? 'AI chats' : 'document analyses';
-      return { allowed: false, error: `You have reached your daily limit for ${feature} on the Free plan. Please upgrade to Pro for unlimited usage.` };
+      const periodName = isIndividual ? 'monthly' : 'daily';
+      return { allowed: false, error: `You have reached your ${periodName} limit for ${feature} on the ${plan} plan. Please upgrade for more usage.` };
     }
     
-    userData.history[today][type]++;
+    userData.history[period][type] = currentCount + 1;
+    try {
+      const userRef = adminDb.collection("users").doc(userId);
+      await userRef.collection("usage").doc(period).set({ [type]: userData.history[period][type] }, { merge: true });
+    } catch (e) { console.error(e); }
     return { allowed: true };
   } catch (err: any) {
     console.error("Usage Tracking Error:", err);
@@ -189,25 +216,51 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
         return res.status(400).json({ error: "Could not extract text from the document" });
       }
 
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
 
-      if (!openaiKey) {
-        return res.status(500).json({ error: "OPENAI_API_KEY is missing. Please add it to your environment variables." });
+      if (!geminiKey && !openaiKey) {
+        return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing. Please add at least one to your environment variables." });
       }
 
       const systemInstruction = "You are an expert AI Legal Assistant. Your task is to analyze legal documents. Provide the output strictly in JSON format. The JSON should contain the following keys: 'summary' (string), 'risks' (array of strings), 'important_clauses' (array of strings), 'explanations' (array of objects with 'term' and 'explanation'), and 'improvements' (array of strings).";
       let analysisResult = null;
       
-      const openai = new OpenAI({ apiKey: openaiKey });
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemInstruction },
-          { role: "user", content: `Analyze this legal document:\n\n${text.substring(0, 15000)}`}
-        ],
-        response_format: { type: "json_object" }
-      });
-      analysisResult = JSON.parse(response.choices[0].message.content || "{}");
+      if (geminiKey) {
+        try {
+      
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: `Analyze this legal document:\n\n${text.substring(0, 40000)}`,
+            config: {
+              systemInstruction,
+              responseMimeType: "application/json"
+            }
+          });
+          analysisResult = JSON.parse(response.text || "{}");
+        } catch(e: any) {
+          const isDocRateLimit = e?.message && (e.message.includes("429") || e.message.includes("Quota") || e.message.includes("exhausted") || e.message.includes("Too Many Requests") || e.message.includes("404"));
+          if (!isDocRateLimit) {
+            console.error("Gemini failed for document analysis:", e.message);
+          }
+          if (!openaiKey) throw e;
+        }
+      }
+
+      if (!analysisResult && openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            { role: "system", content: systemInstruction },
+            { role: "user", content: `Analyze this legal document:\n\n${text.substring(0, 15000)}`}
+          ],
+          response_format: { type: "json_object" }
+        });
+        analysisResult = JSON.parse(response.choices[0].message.content || "{}");
+      }
 
       if (!analysisResult) analysisResult = {};
       
@@ -246,20 +299,42 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
     try {
       const { document_id, question } = req.body;
 
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
-      if (!openaiKey) {
-        return res.status(500).json({ error: "OPENAI_API_KEY is missing." });
+
+      if (!geminiKey && !openaiKey) {
+        return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing." });
       }
 
-      const openai = new OpenAI({ apiKey: openaiKey });
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-            { role: "user", content: `You are an expert AI Legal Assistant. Answer the following question about the uploaded document (ID: ${document_id}):\n\nQuestion: ${question}` }
-        ]
-      });
+      let answer = null;
 
-      res.json({ answer: response.choices[0].message.content });
+      if (geminiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: `You are an expert AI Legal Assistant. Answer the following question about the uploaded document (ID: ${document_id}):\n\nQuestion: ${question}`
+          });
+          answer = response.text;
+        } catch (e: any) {
+          console.error("Gemini failed for ask endpoint:", e);
+          if (!openaiKey) throw e;
+        }
+      }
+
+      if (!answer && openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+              { role: "user", content: `You are an expert AI Legal Assistant. Answer the following question about the uploaded document (ID: ${document_id}):\n\nQuestion: ${question}` }
+          ]
+        });
+        answer = response.choices[0].message.content;
+      }
+
+      res.json({ answer });
     } catch (e: any) {
       console.error("Ask endpoint error:", e);
       res.status(500).json({ error: e.message || "Failed to process question" });
@@ -288,31 +363,61 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
         }
       }
       
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
       
-      if (!openaiKey) {
-        return res.status(500).json({ error: "OPENAI_API_KEY is missing. Please add it to your environment variables." });
+      if (!geminiKey && !openaiKey) {
+        return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing. Please add at least one to your environment variables." });
       }
 
       const systemInstruction = "You are Legal Advisories, an advanced legal AI assistant designed to help lawyers, legal professionals, and the public. You have a built-in PDF generation capability. When a user asks to generate, make, or download a PDF, you MUST output a JSON object in this exact format: {\"action\": \"generate_pdf\", \"title\": \"[Title of the document]\"}. DO NOT output any other text when responding to a PDF generation request. If you are drafting a document, provide the text as normal.";
 
-      // Try OpenAI
-      const openai = new OpenAI({ apiKey: openaiKey });
-      
-      const formattedMessages = [
-        { role: "system", content: systemInstruction },
-        ...messages.map((m: any) => ({
-          role: m.role === 'model' ? 'assistant' : m.role,
-          content: m.content
-        }))
-      ];
-      
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: formattedMessages,
-        // ... (rest of the OpenAI call)
-      });
-      return res.json({ message: { content: response.choices[0].message.content } });
+      // Try Gemini first if available
+      if (geminiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          
+          const formattedMessages = messages.map((m: any) => ({
+            role: m.role === 'model' || m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.content }]
+          }));
+          
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: formattedMessages,
+            config: {
+              systemInstruction
+            }
+          });
+          return res.json({ message: { content: response.text } });
+        } catch (e: any) {
+          const isGeminiRateLimit = e?.message && (e.message.includes("429") || e.message.includes("Quota") || e.message.includes("exhausted") || e.message.includes("Too Many Requests") || e.message.includes("404"));
+          if (!isGeminiRateLimit) {
+            console.error("Gemini failed, trying OpenAI if available...", e.message);
+          }
+          if (!openaiKey) throw e;
+        }
+      }
+
+      // Try OpenAI if Gemini failed or isn't available
+      if (openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        
+        const formattedMessages = [
+          { role: "system", content: systemInstruction },
+          ...messages.map((m: any) => ({
+            role: m.role === 'model' ? 'assistant' : m.role,
+            content: m.content
+          }))
+        ];
+        
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: formattedMessages
+        });
+        return res.json({ message: { content: response.choices[0].message.content } });
+      }
 
     } catch (error: any) {
       const isApiRateLimit = error?.message && (error.message.includes("429") || error.message.includes("Quota") || error.message.includes("exhausted") || error.message.includes("Too Many Requests"));
@@ -342,19 +447,37 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
   
 // GET /api/user/dashboard
 app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
-    try {
-
+  try {
     const userId = req.user?.uid;
     if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-   const userRef = adminDb.collection('users').doc(userId);
+    const userRef = adminDb.collection('users').doc(userId);
     const userDoc = await userRef.get();
     const userData = userDoc.exists ? userDoc.data() : { plan: 'Free' };
     
-    const today = new Date().toISOString().split('T')[0];
-    const usageDoc = await userRef.collection('usage').doc(today).get();
-    const usageData = usageDoc.exists ? usageDoc.data() : { chat: 0, doc: 0 };
+    let rawPlan = userData?.plan || 'Free';
+    let plan = 'Free';
+    const str = String(rawPlan).toLowerCase().trim();
+    if (str.includes('lawyer') || str.includes('pro') || str.includes('enterprise')) plan = 'Lawyer';
+    else if (str.includes('individual')) plan = 'Individual';
     
+    const isLawyer = plan === 'Lawyer';
+    const isIndividual = plan === 'Individual';
+    
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const monthStr = todayStr.substring(0, 7);
+
+    let chatUsedToday = Number(userData?.chatUsedToday) || 0;
+    let chatUsedMonth = Number(userData?.chatUsedMonth) || 0;
+    let documentUsedToday = Number(userData?.documentUsedToday) || 0;
+    let documentUsedMonth = Number(userData?.documentUsedMonth) || 0;
+
+    if (userData?.lastChatDate !== todayStr) chatUsedToday = 0;
+    if (userData?.lastDocDate !== todayStr) documentUsedToday = 0;
+    if (userData?.lastChatMonth !== monthStr) chatUsedMonth = 0;
+    if (userData?.lastDocMonth !== monthStr) documentUsedMonth = 0;
+
     const billingSnapshot = await userRef.collection('billing_history').orderBy('created_at', 'desc').limit(5).get();
     const billingHistory = billingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
@@ -362,13 +485,16 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
     const savedDocs = docsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     res.json({
-      plan: userData?.plan || 'Free',
-      usage: usageData,
+      plan: plan,
+      usage: {
+        chat: isIndividual ? chatUsedMonth : chatUsedToday,
+        doc: isIndividual ? documentUsedMonth : documentUsedToday
+      },
       billingHistory,
       savedDocs,
       limits: {
-        chat: (userData?.plan !== 'Free' && userData?.plan !== 'None') ? -1 : 20,
-        doc: (userData?.plan !== 'Free' && userData?.plan !== 'None') ? -1 : 3
+        chat: isLawyer ? -1 : (isIndividual ? 500 : 20),
+        doc: isLawyer ? -1 : (isIndividual ? 100 : 3)
       }
     });
   } catch (error: any) {
@@ -661,16 +787,34 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
       
       Provide a highly accurate, structured response focusing on required filings, due dates, penalties, and required documents. Use Markdown.`;
 
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
-      if (!openaiKey) return res.status(500).json({ error: "API key is missing" });
-      const openai = new OpenAI({ apiKey: openaiKey });
+
+      let result = null;
+      if (geminiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: prompt
+          });
+          result = response.text;
+        } catch (e) {
+          console.error("Gemini failed for compliance AI:", e);
+        }
+      }
+
+      if (!result && openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }]
+        });
+        result = response.choices[0].message.content;
+      }
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }]
-      });
-      
-      res.json({ result: response.choices[0].message.content });
+      res.json({ result });
     } catch (error: any) {
       console.error("Compliance AI Error:", error);
       res.status(500).json({ error: "Failed to process compliance query." });
@@ -692,16 +836,34 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
       
       Format the output cleanly in Markdown, using appropriate headings, clauses, and numbering. Include signature blocks at the end.`;
 
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
-      if (!openaiKey) return res.status(500).json({ error: "API key is missing" });
-      const openai = new OpenAI({ apiKey: openaiKey });
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }]
-      });
+      let content = null;
+      if (geminiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: prompt
+          });
+          content = response.text;
+        } catch (e) {
+          console.error("Gemini failed for contract generation:", e);
+        }
+      }
+
+      if (!content && openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }]
+        });
+        content = response.choices[0].message.content;
+      }
       
-      res.json({ content: response.choices[0].message.content });
+      res.json({ content });
     } catch (error: any) {
       console.error("Contract Generation Error:", error);
       res.status(500).json({ error: "Failed to generate contract." });
@@ -723,16 +885,34 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
         return res.status(400).json({ error: "Invalid action" });
       }
 
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
       const openaiKey = process.env.OPENAI_API_KEY;
-      if (!openaiKey) return res.status(500).json({ error: "API key is missing" });
-      const openai = new OpenAI({ apiKey: openaiKey });
+
+      let result = null;
+      if (geminiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: prompt
+          });
+          result = response.text;
+        } catch (e) {
+          console.error("Gemini failed for smart feature:", e);
+        }
+      }
+
+      if (!result && openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }]
+        });
+        result = response.choices[0].message.content;
+      }
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }]
-      });
-      
-      res.json({ result: response.choices[0].message.content });
+      res.json({ result });
     } catch (error: any) {
       console.error("Smart Feature Error:", error);
       res.status(500).json({ error: "Failed to process smart feature." });
@@ -823,12 +1003,34 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
       
       User Query: "${query}"`;
 
-      const openaiKey = process.env.OPENAI_API_KEY; if (!openaiKey) return res.status(500).json({ error: "API key is missing" }); const openai = new OpenAI({ apiKey: openaiKey }); const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [{ role: "user", content: prompt }]
-      });
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
+      const openaiKey = process.env.OPENAI_API_KEY;
+
+      let result = null;
+      if (geminiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: prompt
+          });
+          result = response.text;
+        } catch (e) {
+          console.error("Gemini failed for research API:", e);
+        }
+      }
+
+      if (!result && openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }]
+        });
+        result = response.choices[0].message.content;
+      }
       
-      res.json({ result: response.choices[0].message.content });
+      res.json({ result });
     } catch (error: any) {
       console.error("Research API Error:", error);
       res.status(500).json({ error: "Failed to perform legal research." });
@@ -1129,6 +1331,82 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
       res.json(paymentData);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch payment status" });
+    }
+  });
+  
+  // POST /api/contact/demo (Handle demo requests and "send" email)
+  app.post('/api/contact/demo', express.json(), async (req, res) => {
+    try {
+      const { first_name, last_name, email, company, job_title, phone, org_type, country, marketing_opt_in } = req.body;
+      
+      console.log('--- NEW DEMO REQUEST ---');
+      console.log(`From: ${first_name} ${last_name} (${email})`);
+      console.log(`Company: ${company}, Job: ${job_title}, Phone: ${phone}`);
+      console.log(`Org: ${org_type}, Country: ${country}`);
+      console.log('Recipient: legaladvisoriesofficial@gmail.com');
+      console.log('-------------------------');
+
+      // 1. Save to Firestore via Admin SDK (Bypasses rules)
+      if (adminDb) {
+        try {
+          await adminDb.collection('demo_requests').add({
+            first_name,
+            last_name,
+            email,
+            company,
+            job_title,
+            phone,
+            org_type,
+            country,
+            marketing_opt_in: !!marketing_opt_in,
+            created_at: Date.now()
+          });
+          console.log('Saved demo request to Firestore');
+        } catch (dbError: any) {
+          console.error('Failed to save to Firestore (ignoring so email can proceed):', dbError.message);
+        }
+      }
+      
+      // 2. Send email notification via nodemailer
+      if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: parseInt(process.env.SMTP_PORT || '587'),
+          secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
+
+        const mailOptions = {
+          from: '"Legal Advisories System" <' + process.env.SMTP_USER + '>',
+          to: "legaladvisoriesofficial@gmail.com",
+          subject: `New Demo Request: ${company}`,
+          text: `
+New Demo Request Details:
+
+Name: ${first_name} ${last_name}
+Email: ${email}
+Company: ${company}
+Job Title: ${job_title}
+Phone: ${phone}
+Organization Type: ${org_type}
+Country: ${country}
+Marketing Opt-in: ${marketing_opt_in ? 'Yes' : 'No'}
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully to legaladvisoriesofficial@gmail.com");
+      } else {
+        console.log("SMTP credentials missing in .env. Email not sent, but request saved.");
+      }
+
+      res.json({ success: true, message: "Demo request received successfully." });
+    } catch (error: any) {
+      console.error('Demo Request API Error:', error);
+      res.status(500).json({ error: "Failed to process demo request" });
     }
   });
 

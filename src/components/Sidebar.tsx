@@ -106,9 +106,9 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
                 initial={{ opacity: 0, x: -5 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
-                className="text-[16px] font-bold text-[#0F172A] tracking-tight"
+                className="text-[16px] font-bold text-[#0F172A] tracking-tight whitespace-nowrap truncate max-w-[140px]"
               >
-                Legal Advisories
+                {user?.displayName || "Legal Advisories"}
               </motion.span>
               <ChevronDown className="w-4 h-4 text-slate-400 stroke-[2.5]" />
             </button>
@@ -158,7 +158,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
 
         {/* Create Button */}
         <button 
-          onClick={() => { onPageChange("dashboard"); if (onChatSelect) onChatSelect(null); if (window.innerWidth < 768) onToggle(); }}
+          onClick={() => { onPageChange("create"); if (onChatSelect) onChatSelect(null); if (window.innerWidth < 768) onToggle(); }}
           className="w-full flex items-center justify-between bg-white border border-gray-200 shadow-sm hover:shadow transition-shadow rounded-xl px-3 py-2 text-[14px] font-semibold text-gray-800 mb-6"
         >
           <div className="flex items-center gap-2">

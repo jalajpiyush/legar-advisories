@@ -16,6 +16,8 @@ export function History({ onResume }: HistoryProps) {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [filterType, setFilterType] = useState<string>("All");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -46,9 +48,12 @@ export function History({ onResume }: HistoryProps) {
     setHistoryItems(getHistory());
   }, []);
 
+  const availableTypes = ["All", ...Array.from(new Set(historyItems.map(i => i.type)))];
+
   const filteredItems = historyItems.filter(item => 
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    item.type.toLowerCase().includes(searchQuery.toLowerCase())
+    (filterType === "All" || item.type === filterType) &&
+    (item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+     item.type.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const getIcon = (iconName: string) => {
@@ -69,9 +74,42 @@ export function History({ onResume }: HistoryProps) {
             <h1 className="text-2xl font-serif text-gray-900 mb-1">History</h1>
             <p className="text-[14px] text-gray-500">Review your past conversations, workflows, and document analyses.</p>
           </div>
-          <button className="flex items-center gap-2 border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-[14px] font-semibold hover:bg-gray-50 transition-colors shadow-sm">
-            <Filter className="w-4 h-4" /> Filter
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`flex items-center gap-2 border px-4 py-2 rounded-lg text-[14px] font-semibold transition-colors shadow-sm ${
+                isFilterOpen || filterType !== "All" 
+                  ? "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100" 
+                  : "border-gray-200 text-gray-700 bg-white hover:bg-gray-50"
+              }`}
+            >
+              <Filter className="w-4 h-4" /> 
+              {filterType === "All" ? "Filter" : filterType}
+            </button>
+            
+            {isFilterOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)} />
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-2 animate-in fade-in slide-in-from-top-2">
+                  {availableTypes.map(type => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        setFilterType(type);
+                        setIsFilterOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-[14px] flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    >
+                      <span className={filterType === type ? "font-semibold text-gray-900" : "text-gray-600"}>
+                        {type}
+                      </span>
+                      {filterType === type && <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <div className="relative max-w-md w-full">

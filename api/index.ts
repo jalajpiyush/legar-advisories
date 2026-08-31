@@ -1,5 +1,6 @@
 import express from "express";
 import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
 const app = express();
 
@@ -14,14 +15,36 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { messages, files } = req.body;
     
+    const geminiKey = process.env.GEMINI_API_KEY;
     const openaiKey = process.env.OPENAI_API_KEY;
-    if (!openaiKey) {
-      return res.status(500).json({ error: "OPENAI_API_KEY is missing." });
-    }
-    const openai = new OpenAI({ apiKey: openaiKey });
     
+    if (!geminiKey && !openaiKey) {
+      return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing." });
+    }
+    
+    // Try Gemini first
+    if (geminiKey) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: geminiKey });
+        const formattedMessages = messages.map((m: any) => ({
+          role: m.role === 'model' || m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }]
+        }));
+        const response = await ai.models.generateContent({
+          model: "gemini-3.1-flash-lite",
+          contents: formattedMessages
+        });
+        return res.json({ reply: response.text });
+      } catch (e) {
+        console.error("Gemini failed in API, trying OpenAI...", e);
+        if (!openaiKey) throw e;
+      }
+    }
+    
+    // Fallback to OpenAI
+    const openai = new OpenAI({ apiKey: openaiKey! });
     const formattedMessages = [
-      { role: "system", content: "You are Legal Advisories, an advanced legal AI assistant designed to help lawyers, legal professionals, and the public. By default, you should provide advice, rules, and information based on Indian law and jurisdiction. However, if a user specifically asks about the laws of other countries, you should answer their queries to the best of your ability, but clarify that your primary expertise is Indian law. Provide precise, professional, and well-reasoned answers. You specialize in the following features:\n- Explaining laws in plain language.\n- Drafting legal notices, contracts, and petitions.\n- Analyzing contracts and identifying risky clauses.\n- Summarizing judgments.\n- Searching legal precedents.\n- Answering legal questions with citations to the underlying legal sources.\n- Supporting multiple Indian languages." },
+      { role: "system", content: "You are Legal Advisories, an advanced legal AI assistant..." },
       ...messages.map((m: any) => ({
         role: m.role === 'model' ? 'assistant' : m.role,
         content: m.content
@@ -32,7 +55,7 @@ app.post("/api/chat", async (req, res) => {
       model: "gpt-4o-mini",
       messages: formattedMessages
     });
-
+    
     res.json({ reply: response.choices[0].message.content });
   } catch (error: any) {
     console.error("OpenAI API Error:", error);

@@ -9,12 +9,12 @@ const DEFAULT_PLANS = [
   {
     id: "plan_free",
     heading: "FREE",
-    description: "Essential legal AI research & document analysis for personal use.",
+    description: "Essential legal research & document analysis for personal use.",
     monthlyPrice: 0,
     yearlyPrice: 0,
     isFree: true,
     features: [
-      "20 AI chats/day",
+      "20 Legal Advisories chats/day",
       "3 document uploads/day",
       "Basic legal research",
       "Document summaries",
@@ -24,11 +24,11 @@ const DEFAULT_PLANS = [
   {
     id: "plan_individual",
     heading: "INDIVIDUAL",
-    description: "Enhanced AI capacity for solo practitioners, legal analysts & advisors.",
+    description: "Enhanced capacity for solo practitioners, legal analysts & advisors.",
     monthlyPrice: 499,
     yearlyPrice: 4790,
     features: [
-      "500 AI chats/month",
+      "500 Legal Advisories chats/month",
       "100 document uploads/month",
       "Contract analysis",
       "Legal notice review",
@@ -45,10 +45,10 @@ const DEFAULT_PLANS = [
     yearlyPrice: 19190,
     badge: "Most Popular",
     features: [
-      "Unlimited AI chats",
+      "Unlimited Legal Advisories chats",
       "Unlimited document uploads",
       "OCR",
-      "AI Contract Drafting",
+      "Legal Advisories Contract Drafting",
       "Case Law Research",
       "Citation Support",
       "Client Workspace",
@@ -131,11 +131,12 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
           });
           if (res.ok) {
             const data = await res.json();
-            if (data.profile) setProfile((prev: any) => ({ ...prev, ...data.profile }));
-            if (data.history) setHistory(data.history);
+            if (data.history) {
+              setHistory(data.history);
+            }
           }
         } catch (err) {
-          console.error("Error fetching user profile & history:", err);
+          console.error("Error fetching user history:", err);
         } finally {
           setLoading(false);
         }
@@ -348,7 +349,7 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
           </div>
           <p className="text-sm text-gray-500 mt-1">
             {currentPlan === "Free" || currentPlan === "None"
-              ? "You are currently on the Free tier. Upgrade to Pro for unlimited AI queries and full features."
+              ? "You are currently on the Free tier. Upgrade to Pro for unlimited Legal Advisories queries and full features."
               : `Your ${currentPlan} subscription provides premium access to AI Legal Advisories.`}
           </p>
           {profile?.subscription_expiry && (

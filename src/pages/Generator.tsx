@@ -329,7 +329,7 @@ export function Generator() {
             <div className="w-80 border-l border-neutral-200 bg-white flex flex-col print:hidden">
               <div className="p-4 border-b border-neutral-100">
                 <h3 className="font-semibold text-neutral-900 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-[#c6a87c]" /> AI Tools
+                  <Sparkles className="h-5 w-5 text-[#c6a87c]" /> Legal Advisories Tools
                 </h3>
               </div>
               <div className="p-4 flex flex-col gap-3">
@@ -394,7 +394,7 @@ export function Generator() {
         <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-8">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-neutral-900 mb-2">Generate {activeTemplate.title}</h1>
-            <p className="text-neutral-500">Fill in the key details below. The AI will draft a complete, legally sound document based on Indian law.</p>
+            <p className="text-neutral-500">Fill in the key details below. Legal Advisories will draft a complete, legally sound document based on Indian law.</p>
           </div>
 
           <form onSubmit={handleGenerate} className="space-y-6">
@@ -437,7 +437,7 @@ export function Generator() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 flex items-center gap-2">
               <FileText className="h-6 w-6 text-[#c6a87c]" />
-              AI Contract Generator
+              Legal Advisories Generator
             </h1>
             <p className="mt-1 text-sm text-neutral-500">Generate, edit, and export enterprise-grade legal documents in seconds.</p>
           </div>

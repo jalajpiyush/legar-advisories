@@ -3,10 +3,12 @@ import { Footer } from '../components/Footer';
 import { ChevronDown, ArrowRight, Paperclip, Building2, Sparkles, SlidersHorizontal, Search, MessageSquare, MoreHorizontal, Pause, Plus, X, Edit3, ArrowUp, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AuthModal } from '../components/AuthModal';
+import { cn } from '../lib/utils';
 
 export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onContactSales?: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const handleLogin = () => setIsAuthOpen(true);
 
@@ -40,75 +42,117 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
             
             <div className="hidden lg:flex items-center gap-8 text-[15px] font-medium text-white/90">
               <div className="relative group">
-                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Platform <ChevronDown className="w-3.5 h-3.5" /></button>
-                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                <button 
+                  onClick={() => setActiveDropdown(activeDropdown === 'platform' ? null : 'platform')}
+                  className="flex items-center gap-1.5 hover:text-white transition-colors"
+                >
+                  Platform <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'platform' && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  activeDropdown === 'platform' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
+                )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">AI Drafting</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Document Automation</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Knowledge Management</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Compliance Engine</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Legal Drafting</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Document Automation</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Knowledge Management</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Compliance Engine</a>
                     <div className="border-t my-1"></div>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Overview</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Agents</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Vault</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Knowledge</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Shared Spaces</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Command Center</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Contract Intelligence</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Harvey Mobile</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Ecosystem</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Overview</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Agents</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Vault</a>
                   </div>
                 </div>
               </div>
               <div className="relative group">
-                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Solutions <ChevronDown className="w-3.5 h-3.5" /></button>
-                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                <button 
+                  onClick={() => setActiveDropdown(activeDropdown === 'solutions' ? null : 'solutions')}
+                  className="flex items-center gap-1.5 hover:text-white transition-colors"
+                >
+                  Solutions <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'solutions' && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  activeDropdown === 'solutions' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
+                )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Case Management</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Contract Drafting</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Due Diligence</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">AI Analytics</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Case Management</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Contract Drafting</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Due Diligence</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Legal Analytics</a>
                   </div>
                 </div>
               </div>
               <div className="relative group">
-                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Customers <ChevronDown className="w-3.5 h-3.5" /></button>
-                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                <button 
+                  onClick={() => setActiveDropdown(activeDropdown === 'customers' ? null : 'customers')}
+                  className="flex items-center gap-1.5 hover:text-white transition-colors"
+                >
+                  Customers <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'customers' && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  activeDropdown === 'customers' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
+                )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Law Firms</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">In-House Teams</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Government</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Law Firms</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">In-House Teams</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Government</a>
                   </div>
                 </div>
               </div>
               <div className="relative group">
-                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Security <ChevronDown className="w-3.5 h-3.5" /></button>
-                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                <button 
+                  onClick={() => setActiveDropdown(activeDropdown === 'security' ? null : 'security')}
+                  className="flex items-center gap-1.5 hover:text-white transition-colors"
+                >
+                  Security <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'security' && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  activeDropdown === 'security' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
+                )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">SOC 2 Compliance</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Data Privacy</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Infrastructure</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">SOC 2 Compliance</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Data Privacy</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Infrastructure</a>
                   </div>
                 </div>
               </div>
               <div className="relative group">
-                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Resources <ChevronDown className="w-3.5 h-3.5" /></button>
-                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                <button 
+                  onClick={() => setActiveDropdown(activeDropdown === 'resources' ? null : 'resources')}
+                  className="flex items-center gap-1.5 hover:text-white transition-colors"
+                >
+                  Resources <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'resources' && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  activeDropdown === 'resources' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
+                )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Documentation</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Blog</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Webinars</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Documentation</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Blog</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Webinars</a>
                   </div>
                 </div>
               </div>
               <div className="relative group">
-                <button className="flex items-center gap-1.5 hover:text-white transition-colors">Company <ChevronDown className="w-3.5 h-3.5" /></button>
-                <div className="absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 hidden group-hover:block z-50">
+                <button 
+                  onClick={() => setActiveDropdown(activeDropdown === 'company' ? null : 'company')}
+                  className="flex items-center gap-1.5 hover:text-white transition-colors"
+                >
+                  Company <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'company' && "rotate-180")} />
+                </button>
+                <div className={cn(
+                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  activeDropdown === 'company' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
+                )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">About Us</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Careers</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Contact</a>
-                    <a href="#" onClick={(e) => e.preventDefault()} className="text-sm font-medium hover:text-blue-600 transition-colors">Legal</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">About Us</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Careers</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Contact</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Legal</a>
                   </div>
                 </div>
               </div>
@@ -213,7 +257,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
                  <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center">
                     <div className="w-2 h-2 bg-white rounded-full-full"></div>
                  </div>
-                 Ask LexisNexis® <span className="text-gray-400 font-light ml-1">+</span>
+                 Ask Legal Advisories® <span className="text-gray-400 font-light ml-1">+</span>
                </button>
                <button className="flex items-center gap-2.5 text-[14px] font-medium border border-gray-200 text-gray-700 px-5 py-2 rounded-full hover:bg-gray-50 transition-colors shadow-sm">
                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-[11px] text-white font-bold">m</div>
@@ -226,9 +270,9 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
 
       {/* Main Content Sections */}
       <div className="bg-white py-32 text-center">
-        <h2 className="text-[3rem] md:text-[3.5rem] font-serif text-[#1F1F1F] mb-6 tracking-tight">Legal AI for Enterprise.</h2>
+        <h2 className="text-[3rem] md:text-[3.5rem] font-serif text-[#1F1F1F] mb-6 tracking-tight">Legal Advisories for Enterprise.</h2>
         <p className="text-[20px] md:text-[24px] text-[#1F1F1F] max-w-3xl mx-auto font-sans font-medium mb-32 leading-snug">
-          Our AI-powered platform reviews, analyses, and finalises contracts in the<br className="hidden md:block" />time it takes to finish this sentence.
+          Our Legal Advisories platform reviews, analyses, and finalises contracts in the<br className="hidden md:block" />time it takes to finish this sentence.
         </p>
 
         {/* Talk Terms Section */}
@@ -239,7 +283,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
               Talk to Robin about your documents in<br className="hidden md:block" />searchable conversations.
             </p>
             <p className="text-[17px] md:text-[19px] text-[#4A4A4A] leading-[1.6]">
-              Our Chat features let you hash out the fine print with AI<br className="hidden md:block" />and teammates in one secure, searchable thread — so<br className="hidden md:block" />questions, clarifications, and lightbulb moments about<br className="hidden md:block" />your documents never get lost in your inbox again.
+              Our Chat features let you hash out the fine print with Legal Advisories<br className="hidden md:block" />and teammates in one secure, searchable thread — so<br className="hidden md:block" />questions, clarifications, and lightbulb moments about<br className="hidden md:block" />your documents never get lost in your inbox again.
             </p>
           </div>
           
@@ -268,7 +312,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
               {/* Robin Msg */}
               <div className="flex gap-4 items-start">
                 <div className="w-7 h-7 rounded-full bg-[#2A2A2A] flex items-center justify-center flex-shrink-0 text-white mt-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span className="text-[14px] font-bold leading-none select-none">₹</span>
                 </div>
                 <div className="space-y-3 flex-1">
                   <div className="bg-white p-3.5 rounded-2xl rounded-tl-sm text-gray-800 shadow-sm inline-block border border-gray-100">
@@ -291,7 +335,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
               {/* Robin Msg */}
               <div className="flex gap-4 items-start">
                 <div className="w-7 h-7 rounded-full bg-[#2A2A2A] flex items-center justify-center flex-shrink-0 text-white mt-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span className="text-[14px] font-bold leading-none select-none">₹</span>
                 </div>
                 <div className="flex-1">
                   <div className="bg-white p-4 rounded-2xl rounded-tl-sm text-[#1F1F1F] shadow-sm inline-block border border-gray-100 text-[13px] leading-relaxed">
@@ -316,7 +360,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
               {/* Robin Msg */}
               <div className="flex gap-4 items-start">
                 <div className="w-7 h-7 rounded-full bg-[#2A2A2A] flex items-center justify-center flex-shrink-0 text-white mt-1">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span className="text-[14px] font-bold leading-none select-none">₹</span>
                 </div>
                 <div className="flex-1">
                   <div className="bg-white p-4 rounded-2xl rounded-tl-sm text-[#1F1F1F] shadow-sm inline-block border border-gray-100 text-[13px] leading-relaxed">
@@ -493,7 +537,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-4">
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-sm text-amber-900 leading-relaxed">
-            <strong>Legal Advisories is an AI-powered legal research and document assistance platform.</strong> It provides informational and educational content only and is not a substitute for advice from a qualified lawyer. Using this platform does not create an advocate-client relationship. Always consult a licensed legal professional before making important legal decisions.
+            <strong>Legal Advisories is an advanced legal research and document assistance platform.</strong> It provides informational and educational content only and is not a substitute for advice from a qualified lawyer. Using this platform does not create an advocate-client relationship. Always consult a licensed legal professional before making important legal decisions.
           </p>
         </div>
       </div>

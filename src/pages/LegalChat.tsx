@@ -18,7 +18,7 @@ interface Message {
 
 export function LegalChat() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hello. I am your Legal Advisories AI Assistant. How can I help you with legal research, drafting, or analysis today?" }
+    { role: "assistant", content: "Hello. I am your Legal Advisories Assistant. How can I help you with legal research, drafting, or analysis today?" }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -163,7 +163,7 @@ export function LegalChat() {
               <Shield className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-gray-100">AI Legal Counsel</h2>
+              <h2 className="text-sm font-semibold text-gray-100">Legal Advisories Counsel</h2>
               <p className="text-xs text-gray-500">Connected to Local Secure Model</p>
             </div>
           </div>
@@ -246,7 +246,7 @@ export function LegalChat() {
             </button>
           </form>
           <div className="text-center mt-2">
-             <span className="text-[10px] text-gray-600 uppercase tracking-widest font-mono">Legal Advisories AI responses are for research purposes, not legal advice.</span>
+             <span className="text-[10px] text-gray-600 uppercase tracking-widest font-mono">Legal Advisories responses are for research purposes, not legal advice.</span>
           </div>
         </div>
       </div>

@@ -33,7 +33,7 @@ export function Terms({ onBack }: { onBack: () => void }) {
       <p>You are responsible for any documents you upload and any queries you submit. You must ensure you have the necessary rights and permissions to share such information.</p>
       
       <h3>3. No Legal Advice</h3>
-      <p><strong>Legal Advisories is not a law firm.</strong> The information and AI-generated responses provided by the platform are for informational and educational purposes only. The platform <strong>does not create an advocate-client relationship</strong>. AI-generated responses may contain mistakes, inaccuracies, or outdated information. Always consult a licensed legal professional before making important legal decisions.</p>
+      <p><strong>Legal Advisories is not a law firm.</strong> The information and system-generated responses provided by the platform are for informational and educational purposes only. The platform <strong>does not create an advocate-client relationship</strong>. System-generated responses may contain mistakes, inaccuracies, or outdated information. Always consult a licensed legal professional before making important legal decisions.</p>
       
       <h3>4. Limitation of Liability</h3>
       <p>To the maximum extent permitted by applicable law, Legal Advisories and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from your use of the platform.</p>
@@ -54,7 +54,7 @@ export function Privacy({ onBack }: { onBack: () => void }) {
       <p>We collect information you provide directly to us, including your email address, uploaded files, and chat history. We may also collect usage data and analytics to improve our services.</p>
       
       <h3>2. How We Use Your Information</h3>
-      <p>Your information is used to provide, maintain, and improve our platform, including generating AI responses. We do not sell your personal data to third parties.</p>
+      <p>Your information is used to provide, maintain, and improve our platform, including generating responses. We do not sell your personal data to third parties.</p>
       
       <h3>3. Data Retention</h3>
       <p>We retain your data for as long as your account is active or as needed to provide you services. You may request deletion of your account and associated data at any time.</p>
@@ -62,8 +62,8 @@ export function Privacy({ onBack }: { onBack: () => void }) {
       <h3>4. Security Measures</h3>
       <p>We implement appropriate technical and organizational measures to protect your personal data against unauthorized or unlawful processing, accidental loss, destruction, or damage.</p>
       
-      <h3>5. AI Providers</h3>
-      <p>Your queries and uploaded documents may be processed by third-party AI providers (such as OpenAI or Google) to generate responses. These providers are bound by strict confidentiality and data processing agreements and do not use your data to train their public models.</p>
+      <h3>5. Technology Providers</h3>
+      <p>Your queries and uploaded documents may be processed by third-party technology providers (such as OpenAI or Google) to generate responses. These providers are bound by strict confidentiality and data processing agreements and do not use your data to train their public models.</p>
       
       <h3>6. User Rights (DPDP Act Compliance)</h3>
       <p>Depending on your jurisdiction, you may have the right to access, correct, or delete your personal data. Users in India have rights under the Digital Personal Data Protection (DPDP) Act. To exercise these rights, please contact us.</p>
@@ -76,19 +76,19 @@ export function Privacy({ onBack }: { onBack: () => void }) {
 
 export function Disclaimer({ onBack }: { onBack: () => void }) {
   return (
-    <LegalLayout title="AI Disclaimer" onBack={onBack}>
+    <LegalLayout title="Legal Disclaimer" onBack={onBack}>
       <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl">
         <p className="text-amber-900 font-medium text-lg leading-relaxed mb-0">
-          Legal Advisories is an AI-powered legal research and document assistance platform. It provides informational and educational content only and is not a substitute for advice from a qualified lawyer. Using this platform does not create an advocate-client relationship. Always consult a licensed legal professional before making important legal decisions.
+          Legal Advisories is an advanced legal research and document assistance platform. It provides informational and educational content only and is not a substitute for advice from a qualified lawyer. Using this platform does not create an advocate-client relationship. Always consult a licensed legal professional before making important legal decisions.
         </p>
       </div>
       <div className="mt-8">
-        <h3>Understanding AI Limitations</h3>
-        <p>While we strive for accuracy, artificial intelligence systems can occasionally produce incorrect, incomplete, or biased information (often referred to as "hallucinations").</p>
+        <h3>Understanding System Limitations</h3>
+        <p>While we strive for accuracy, automated systems can occasionally produce incorrect, incomplete, or biased information (often referred to as "hallucinations").</p>
         <ul>
-          <li><strong>No Guarantee of Accuracy:</strong> Laws change frequently, and AI may rely on outdated or misinterpreted data.</li>
-          <li><strong>Not Specific to Your Situation:</strong> AI cannot fully understand the nuances and context of your specific legal situation.</li>
-          <li><strong>Verification Required:</strong> You should independently verify any citations, case laws, or statutes provided by the AI.</li>
+          <li><strong>No Guarantee of Accuracy:</strong> Laws change frequently, and the platform may rely on outdated or misinterpreted data.</li>
+          <li><strong>Not Specific to Your Situation:</strong> Automated systems cannot fully understand the nuances and context of your specific legal situation.</li>
+          <li><strong>Verification Required:</strong> You should independently verify any citations, case laws, or statutes provided by the platform.</li>
         </ul>
       </div>
     </LegalLayout>
