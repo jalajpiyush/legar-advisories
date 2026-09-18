@@ -14,7 +14,7 @@ export function PdfDocumentCard({ fileName, downloadUrl }: PdfDocumentCardProps)
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-200 truncate">{fileName}</p>
-        <p className="text-xs text-gray-400">Created: {new Date().toLocaleDateString()}</p>
+        <p className="text-xs text-gray-400 dark:text-neutral-500">Created: {new Date().toLocaleDateString()}</p>
       </div>
       <div className="flex items-center gap-2">
         <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="p-2 hover:bg-gray-600 rounded text-gray-300">

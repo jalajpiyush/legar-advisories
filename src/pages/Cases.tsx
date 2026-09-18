@@ -1,7 +1,9 @@
+import { CaseDetail } from "./CaseDetail";
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../lib/auth';
 import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { 
+import { motion } from "motion/react";
+import {
   FolderOpen, Plus, Search, Calendar, User as UserIcon, 
   FileText, MessageSquare, AlertCircle, Trash2, Edit, X, Loader2, Pin 
 } from 'lucide-react';
@@ -25,6 +27,7 @@ export function Cases() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
+  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   
   const [formData, setFormData] = useState<Partial<Case>>({
     title: '',
@@ -134,18 +137,26 @@ export function Cases() {
   );
 
   if (loading) {
-    return (
+    if (selectedCase) {
+    return <CaseDetail caseData={selectedCase} onBack={() => setSelectedCase(null)} />;
+  }
+
+  return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-[#c6a87c]" />
       </div>
     );
   }
 
+  if (selectedCase) {
+    return <CaseDetail caseData={selectedCase} onBack={() => setSelectedCase(null)} />;
+  }
+
   return (
     <div className="mx-auto max-w-6xl p-6 md:p-12">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">My Cases</h1>
+          <motion.h1 layoutId="page-title" className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">My Cases</motion.h1>
           <p className="mt-2 text-neutral-600 dark:text-neutral-400">Manage and organize your legal matters.</p>
         </div>
         <button
@@ -169,7 +180,7 @@ export function Cases() {
             placeholder="Search cases by title, client, or ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-neutral-200 bg-white py-2.5 pl-10 pr-4 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:border-[#c6a87c]"
+            className="w-full rounded-xl border border-neutral-200 bg-white dark:bg-neutral-900 py-2.5 pl-10 pr-4 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white dark:focus:border-[#c6a87c]"
           />
         </div>
       </div>
@@ -178,12 +189,12 @@ export function Cases() {
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-neutral-200 py-20 text-center dark:border-neutral-800">
           <FolderOpen className="mb-4 h-12 w-12 text-neutral-400" />
           <h3 className="text-lg font-medium text-neutral-900 dark:text-white">No cases found</h3>
-          <p className="mt-1 text-sm text-neutral-500">Create a new case to get started.</p>
+          <motion.p layoutId="page-description" className="mt-1 text-sm text-neutral-500">Create a new case to get started.</motion.p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredCases.map(c => (
-            <div key={c.id} className="group relative rounded-xl border border-neutral-200 bg-white p-5 transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
+            <div key={c.id} onClick={() => setSelectedCase(c)} className="group relative rounded-xl border border-neutral-200 bg-white dark:bg-neutral-900 p-5 transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900 cursor-pointer">
               <div className="mb-3 flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <FolderOpen className="h-5 w-5 text-[#c6a87c]" />
@@ -198,11 +209,11 @@ export function Cases() {
                   </span>
                   <div className="relative opacity-0 transition-opacity group-hover:opacity-100">
                     
-                    <button onClick={() => togglePin(c)} className={c.pinned ? "p-1 text-[#c6a87c]" : "p-1 text-neutral-400 hover:text-[#c6a87c]"}>
+                    <button onClick={(e) => { e.stopPropagation(); togglePin(c); }} className={c.pinned ? "p-1 text-[#c6a87c]" : "p-1 text-neutral-400 hover:text-[#c6a87c]"}>
                       <Pin className="h-4 w-4" />
                     </button>
-                    <button onClick={() => openEditModal(c)} className="p-1 text-neutral-400 hover:text-[#c6a87c]"><Edit className="h-4 w-4" /></button>
-                    <button onClick={() => deleteCase(c.id)} className="p-1 text-neutral-400 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); openEditModal(c); }} className="p-1 text-neutral-400 hover:text-[#c6a87c]"><Edit className="h-4 w-4" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); deleteCase(c.id); }} className="p-1 text-neutral-400 hover:text-red-500"><Trash2 className="h-4 w-4" /></button>
                   </div>
                 </div>
               </div>
@@ -242,7 +253,7 @@ export function Cases() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-neutral-900">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-neutral-900 p-6 shadow-xl dark:bg-neutral-900">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
                 {isEditing ? 'Edit Case' : 'Create New Case'}
@@ -263,7 +274,7 @@ export function Cases() {
                   type="text"
                   value={formData.title}
                   onChange={e => setFormData({...formData, title: e.target.value})}
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border border-neutral-200 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
                   placeholder="e.g. Sharma Property Dispute"
                 />
               </div>
@@ -275,7 +286,7 @@ export function Cases() {
                   type="text"
                   value={formData.clientName}
                   onChange={e => setFormData({...formData, clientName: e.target.value})}
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border border-neutral-200 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
                   placeholder="Client or Company Name"
                 />
               </div>
@@ -286,13 +297,14 @@ export function Cases() {
                   <select
                     value={formData.caseType}
                     onChange={e => setFormData({...formData, caseType: e.target.value})}
-                    className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                    className="w-full rounded-xl border border-neutral-200 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
                   >
                     <option>Civil</option>
                     <option>Criminal</option>
                     <option>Corporate</option>
                     <option>Family</option>
                     <option>Property</option>
+                    <option>Property Dispute</option>
                     <option>Taxation</option>
                     <option>Other</option>
                   </select>
@@ -302,7 +314,7 @@ export function Cases() {
                   <select
                     value={formData.priority}
                     onChange={e => setFormData({...formData, priority: e.target.value as any})}
-                    className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                    className="w-full rounded-xl border border-neutral-200 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
                   >
                     <option>Low</option>
                     <option>Medium</option>
@@ -317,7 +329,7 @@ export function Cases() {
                   <select
                     value={formData.status}
                     onChange={e => setFormData({...formData, status: e.target.value as any})}
-                    className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                    className="w-full rounded-xl border border-neutral-200 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
                   >
                     <option>Open</option>
                     <option>Pending</option>
@@ -332,7 +344,7 @@ export function Cases() {
                   rows={3}
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
-                  className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                  className="w-full rounded-xl border border-neutral-200 bg-white dark:bg-neutral-900 px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:ring-1 focus:ring-[#c6a87c] dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
                   placeholder="Optional notes about the case..."
                 />
               </div>

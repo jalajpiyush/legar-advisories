@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { CreditCard, History, Zap, CheckCircle2, AlertCircle, Tag, Check, Shield } from "lucide-react";
+import { CreditCard, History, Zap, CheckCircle2, AlertCircle, Tag, Check, Shield, ArrowLeft } from "lucide-react";
 import { auth, db } from "../lib/auth";
 import { doc, collection, onSnapshot, getDoc } from "firebase/firestore";
 import { createPayUOrder, redirectToPayU } from "../services/payuService";
@@ -8,13 +8,14 @@ import { AdminPortal } from "../components/AdminPortal";
 const DEFAULT_PLANS = [
   {
     id: "plan_free",
-    heading: "FREE",
-    description: "Essential legal research & document analysis for personal use.",
+    heading: "Start Free",
+    description: "Explore AI-powered legal assistance with limited daily usage. Perfect for students and first-time users.",
     monthlyPrice: 0,
     yearlyPrice: 0,
     isFree: true,
+    featuresTitle: "",
     features: [
-      "20 Legal Advisories chats/day",
+      "20 AI chats/day",
       "3 document uploads/day",
       "Basic legal research",
       "Document summaries",
@@ -23,13 +24,14 @@ const DEFAULT_PLANS = [
   },
   {
     id: "plan_individual",
-    heading: "INDIVIDUAL",
-    description: "Enhanced capacity for solo practitioners, legal analysts & advisors.",
+    heading: "For Individuals",
+    description: "Everything you need for personal legal guidance and document analysis.",
     monthlyPrice: 499,
     yearlyPrice: 4790,
+    featuresTitle: "",
     features: [
-      "500 Legal Advisories chats/month",
-      "100 document uploads/month",
+      "500 AI chats/month",
+      "100 document uploads",
       "Contract analysis",
       "Legal notice review",
       "Clause explanation",
@@ -39,23 +41,17 @@ const DEFAULT_PLANS = [
   },
   {
     id: "plan_lawyer",
-    heading: "LAWYER",
-    description: "Complete professional legal suite for advocates, firms & senior counsel.",
+    heading: "For Lawyers & Professionals",
+    description: "Built for advocates, consultants, startups, and professionals who need advanced legal AI.",
     monthlyPrice: 1999,
     yearlyPrice: 19190,
-    badge: "Most Popular",
+    featuresTitle: "",
     features: [
-      "Unlimited Legal Advisories chats",
-      "Unlimited document uploads",
-      "OCR",
-      "Legal Advisories Contract Drafting",
-      "Case Law Research",
-      "Citation Support",
-      "Client Workspace",
-      "Team Collaboration",
-      "API Access",
-      "Priority Processing",
-      "Premium Support"
+      "Unlimited AI chats",
+      "Unlimited document analysis",
+      "OCR for scanned PDFs",
+      "AI contract drafting",
+      "Case law research"
     ]
   }
 ];
@@ -81,16 +77,20 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
 
   // Payment banner status
   const [paymentNotice, setPaymentNotice] = useState<{ type: 'success' | 'failed'; message: string } | null>(null);
+  const [paymentFlowState, setPaymentFlowState] = useState<'verifying' | 'welcome' | null>(null);
 
   useEffect(() => {
     // 1. Inspect URL parameters for payment redirects
     const urlParams = new URLSearchParams(window.location.search);
     const status = urlParams.get('status');
     if (status === 'success') {
-      setPaymentNotice({
-        type: 'success',
-        message: 'Payment completed successfully! Your subscription has been activated.'
-      });
+      setPaymentFlowState('verifying');
+      setTimeout(() => {
+        setPaymentFlowState('welcome');
+        setTimeout(() => {
+          setPaymentFlowState(null);
+        }, 3000);
+      }, 2500);
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (status === 'failed' || status === 'error') {
       setPaymentNotice({
@@ -283,7 +283,7 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
     return (
       <span className="inline-flex items-baseline gap-2 flex-wrap">
         <span>₹{discounted.toLocaleString('en-IN')}</span>
-        <span className="text-sm text-gray-400 line-through font-normal">₹{numPrice.toLocaleString('en-IN')}</span>
+        <span className="text-sm text-gray-400 dark:text-neutral-500 line-through font-normal">₹{numPrice.toLocaleString('en-IN')}</span>
       </span>
     );
   };
@@ -291,11 +291,17 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
   const currentPlan = profile?.plan || "Free";
   const subscriptionStatus = profile?.subscription_status || profile?.status || "active";
   const activePlans = plans.length > 0 ? plans : DEFAULT_PLANS;
-  const filteredPlans = activePlans.filter(p => isBusiness ? (p.heading === 'Enterprise' || p.isBusiness) : p.heading !== 'Enterprise');
+  const filteredPlans = activePlans
+    .filter(p => isBusiness ? (p.heading === 'Enterprise' || p.isBusiness) : p.heading !== 'Enterprise')
+    .sort((a, b) => {
+      if (a.isFree || a.monthlyPrice === 0) return -1;
+      if (b.isFree || b.monthlyPrice === 0) return 1;
+      return (a.monthlyPrice || 0) - (b.monthlyPrice || 0);
+    });
 
   if (loading) {
     return (
-      <div className="p-12 text-center text-gray-500 flex flex-col items-center justify-center space-y-3">
+      <div className="p-12 text-center text-gray-500 dark:text-neutral-400 flex flex-col items-center justify-center space-y-3">
         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <p className="text-sm font-medium">Loading billing & subscription details...</p>
       </div>
@@ -303,138 +309,117 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
   }
 
   return (
-    <div className={embedded ? "space-y-8" : "p-8 max-w-6xl mx-auto space-y-8 bg-white min-h-full"}>
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Payments & Subscriptions</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage your plan, view invoices, and upgrade securely via PayU.</p>
-      </div>
+    <div className={embedded ? "space-y-8" : "bg-[#FAFAFA] dark:bg-neutral-950 min-h-full flex flex-col font-sans"}>
+      {!embedded && (
+        <div className="flex items-center px-6 py-4 border-b border-[#E5E5E5] dark:border-neutral-800 shrink-0 bg-white dark:bg-neutral-950">
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'options' }))} 
+            className="flex items-center gap-2 text-[15px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-[18px] h-[18px]" />
+            Upgrade
+          </button>
+        </div>
+      )}
+      
+      <div className={embedded ? "" : "px-4 sm:px-6 py-4 sm:py-6 max-w-[1100px] mx-auto w-full flex-1"}>
 
       {/* Payment Redirect Notification Banner */}
       {paymentNotice && (
-        <div className={`p-4 rounded-xl border flex items-start gap-3 ${
-          paymentNotice.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'
+        <div className={`mb-8 p-4 rounded-xl border flex items-start gap-3 max-w-2xl mx-auto bg-white ${
+          paymentNotice.type === 'success' ? 'border-green-200 text-green-800' : 'border-red-200 text-red-800'
         }`}>
           {paymentNotice.type === 'success' ? (
             <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
           ) : (
             <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
           )}
-          <div className="flex-1 text-sm font-medium">{paymentNotice.message}</div>
+          <div className="flex-1 text-[14px] font-medium">{paymentNotice.message}</div>
           <button 
             onClick={() => setPaymentNotice(null)}
-            className="text-xs font-semibold underline hover:no-underline ml-auto"
+            className="text-[13px] font-semibold underline hover:no-underline ml-auto"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Current Plan Overview from Firestore */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div>
-          <div className="bg-[#0f172a] text-white px-6 py-4 rounded-2xl font-bold text-sm inline-flex items-center gap-2">
-            Your current plan: <span className="text-blue-400 font-bold">{currentPlan}</span>
-          </div>
-          <div className="flex items-center gap-2 mt-2">
-            {subscriptionStatus === "cancelled" && (
-              <span className="bg-red-100 text-red-700 text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1 font-medium">
-                <AlertCircle className="w-3 h-3" /> Cancelled
-              </span>
-            )}
+      {/* Current Plan Overview (Simplified) */}
+      {!embedded && (
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex items-center gap-3 bg-white dark:bg-neutral-900 border border-[#E5E5E5] dark:border-neutral-800 rounded-full px-5 py-2 shadow-sm">
+            <span className="text-[14px] text-gray-600 dark:text-gray-400">Your current plan:</span>
+            <span className="text-[14px] font-semibold text-black dark:text-white">{currentPlan}</span>
             {subscriptionStatus === "active" && (
-              <span className="bg-green-100 text-green-700 text-xs px-2.5 py-0.5 rounded-full flex items-center gap-1 font-medium">
-                <CheckCircle2 className="w-3 h-3" /> Active
+              <span className="bg-[#E8F5E9] dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[12px] px-2 py-0.5 rounded-full font-medium">
+                Active
+              </span>
+            )}
+            {subscriptionStatus === "cancelled" && (
+              <span className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-[12px] px-2 py-0.5 rounded-full font-medium">
+                Cancelled
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 mt-1">
-            {currentPlan === "Free" || currentPlan === "None"
-              ? "You are currently on the Free tier. Upgrade to Pro for unlimited Legal Advisories queries and full features."
-              : `Your ${currentPlan} subscription provides premium access to AI Legal Advisories.`}
-          </p>
-          {profile?.subscription_expiry && (
-            <p className="text-xs text-gray-400 mt-2">
-              Renewal Date: {new Date(profile.subscription_expiry).toLocaleDateString()}
-            </p>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Plan Selection Toggles & Coupons */}
-      <div className="flex flex-col items-center space-y-6 pt-4">
-        {/* Personal vs Business Toggle */}
-        <div className="bg-gray-100 p-1 rounded-full flex items-center space-x-1 border border-gray-200">
+      <div className="flex flex-col items-center pt-2 pb-8">
+        <h2 className="text-[28px] sm:text-[36px] font-medium tracking-tight text-gray-900 dark:text-gray-100 mb-4 text-center font-serif">
+          Plans that grow with you
+        </h2>
+        
+        {/* Claude style top toggle */}
+        <div className="bg-[#F3F4F6] dark:bg-neutral-800 p-1 rounded-[12px] flex items-center mb-6 border border-gray-200 dark:border-neutral-700/50">
           <button 
             onClick={() => setIsBusiness(false)} 
-            className={`px-6 py-2 text-sm font-semibold rounded-full transition-all ${
-              !isBusiness ? 'bg-white shadow-sm text-gray-900 border border-gray-200/50' : 'text-gray-500 hover:text-gray-900 border border-transparent'
+            className={`px-6 py-2.5 text-[15px] font-medium rounded-[8px] transition-all ${
+              !isBusiness ? 'bg-white dark:bg-neutral-900 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:text-white'
             }`}
           >
-            Personal
+            Individual
           </button>
           <button 
             onClick={() => setIsBusiness(true)} 
-            className={`px-6 py-2 text-sm font-semibold rounded-full transition-all ${
-              isBusiness ? 'bg-white shadow-sm text-gray-900 border border-gray-200/50' : 'text-gray-500 hover:text-gray-900 border border-transparent'
+            className={`px-6 py-2.5 text-[15px] font-medium rounded-[8px] transition-all ${
+              isBusiness ? 'bg-white dark:bg-neutral-900 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:text-white'
             }`}
           >
-            Business / Firms
+            Team and Enterprise
           </button>
         </div>
 
-        {/* Monthly vs Yearly Billing Toggle */}
-        {!isBusiness && (
-          <div className="bg-gray-100 p-1 rounded-lg flex items-center space-x-1 border border-gray-200">
-            <button 
-              onClick={() => setIsYearly(false)} 
-              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-                !isYearly ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              Monthly
-            </button>
-            <button 
-              onClick={() => setIsYearly(true)} 
-              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-1.5 ${
-                isYearly ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              Yearly 
-              <span className="text-[11px] text-green-700 bg-green-100 px-2 py-0.5 rounded-full font-semibold">Save 20%</span>
-            </button>
-          </div>
-        )}
-
         {/* Firestore Coupon Code Lookup */}
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md mb-4">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Tag className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+              <Tag className="w-4 h-4 text-gray-400 dark:text-neutral-500 absolute left-3 top-3.5" />
               <input
                 type="text"
                 placeholder="Enter coupon code (e.g. SAVE20)"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase font-mono"
+                className="w-full pl-9 pr-4 py-3 border border-[#E5E5E5] dark:border-neutral-700 rounded-xl text-[14px] focus:outline-none focus:ring-1 focus:ring-black dark:focus:ring-white uppercase font-mono bg-white dark:bg-neutral-900"
               />
             </div>
             <button 
               onClick={handleApplyCoupon}
               disabled={validatingCoupon}
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition disabled:opacity-50"
+              className="px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl text-[14px] font-medium hover:bg-[#1a1a1a] dark:hover:bg-gray-200 transition disabled:opacity-50"
             >
-              {validatingCoupon ? "Validating..." : "Apply"}
+              {validatingCoupon ? "..." : "Apply"}
             </button>
           </div>
 
           {couponError && (
-            <p className="text-xs text-red-600 font-medium mt-1.5 flex items-center gap-1">
+            <p className="text-[13px] text-red-600 font-medium mt-2 flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5" /> {couponError}
             </p>
           )}
 
           {couponSuccess && (
-            <p className="text-xs text-green-600 font-medium mt-1.5 flex items-center gap-1">
+            <p className="text-[13px] text-green-600 font-medium mt-2 flex items-center gap-1.5">
               <Check className="w-3.5 h-3.5 text-green-600" /> {couponSuccess}
             </p>
           )}
@@ -442,11 +427,11 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
       </div>
 
       {/* Pricing Cards Grid */}
-      <div className={`grid grid-cols-1 gap-6 sm:gap-8 pt-4 items-stretch ${
+      <div className={`grid grid-cols-1 gap-5 sm:gap-6 items-stretch ${
         filteredPlans.length === 1 
           ? 'max-w-md mx-auto' 
           : filteredPlans.length === 2 
-            ? 'md:grid-cols-2 max-w-4xl mx-auto' 
+            ? 'md:grid-cols-2 max-w-5xl mx-auto' 
             : 'lg:grid-cols-3'
       }`}>
         {filteredPlans.map((plan) => {
@@ -461,88 +446,112 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
           return (
             <div 
               key={plan.id} 
-              className={`w-full border-2 rounded-2xl p-6 sm:p-8 bg-white shadow-sm flex flex-col h-full relative transition-all ${
-                plan.badge ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200'
+              className={`w-full rounded-[24px] p-6 sm:p-7 bg-white dark:bg-neutral-900 flex flex-col h-full relative transition-all border shadow-sm dark:shadow-none ${
+                plan.heading === 'For Individuals' ? 'border-gray-300 dark:border-neutral-600 shadow-md' : 'border-[#E5E5E5] dark:border-neutral-800'
               }`}
             >
-              {plan.badge && (
-                <div className="absolute -top-3 right-6">
-                  <span className="bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                    {plan.badge}
-                  </span>
-                </div>
-              )}
               
-              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2 h-[70px] leading-snug">
-                {plan.badge && <Zap className="w-5 h-5 text-blue-500 fill-blue-500 shrink-0" />}
-                <span>{plan.heading}</span>
-              </h3>
+              <div className="flex flex-col xl:flex-row items-start justify-between min-h-[44px] gap-2">
+                <h3 className="text-[24px] sm:text-[28px] font-semibold text-black dark:text-white tracking-tight leading-[1.1]">
+                  {plan.heading}
+                </h3>
+                {plan.heading === 'For Individuals' && (
+                  <div className="bg-[#F3F4F6] dark:bg-neutral-800 p-0.5 rounded-full flex items-center shrink-0">
+                    <button 
+                      onClick={() => setIsYearly(false)} 
+                      className={`px-3 py-1 text-[12px] font-medium rounded-full transition-colors ${!isYearly ? 'bg-white dark:bg-neutral-700 shadow-sm text-black dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white'}`}
+                    >
+                      Monthly
+                    </button>
+                    <button 
+                      onClick={() => setIsYearly(true)} 
+                      className={`px-3 py-1 text-[12px] font-medium rounded-full transition-colors flex items-center gap-1 ${isYearly ? 'bg-white dark:bg-neutral-700 shadow-sm text-black dark:text-white' : 'text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white'}`}
+                    >
+                      Yearly <span className="text-blue-600 dark:text-blue-400">· Save 20%</span>
+                    </button>
+                  </div>
+                )}
+              </div>
               
-              <p className="text-xs text-gray-500 mt-2 h-[120px] leading-relaxed overflow-hidden">{plan.description}</p>
+              <p className="text-[14px] sm:text-[14.5px] text-[#666666] dark:text-neutral-400 mt-2 leading-snug">{plan.description}</p>
               
-              {plan.isContactSales || plan.heading === 'Enterprise' ? (
-                <div className="mt-4 h-[90px] flex items-baseline">
-                  <span className="text-3xl font-extrabold text-gray-900 tracking-tight">Custom</span>
-                </div>
-              ) : plan.isFree ? (
-                <div className="mt-4 h-[90px] flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-3xl font-extrabold text-gray-900 tracking-tight">₹0</span>
-                  <span className="text-xs font-medium text-gray-500 whitespace-nowrap">/month</span>
-                </div>
-              ) : (
-                <div className="mt-4 h-[90px] flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-3xl font-extrabold text-gray-900 tracking-tight">
-                    {renderPrice(basePrice, fullPlanId)}
-                  </span>
-                  <span className="text-xs font-medium text-gray-500 whitespace-nowrap shrink-0">{isYearly ? '/month (billed yearly)' : '/month'}</span>
-                </div>
-              )}
-              
-              <ul className="mt-6 space-y-3 flex-1 border-t border-gray-100 pt-6">
-                {plan.features?.map((feature: string, idx: number) => (
-                  <li key={idx} className="flex items-start text-xs text-gray-600 gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" /> 
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-5 flex flex-col justify-center">
+                {plan.isContactSales || plan.heading === 'Enterprise' ? (
+                  <span className="text-[32px] sm:text-[36px] font-semibold text-black dark:text-white tracking-tight leading-none">Custom</span>
+                ) : plan.isFree ? (
+                  <span className="text-[32px] sm:text-[36px] font-semibold text-black dark:text-white tracking-tight leading-none">₹0</span>
+                ) : (
+                  <div className="flex items-baseline gap-2">
+                    {plan.heading === 'For Lawyers & Professionals' && <span className="text-[14px] text-[#666666] dark:text-neutral-400 font-medium">From</span>}
+                    <span className="text-[32px] sm:text-[36px] font-semibold text-black dark:text-white tracking-tight leading-none">
+                      {renderPrice(basePrice, fullPlanId)}
+                    </span>
+                  </div>
+                )}
+                {!plan.isFree && !plan.isContactSales && (
+                  <p className="text-[12.5px] text-[#666666] dark:text-neutral-400 mt-1.5">
+                    {isYearly ? `INR / year · billed annually (includes GST)` : 'INR / month · billed monthly (includes GST)'}
+                  </p>
+                )}
+              </div>
               
               {plan.isContactSales ? (
                 <button 
                   onClick={() => window.location.href = "mailto:sales@lexmind.ai"}
-                  className="mt-8 w-full py-2.5 rounded-xl text-sm font-semibold transition bg-gray-900 text-white hover:bg-gray-800"
+                  className="mt-6 w-full py-[10px] rounded-[10px] text-[14px] font-medium transition-colors bg-black dark:bg-white text-white dark:text-black hover:bg-[#1a1a1a] dark:hover:bg-gray-200"
                 >
                   Contact Sales
                 </button>
               ) : plan.isFree ? (
                 <button 
                   disabled={true}
-                  className="mt-8 w-full py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-400 cursor-not-allowed"
+                  className="mt-6 w-full py-[10px] rounded-[10px] text-[14px] font-medium transition-colors border border-[#E5E5E5] dark:border-neutral-700 bg-white dark:bg-neutral-800 text-black dark:text-white hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-not-allowed"
                 >
-                  {isCurrentPlan ? "Current Plan" : "Included Free"}
+                  {isCurrentPlan ? "Current Plan" : "Use for free"}
                 </button>
               ) : (
-                <button 
-                  onClick={() => handleSubscribe(fullPlanId, plan.heading, basePrice)}
-                  disabled={processing || isCurrentPlan}
-                  className={`mt-8 w-full py-4 px-6 rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                    isCurrentPlan 
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200" 
-                      : "bg-[#0f172a] text-white hover:bg-[#1e293b] shadow-md hover:shadow-lg"
-                  }`}
-                >
-                  {processing ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Connecting to PayU...</span>
-                    </>
-                  ) : isCurrentPlan ? (
-                    "Current Active Plan"
-                  ) : (
-                    `Upgrade to ${plan.heading}`
+                <div className="mt-6 w-full flex flex-col items-center">
+                  <button 
+                    onClick={() => handleSubscribe(fullPlanId, plan.heading, basePrice)}
+                    disabled={processing || isCurrentPlan}
+                    className={`w-full py-[10px] px-5 rounded-[10px] text-[14px] font-medium transition-all flex items-center justify-center gap-2 ${
+                      isCurrentPlan 
+                        ? "bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-neutral-500 cursor-not-allowed border border-[#E5E5E5] dark:border-neutral-700" 
+                        : "bg-black dark:bg-white text-white dark:text-black hover:bg-[#1a1a1a] dark:hover:bg-gray-200"
+                    }`}
+                  >
+                    {processing ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        <span>Connecting...</span>
+                      </>
+                    ) : isCurrentPlan ? (
+                      "Current Active Plan"
+                    ) : (
+                      `Get ${plan.heading} plan`
+                    )}
+                  </button>
+                  {plan.heading === 'For Lawyers & Professionals' && (
+                    <p className="text-[12.5px] text-[#666666] dark:text-neutral-400 mt-2">No commitment · Cancel anytime</p>
                   )}
-                </button>
+                </div>
               )}
+
+              <div className="mt-6 pt-6 border-t border-[#E5E5E5] dark:border-neutral-800 flex-1">
+                {plan.featuresTitle && (
+                  <h4 className="text-[13.5px] font-medium text-black dark:text-white mb-3">
+                    {plan.featuresTitle}
+                  </h4>
+                )}
+                <ul className="space-y-2.5">
+                  {plan.features?.map((feature: string, idx: number) => (
+                    <li key={idx} className="flex items-start text-[13.5px] sm:text-[14px] text-[#333333] dark:text-neutral-300 gap-2.5">
+                      <Check className="w-[16px] h-[16px] text-[#666666] dark:text-neutral-400 shrink-0 stroke-[1.5] mt-0.5" /> 
+                      <span className="leading-tight">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           );
         })}
@@ -554,31 +563,31 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
       </div>
 
       {/* Billing History Section */}
-      <div className="mt-12 pt-8 border-t border-gray-100">
-        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <History className="w-5 h-5 text-gray-500" /> Payment & Billing History
+      <div className="mt-12 pt-8 border-t border-gray-100 dark:border-neutral-800">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-4 flex items-center gap-2">
+          <History className="w-5 h-5 text-gray-500 dark:text-neutral-400" /> Payment & Billing History
         </h3>
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm">
           {history.length > 0 ? (
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-neutral-900">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Transaction Ref</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Date</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Transaction Ref</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Amount</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-neutral-900 divide-y divide-gray-200">
                 {history.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50/50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  <tr key={idx} className="hover:bg-gray-50 dark:bg-neutral-900/50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-neutral-100 font-medium">
                       {new Date(item.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400 font-mono">
                       {item.invoice_id || item.txnid || "N/A"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                       ₹{item.amount?.toLocaleString('en-IN')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -595,11 +604,12 @@ export function Billing({ embedded = false }: { embedded?: boolean }) {
               </tbody>
             </table>
           ) : (
-            <div className="p-8 text-center text-gray-500 text-sm">
+            <div className="p-8 text-center text-gray-500 dark:text-neutral-400 text-sm">
               No previous payment transactions found.
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

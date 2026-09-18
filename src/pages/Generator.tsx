@@ -1,541 +1,406 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db } from '../lib/auth';
-import { collection, query, where, orderBy, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { 
-  FileText, Wand2, Download, Search, Edit3, 
-  ChevronRight, Save, Trash2, ShieldAlert, Sparkles, Loader2, ArrowLeft,
-  X, Check, Plus
-} from 'lucide-react';
+import { auth } from '../lib/auth';
+import { documentSchemas, DocSchema, FormField } from '../lib/documentSchemas';
+import { saveGeneratedDocument, getUserDocuments, GeneratedDocument } from '../lib/documentService';
+import { FileText, Wand2, ArrowLeft, Loader2, Sparkles, AlertCircle, FileCheck2, Clock, CheckCircle2 } from 'lucide-react';
+import { ExportMenu } from '../components/ExportMenu';
 import ReactMarkdown from 'react-markdown';
-
-interface Template {
-  id: string;
-  category: string;
-  title: string;
-  fields: { name: string; label: string; placeholder: string }[];
-}
-
-const TEMPLATES: Template[] = [
-  {
-    id: 'emp-agreement',
-    category: 'Business',
-    title: 'Employment Agreement',
-    fields: [
-      { name: 'companyName', label: 'Company Name', placeholder: 'e.g. Acme Corp' },
-      { name: 'employeeName', label: 'Employee Name', placeholder: 'e.g. John Doe' },
-      { name: 'designation', label: 'Designation / Role', placeholder: 'e.g. Software Engineer' },
-      { name: 'salary', label: 'Annual Salary', placeholder: 'e.g. Rs. 12,00,000' },
-      { name: 'joiningDate', label: 'Date of Joining', placeholder: 'e.g. 1st Aug 2026' },
-      { name: 'noticePeriod', label: 'Notice Period', placeholder: 'e.g. 30 Days' },
-      { name: 'location', label: 'Work Location', placeholder: 'e.g. Bangalore' },
-      { name: 'workingHours', label: 'Working Hours', placeholder: 'e.g. 9 AM to 6 PM, Monday to Friday' }
-    ]
-  },
-  {
-    id: 'nda',
-    category: 'Business',
-    title: 'Non-Disclosure Agreement (NDA)',
-    fields: [
-      { name: 'party1', label: 'Disclosing Party Name', placeholder: 'e.g. Acme Corp' },
-      { name: 'party2', label: 'Receiving Party Name', placeholder: 'e.g. Stark Industries' },
-      { name: 'purpose', label: 'Purpose of NDA', placeholder: 'e.g. Exploring potential partnership' },
-      { name: 'duration', label: 'Confidentiality Duration', placeholder: 'e.g. 2 Years' },
-      { name: 'jurisdiction', label: 'Jurisdiction', placeholder: 'e.g. Courts of New Delhi' }
-    ]
-  },
-  {
-    id: 'rent-agreement',
-    category: 'Property',
-    title: 'Rent Agreement',
-    fields: [
-      { name: 'landlordName', label: 'Landlord Name', placeholder: 'e.g. Rajesh Sharma' },
-      { name: 'tenantName', label: 'Tenant Name', placeholder: 'e.g. Vikram Singh' },
-      { name: 'propertyAddress', label: 'Property Address', placeholder: 'e.g. Flat 101, Residency, Mumbai' },
-      { name: 'rentAmount', label: 'Monthly Rent', placeholder: 'e.g. Rs. 25,000' },
-      { name: 'deposit', label: 'Security Deposit', placeholder: 'e.g. Rs. 1,00,000' },
-      { name: 'duration', label: 'Duration (Months)', placeholder: 'e.g. 11 Months' },
-      { name: 'startDate', label: 'Start Date', placeholder: 'e.g. 1st Sep 2026' }
-    ]
-  }
-];
-
-interface GeneratedDoc {
-  id: string;
-  title: string;
-  templateTitle: string;
-  content: string;
-  createdAt: number;
-}
+import { motion } from "motion/react";
 
 export function Generator() {
-  const [activeTab, setActiveTab] = useState<'templates' | 'mydocs'>('templates');
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  
-  const [myDocs, setMyDocs] = useState<GeneratedDoc[]>([]);
-  const [loadingDocs, setLoadingDocs] = useState(false);
-  
-  const [activeTemplate, setActiveTemplate] = useState<Template | null>(null);
-  const [formData, setFormData] = useState<Record<string, string>>({});
-  
-  const [generating, setGenerating] = useState(false);
-  const [generatedContent, setGeneratedContent] = useState<string | null>(null);
-  const [editingContent, setEditingContent] = useState<string>("");
-  const [isEditing, setIsEditing] = useState(false);
-  
-  const [activeDocId, setActiveDocId] = useState<string | null>(null);
-  const [docTitle, setDocTitle] = useState("");
+  const [view, setView] = useState<'list' | 'create'>('list');
+  const [documents, setDocuments] = useState<GeneratedDocument[]>([]);
+  const [loadingList, setLoadingList] = useState(false);
 
-  const [smartLoading, setSmartLoading] = useState<string | null>(null);
-  const [smartResult, setSmartResult] = useState<{ type: string; content: string } | null>(null);
-
-  const categories = ['All', ...Array.from(new Set(TEMPLATES.map(t => t.category)))];
-
-  const fetchDocs = async () => {
-    setLoadingDocs(true);
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-      
-      const q = query(
-        collection(db, 'generated_documents'),
-        where('userId', '==', user.uid),
-        orderBy('createdAt', 'desc')
-      );
-      const snapshot = await getDocs(q);
-      setMyDocs(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as GeneratedDoc)));
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoadingDocs(false);
-    }
-  };
+  // Stepper State
+  const [step, setStep] = useState(1);
+  const [selectedSchema, setSelectedSchema] = useState<DocSchema | null>(null);
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState("");
+  const [currentDocId, setCurrentDocId] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (activeTab === 'mydocs') {
-      fetchDocs();
+    if (view === 'list' && auth.currentUser) {
+      loadDocuments();
     }
-  }, [activeTab]);
+  }, [view, auth.currentUser]);
 
-  const handleGenerate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeTemplate) return;
-    setGenerating(true);
+  const loadDocuments = async () => {
+    setLoadingList(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const res = await fetch('/api/contracts/generate', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
-          templateTitle: activeTemplate.title,
-          inputs: formData
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setGeneratedContent(data.content);
-        setEditingContent(data.content);
-        setDocTitle(`${activeTemplate.title} - ${new Date().toLocaleDateString()}`);
-        setActiveDocId(null);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!generatedContent && !editingContent) return;
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-      
-      const docData = {
-        title: docTitle,
-        templateTitle: activeTemplate?.title || 'Custom Document',
-        content: isEditing ? editingContent : generatedContent,
-        userId: user.uid,
-        updatedAt: Date.now()
-      };
-      
-      if (activeDocId) {
-        await updateDoc(doc(db, 'generated_documents', activeDocId), docData);
-        alert("Document saved successfully!");
-      } else {
-        const docRef = await addDoc(collection(db, 'generated_documents'), {
-          ...docData,
-          createdAt: Date.now()
-        });
-        setActiveDocId(docRef.id);
-        alert("Document saved successfully!");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Failed to save document.");
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this document?")) return;
-    try {
-      if (!auth.currentUser) return;
-      await deleteDoc(doc(db, 'generated_documents', id));
-      fetchDocs();
-      if (activeDocId === id) resetView();
+      const docs = await getUserDocuments(auth.currentUser!.uid);
+      setDocuments(docs);
     } catch (e) {
       console.error(e);
     }
+    setLoadingList(false);
   };
 
-  const resetView = () => {
-    setActiveTemplate(null);
-    setGeneratedContent(null);
+  const handleStartNew = () => {
+    setStep(1);
+    setSelectedSchema(null);
     setFormData({});
-    setActiveDocId(null);
-    setSmartResult(null);
-    setIsEditing(false);
+    setAiPrompt("");
+    setGeneratedContent("");
+    setErrors({});
+    setCurrentDocId(null);
+    setView('create');
   };
 
-  const openDoc = (doc: GeneratedDoc) => {
-    setActiveTemplate({ id: 'custom', title: doc.templateTitle, category: 'Custom', fields: [] });
-    setDocTitle(doc.title);
-    setGeneratedContent(doc.content);
-    setEditingContent(doc.content);
-    setActiveDocId(doc.id);
+  const handleResume = (doc: GeneratedDocument) => {
+    const schema = documentSchemas.find(s => s.id === doc.schemaId);
+    if (schema) {
+      setSelectedSchema(schema);
+      setFormData(doc.formData || {});
+      setGeneratedContent(doc.content || "");
+      setCurrentDocId(doc.id);
+      setStep(5);
+      setView('create');
+    }
   };
 
-  const handleSmartFeature = async (action: 'explain' | 'improve' | 'detect_missing') => {
-    const text = isEditing ? editingContent : generatedContent;
-    if (!text) return;
-    
-    setSmartLoading(action);
-    setSmartResult(null);
+  const handleExtractFields = async () => {
+    if (!aiPrompt.trim() || !selectedSchema) return;
+    setIsExtracting(true);
     try {
-      const token = await auth.currentUser?.getIdToken();
-      const res = await fetch('/api/contracts/smart-feature', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ action, text })
+      const idToken = await auth.currentUser?.getIdToken();
+      const res = await fetch("/api/extract-fields", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(idToken && { "Authorization": `Bearer ${idToken}` }) },
+        body: JSON.stringify({ prompt: aiPrompt, schema: selectedSchema })
       });
-      if (res.ok) {
-        const data = await res.json();
-        setSmartResult({ type: action, content: data.result });
+      const data = await res.json();
+      if (data.extractedData) {
+        setFormData(prev => ({ ...prev, ...data.extractedData }));
       }
     } catch (e) {
       console.error(e);
-    } finally {
-      setSmartLoading(null);
     }
+    setIsExtracting(false);
   };
 
-  const downloadAsTxt = () => {
-    const text = isEditing ? editingContent : generatedContent;
-    if (!text) return;
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${docTitle || 'Document'}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleGenerate = async () => {
+    if (!selectedSchema || !auth.currentUser) return;
+    setStep(4);
+    setIsGenerating(true);
+    try {
+      const idToken = await auth.currentUser.getIdToken();
+      const res = await fetch("/api/draft-document", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(idToken && { "Authorization": `Bearer ${idToken}` }) },
+        body: JSON.stringify({ schema: selectedSchema, formData })
+      });
+      const data = await res.json();
+      if (data.document) {
+        setGeneratedContent(data.document);
+        // Save to Firestore
+        const docId = await saveGeneratedDocument(auth.currentUser.uid, {
+          id: currentDocId || undefined,
+          schemaId: selectedSchema.id,
+          title: selectedSchema.title,
+          formData,
+          content: data.document,
+          status: 'draft'
+        });
+        setCurrentDocId(docId);
+        setStep(5);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to generate document.");
+      setStep(3); // go back to review
+    }
+    setIsGenerating(false);
   };
 
-  const downloadAsDocx = () => {
-    // For a real app, use docx library. Here we generate a simple HTML masquerading as DOC.
-    const text = isEditing ? editingContent : generatedContent;
-    if (!text) return;
-    const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title></head><body>";
-    const footer = "</body></html>";
-    // Basic Markdown to HTML conversion for docx structure
-    const htmlContent = text.replace(/\\n/g, '<br>').replace(/## (.*?)<br>/g, '<h2>$1</h2>').replace(/\\*\\*(.*?)\\*\\*/g, '<b>$1</b>');
-    const sourceHTML = header + htmlContent + footer;
-    const blob = new Blob(['\\ufeff', sourceHTML], { type: 'application/msword' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${docTitle || 'Document'}.doc`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const checkCondition = (field: FormField) => {
+    if (!field.condition) return true;
+    return formData[field.condition.field] === field.condition.value;
   };
+
+  const visibleFields = selectedSchema?.fields.filter(checkCondition) || [];
   
-  const downloadAsPdf = () => {
-    window.print(); // Simple fallback since we don't want to wire up html2pdf strictly here
+  const handleNextStep2 = () => {
+    const newErrors: Record<string, string> = {};
+    let hasError = false;
+
+    visibleFields.forEach(f => {
+      const value = formData[f.id];
+
+      // Required check
+      if (f.required && (value === undefined || value === '' || value === null)) {
+        newErrors[f.id] = `${f.label} is required`;
+        hasError = true;
+        return;
+      }
+
+      // Advanced Validation
+      if (value && f.validation) {
+        if (typeof value === 'string') {
+          if (f.validation.min !== undefined && value.length < f.validation.min) {
+            newErrors[f.id] = f.validation.customError || `Minimum length is ${f.validation.min} characters`;
+            hasError = true;
+            return;
+          }
+          if (f.validation.max !== undefined && value.length > f.validation.max) {
+            newErrors[f.id] = f.validation.customError || `Maximum length is ${f.validation.max} characters`;
+            hasError = true;
+            return;
+          }
+          if (f.validation.pattern) {
+            const regex = new RegExp(f.validation.pattern);
+            if (!regex.test(value)) {
+              newErrors[f.id] = f.validation.customError || `Invalid format`;
+              hasError = true;
+              return;
+            }
+          }
+        } else if (typeof value === 'number') {
+          if (f.validation.min !== undefined && value < f.validation.min) {
+            newErrors[f.id] = f.validation.customError || `Minimum value is ${f.validation.min}`;
+            hasError = true;
+            return;
+          }
+          if (f.validation.max !== undefined && value > f.validation.max) {
+            newErrors[f.id] = f.validation.customError || `Maximum value is ${f.validation.max}`;
+            hasError = true;
+            return;
+          }
+        }
+      }
+    });
+
+    setErrors(newErrors);
+    if (hasError) return;
+    setStep(3);
   };
 
-  // View: Document Form or Generated
-  if (activeTemplate) {
-    if (generatedContent) {
-      return (
-        <div className="flex h-full flex-col bg-[#f9f9fa]">
-          <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4 shadow-sm">
-            <div className="flex items-center gap-4">
-              <button onClick={resetView} className="rounded-full p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-              <div>
-                <input 
-                  type="text" 
-                  value={docTitle} 
-                  onChange={e => setDocTitle(e.target.value)}
-                  className="font-bold text-lg text-neutral-900 border-b border-transparent focus:border-[#c6a87c] outline-none bg-transparent w-64"
-                />
-                <p className="text-xs text-neutral-500">{activeTemplate.title}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setIsEditing(!isEditing)} className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${isEditing ? 'bg-blue-50 text-blue-700' : 'text-neutral-600 hover:bg-neutral-100'}`}>
-                <Edit3 className="h-4 w-4" /> {isEditing ? 'Preview' : 'Edit'}
-              </button>
-              <div className="relative group">
-                <button className="flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
-                  <Download className="h-4 w-4" /> Export
-                </button>
-                <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-100 py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                  <button onClick={downloadAsPdf} className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">PDF (Print)</button>
-                  <button onClick={downloadAsDocx} className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">DOCX</button>
-                  <button onClick={downloadAsTxt} className="w-full text-left px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">TXT</button>
-                </div>
-              </div>
-              <button onClick={handleSave} className="flex items-center gap-1.5 rounded-lg bg-[#c6a87c] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#b5986c]">
-                <Save className="h-4 w-4" /> Save
-              </button>
-            </div>
-          </div>
-
-          <div className="flex flex-1 overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 flex justify-center">
-              <div className="w-full max-w-[850px] bg-white rounded-lg shadow-sm border border-neutral-200 p-8 min-h-[1000px] print:m-0 print:border-none print:shadow-none print:p-0">
-                {isEditing ? (
-                  <textarea
-                    value={editingContent}
-                    onChange={e => setEditingContent(e.target.value)}
-                    className="w-full h-full min-h-[800px] resize-none outline-none font-mono text-sm leading-relaxed text-neutral-800 p-2"
-                  />
-                ) : (
-                  <div className="prose prose-neutral max-w-none prose-headings:font-serif prose-h1:text-2xl prose-h2:text-xl prose-p:text-[15px] prose-p:leading-relaxed">
-                    <ReactMarkdown>{editingContent}</ReactMarkdown>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Smart Tools Sidebar */}
-            <div className="w-80 border-l border-neutral-200 bg-white flex flex-col print:hidden">
-              <div className="p-4 border-b border-neutral-100">
-                <h3 className="font-semibold text-neutral-900 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-[#c6a87c]" /> Legal Advisories Tools
-                </h3>
-              </div>
-              <div className="p-4 flex flex-col gap-3">
-                <button 
-                  onClick={() => handleSmartFeature('detect_missing')}
-                  disabled={!!smartLoading}
-                  className="flex items-center gap-2 w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-700 hover:border-[#c6a87c] transition-colors"
-                >
-                  <ShieldAlert className="h-4 w-4" /> Check Missing Clauses
-                </button>
-                <button 
-                  onClick={() => handleSmartFeature('improve')}
-                  disabled={!!smartLoading}
-                  className="flex items-center gap-2 w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-700 hover:border-[#c6a87c] transition-colors"
-                >
-                  <Wand2 className="h-4 w-4" /> Rewrite & Improve
-                </button>
-                <button 
-                  onClick={() => handleSmartFeature('explain')}
-                  disabled={!!smartLoading}
-                  className="flex items-center gap-2 w-full px-4 py-2.5 bg-neutral-50 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-700 hover:border-[#c6a87c] transition-colors"
-                >
-                  <FileText className="h-4 w-4" /> Explain Document
-                </button>
-              </div>
-
-              {(smartLoading || smartResult) && (
-                <div className="flex-1 overflow-y-auto p-4 border-t border-neutral-100 bg-neutral-50/50">
-                  {smartLoading ? (
-                    <div className="flex flex-col items-center justify-center py-8 text-neutral-500">
-                      <Loader2 className="h-6 w-6 animate-spin mb-2" />
-                      <p className="text-sm">Analyzing document...</p>
-                    </div>
-                  ) : smartResult ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">
-                          {smartResult.type === 'explain' ? 'Explanation' : smartResult.type === 'improve' ? 'Improvements' : 'Missing Clauses'}
-                        </span>
-                        <button onClick={() => setSmartResult(null)} className="text-neutral-400 hover:text-neutral-600">
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <div className="prose prose-sm prose-neutral">
-                        <ReactMarkdown>{smartResult.content}</ReactMarkdown>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
+  if (view === 'list') {
     return (
-      <div className="mx-auto max-w-3xl p-6 md:p-12">
-        <button onClick={resetView} className="mb-6 flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Back to Templates
-        </button>
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 p-8">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-neutral-900 mb-2">Generate {activeTemplate.title}</h1>
-            <p className="text-neutral-500">Fill in the key details below. Legal Advisories will draft a complete, legally sound document based on Indian law.</p>
+      <div className="flex flex-col h-full bg-white dark:bg-neutral-900 overflow-y-auto">
+        <div className="px-8 py-6 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-0 z-10 flex justify-between items-center">
+          <div>
+            <motion.h1 layoutId="page-title" className="text-2xl font-serif text-gray-900 dark:text-neutral-100 mb-1">Smart Document Generation</motion.h1>
+            <motion.p layoutId="page-description" className="text-[14px] text-gray-500 dark:text-neutral-400">Generate professional legal documents tailored to your needs.</motion.p>
           </div>
-
-          <form onSubmit={handleGenerate} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {activeTemplate.fields.map(field => (
-                <div key={field.name}>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">{field.label}</label>
-                  <input
-                    required
-                    type="text"
-                    placeholder={field.placeholder}
-                    value={formData[field.name] || ''}
-                    onChange={e => setFormData(prev => ({ ...prev, [field.name]: e.target.value }))}
-                    className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm text-neutral-900 outline-none focus:border-[#c6a87c] focus:bg-white focus:ring-1 focus:ring-[#c6a87c] transition-colors"
-                  />
+          <button onClick={handleStartNew} className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-[14px] font-semibold flex items-center gap-2 hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+            <Sparkles className="w-4 h-4" /> Create New
+          </button>
+        </div>
+        
+        <div className="p-8 max-w-5xl">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-gray-400" /> Recent Documents
+          </h2>
+          {loadingList ? (
+            <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
+          ) : documents.length === 0 ? (
+            <div className="text-center py-12 border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-xl">
+              <FileText className="w-10 h-10 text-gray-300 dark:text-neutral-600 mx-auto mb-3" />
+              <p className="text-gray-500 dark:text-neutral-400 text-sm">No documents generated yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {documents.map(doc => (
+                <div key={doc.id} onClick={() => handleResume(doc)} className="border border-gray-200 dark:border-neutral-800 p-5 rounded-xl hover:border-[#c6a87c] dark:hover:border-[#c6a87c] cursor-pointer transition-colors bg-white dark:bg-neutral-900 group">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="w-10 h-10 bg-gray-50 dark:bg-neutral-800 rounded-lg flex items-center justify-center group-hover:bg-[#c6a87c]/10 transition-colors">
+                      <FileCheck2 className="w-5 h-5 text-gray-600 dark:text-neutral-400 group-hover:text-[#c6a87c]" />
+                    </div>
+                    <span className="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400 rounded">v{doc.version}</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{doc.title}</h3>
+                  <p className="text-xs text-gray-500 dark:text-neutral-400">Last updated: {doc.updatedAt ? new Date(doc.updatedAt.toDate()).toLocaleDateString() : 'Recently'}</p>
                 </div>
               ))}
             </div>
-            <div className="pt-4 flex justify-end">
-              <button 
-                type="submit" 
-                disabled={generating}
-                className="flex items-center gap-2 rounded-xl bg-[#c6a87c] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#b5986c] disabled:opacity-70 disabled:cursor-not-allowed shadow-md shadow-[#c6a87c]/20"
-              >
-                {generating ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5" />}
-                Generate Document
-              </button>
-            </div>
-          </form>
+          )}
         </div>
       </div>
     );
   }
 
-  // View: Main Dashboard (Templates & My Docs)
+  // CREATE WORKFLOW
   return (
-    <div className="flex flex-col h-full bg-[#f9f9fa] overflow-hidden">
-      <div className="flex-none bg-white border-b border-neutral-200 px-6 py-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-6xl mx-auto w-full">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 flex items-center gap-2">
-              <FileText className="h-6 w-6 text-[#c6a87c]" />
-              Legal Advisories Generator
-            </h1>
-            <p className="mt-1 text-sm text-neutral-500">Generate, edit, and export enterprise-grade legal documents in seconds.</p>
-          </div>
-          <div className="flex bg-neutral-100 p-1 rounded-lg">
-            <button
-              onClick={() => setActiveTab('templates')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'templates' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-600 hover:text-neutral-900'}`}
-            >
-              <Plus className="h-4 w-4" /> New Document
-            </button>
-            <button
-              onClick={() => setActiveTab('mydocs')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'mydocs' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-600 hover:text-neutral-900'}`}
-            >
-              <FileText className="h-4 w-4" /> My Documents
-            </button>
-          </div>
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 overflow-y-auto">
+      <div className="px-8 py-4 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-0 z-10">
+        <button onClick={() => setView('list')} className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors mb-4">
+          <ArrowLeft className="w-4 h-4" /> Back to Documents
+        </button>
+        
+        {/* Progress Indicator */}
+        <div className="flex items-center justify-between max-w-3xl mx-auto mb-4 relative">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-gray-100 dark:bg-neutral-800 -z-10" />
+          {[
+            { id: 1, label: 'Document' },
+            { id: 2, label: 'Details' },
+            { id: 3, label: 'Review' },
+            { id: 4, label: 'Generate' },
+            { id: 5, label: 'Preview' }
+          ].map(s => (
+            <div key={s.id} className={`flex flex-col items-center gap-2 bg-white dark:bg-neutral-900 px-2 ${step === s.id ? 'text-[#c6a87c]' : step > s.id ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold border-2 ${step === s.id ? 'border-[#c6a87c] bg-[#c6a87c]/10' : step > s.id ? 'border-gray-900 dark:border-white bg-gray-900 dark:bg-white text-white dark:text-black' : 'border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900'}`}>
+                {step > s.id ? <CheckCircle2 className="w-5 h-5" /> : s.id}
+              </div>
+              <span className="text-xs font-semibold uppercase tracking-wider">{s.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-6xl mx-auto w-full">
-          {activeTab === 'templates' ? (
+      <div className="flex-1 p-8 max-w-4xl mx-auto w-full">
+        {step === 1 && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+            <h2 className="text-2xl font-serif text-gray-900 dark:text-white">Select Document Type</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {documentSchemas.map(schema => (
+                <div key={schema.id} onClick={() => { setSelectedSchema(schema); setStep(2); }} className="border border-gray-200 dark:border-neutral-800 p-5 rounded-xl hover:border-[#c6a87c] dark:hover:border-[#c6a87c] cursor-pointer transition-all hover:shadow-md bg-white dark:bg-neutral-900 group">
+                  <div className="text-xs font-semibold text-[#c6a87c] tracking-wider uppercase mb-2">{schema.category}</div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{schema.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-neutral-400 line-clamp-3">{schema.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 2 && selectedSchema && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-right-4">
             <div>
-              <div className="flex flex-wrap gap-2 mb-8">
-                {categories.map(cat => (
-                  <button 
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${selectedCategory === cat ? 'bg-[#c6a87c] text-white border-[#c6a87c]' : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'}`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+              <h2 className="text-2xl font-serif text-gray-900 dark:text-white mb-2">{selectedSchema.title} Details</h2>
+              <p className="text-gray-500 dark:text-neutral-400">Please provide the necessary information to generate your document.</p>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-xl p-5 flex flex-col gap-3">
+              <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 font-medium">
+                <Wand2 className="w-5 h-5" /> AI Assist
               </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {TEMPLATES.filter(t => selectedCategory === 'All' || t.category === selectedCategory).map(template => (
-                  <div 
-                    key={template.id} 
-                    onClick={() => setActiveTemplate(template)}
-                    className="group bg-white rounded-xl border border-neutral-200 p-5 cursor-pointer hover:border-[#c6a87c] hover:shadow-md transition-all flex flex-col"
-                  >
-                    <div className="mb-4 w-10 h-10 rounded-lg bg-neutral-50 border border-neutral-100 flex items-center justify-center text-[#c6a87c] group-hover:scale-110 group-hover:bg-[#c6a87c]/10 transition-transform">
-                      <FileText className="h-5 w-5" />
-                    </div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-1">{template.category}</span>
-                    <h3 className="text-lg font-semibold text-neutral-900 mb-2">{template.title}</h3>
-                    <div className="mt-auto pt-4 flex items-center justify-between text-sm text-neutral-500 font-medium">
-                      <span>{template.fields.length} dynamic fields</span>
-                      <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all text-[#c6a87c]" />
-                    </div>
-                  </div>
-                ))}
+              <p className="text-sm text-blue-600 dark:text-blue-300">Describe what you need in plain English, and the AI will pre-fill the form for you.</p>
+              <div className="flex gap-2">
+                <input type="text" value={aiPrompt} onChange={e => setAiPrompt(e.target.value)} placeholder="e.g. I took a year off after 12th for JEE prep and need this for BTech admission..." className="flex-1 bg-white dark:bg-neutral-900 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                <button onClick={handleExtractFields} disabled={isExtracting || !aiPrompt.trim()} className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+                  {isExtracting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Auto-Fill'}
+                </button>
               </div>
             </div>
-          ) : (
-            <div>
-              {loadingDocs ? (
-                <div className="flex justify-center py-20">
-                  <Loader2 className="h-8 w-8 animate-spin text-[#c6a87c]" />
-                </div>
-              ) : myDocs.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mb-4">
-                    <FileText className="h-8 w-8 text-neutral-400" />
+
+            <div className="space-y-8">
+              {Array.from(new Set(visibleFields.map(f => f.section))).map(section => (
+                <div key={section} className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-100 dark:border-neutral-800 pb-2">{section}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {visibleFields.filter(f => f.section === section).map(field => (
+                      <div key={field.id} className={`${field.type === 'textarea' ? 'md:col-span-2' : ''}`}>
+                        <label className="block text-[13px] font-medium text-gray-700 dark:text-neutral-300 mb-1.5">
+                          {field.label} {field.required && <span className="text-red-500">*</span>}
+                        </label>
+                        {field.type === 'textarea' ? (
+                          <textarea value={formData[field.id] || ''} onChange={e => { setFormData({...formData, [field.id]: e.target.value}); if (errors[field.id]) setErrors({...errors, [field.id]: ''}); }} placeholder={field.placeholder} className={`w-full bg-gray-50 dark:bg-neutral-800/50 border rounded-lg px-4 py-2.5 text-[14px] text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all min-h-[100px] ${errors[field.id] ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 dark:border-neutral-800 focus:ring-[#c6a87c]/20 focus:border-[#c6a87c]'}`} />
+                        ) : field.type === 'select' ? (
+                          <select value={formData[field.id] || ''} onChange={e => { setFormData({...formData, [field.id]: e.target.value}); if (errors[field.id]) setErrors({...errors, [field.id]: ''}); }} className={`w-full bg-gray-50 dark:bg-neutral-800/50 border rounded-lg px-4 py-2.5 text-[14px] text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors[field.id] ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 dark:border-neutral-800 focus:ring-[#c6a87c]/20 focus:border-[#c6a87c]'}`}>
+                            <option value="">Select option</option>
+                            {field.options?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                          </select>
+                        ) : field.type === 'boolean' ? (
+                          <div className="flex items-center gap-3 h-10">
+                            <button onClick={() => { setFormData({...formData, [field.id]: true}); if (errors[field.id]) setErrors({...errors, [field.id]: ''}); }} className={`px-4 py-1.5 rounded-md text-sm font-medium border ${formData[field.id] === true ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white' : 'bg-white text-gray-700 border-gray-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-800'} ${errors[field.id] ? 'border-red-500' : ''}`}>Yes</button>
+                            <button onClick={() => { setFormData({...formData, [field.id]: false}); if (errors[field.id]) setErrors({...errors, [field.id]: ''}); }} className={`px-4 py-1.5 rounded-md text-sm font-medium border ${formData[field.id] === false ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white' : 'bg-white text-gray-700 border-gray-200 dark:bg-neutral-900 dark:text-neutral-300 dark:border-neutral-800'} ${errors[field.id] ? 'border-red-500' : ''}`}>No</button>
+                          </div>
+                        ) : (
+                          <input type={field.type} value={formData[field.id] || ''} onChange={e => { setFormData({...formData, [field.id]: e.target.value}); if (errors[field.id]) setErrors({...errors, [field.id]: ''}); }} placeholder={field.placeholder} className={`w-full bg-gray-50 dark:bg-neutral-800/50 border rounded-lg px-4 py-2.5 text-[14px] text-gray-900 dark:text-white focus:outline-none focus:ring-2 transition-all ${errors[field.id] ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-200 dark:border-neutral-800 focus:ring-[#c6a87c]/20 focus:border-[#c6a87c]'}`} />
+                        )}
+                        {errors[field.id] && <p className="text-red-500 text-[12px] mt-1.5 font-medium animate-in fade-in">{errors[field.id]}</p>}
+                      </div>
+                    ))}
                   </div>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">No documents found</h3>
-                  <p className="text-neutral-500 max-w-sm mb-6">You haven't generated any documents yet. Head over to the templates to create your first contract.</p>
-                  <button onClick={() => setActiveTab('templates')} className="rounded-lg bg-[#c6a87c] px-4 py-2 text-sm font-medium text-white hover:bg-[#b5986c] transition-colors">
-                    Browse Templates
-                  </button>
                 </div>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {myDocs.map(doc => (
-                    <div key={doc.id} className="bg-white rounded-xl border border-neutral-200 p-5 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="text-xs font-semibold px-2 py-1 bg-blue-50 text-blue-700 rounded-md">
-                          {doc.templateTitle}
-                        </span>
-                        <button onClick={() => handleDelete(doc.id)} className="text-neutral-400 hover:text-red-500 p-1 rounded-md hover:bg-neutral-50 transition-colors">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <h3 className="text-lg font-semibold text-neutral-900 mb-4 truncate" title={doc.title}>{doc.title}</h3>
-                      <div className="flex items-center justify-between mt-auto border-t border-neutral-100 pt-3">
-                        <span className="text-xs text-neutral-500">{new Date(doc.createdAt).toLocaleDateString()}</span>
-                        <button onClick={() => openDoc(doc)} className="text-sm font-medium text-[#c6a87c] hover:text-[#b5986c] transition-colors">
-                          Open & Edit
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
-          )}
-        </div>
+            
+            <div className="pt-6 border-t border-gray-100 dark:border-neutral-800 flex justify-end gap-3">
+              <button onClick={() => setStep(1)} className="px-6 py-2.5 rounded-lg text-[14px] font-semibold text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors">Cancel</button>
+              <button onClick={handleNextStep2} className="bg-black dark:bg-white text-white dark:text-black px-6 py-2.5 rounded-lg text-[14px] font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-sm">Review Information</button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && selectedSchema && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+            <div className="flex justify-between items-end mb-6">
+              <div>
+                <h2 className="text-2xl font-serif text-gray-900 dark:text-white mb-2">Review Details</h2>
+                <p className="text-gray-500 dark:text-neutral-400">Verify your information before we generate the final document.</p>
+              </div>
+              <button onClick={() => setStep(2)} className="text-sm font-medium text-[#c6a87c] hover:underline">Edit Details</button>
+            </div>
+
+            <div className="bg-gray-50 dark:bg-neutral-800/30 rounded-xl p-6 border border-gray-200 dark:border-neutral-800 space-y-6">
+              {Array.from(new Set(visibleFields.map(f => f.section))).map(section => (
+                <div key={section}>
+                  <h4 className="text-xs font-semibold tracking-wider text-gray-400 uppercase mb-3">{section}</h4>
+                  <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {visibleFields.filter(f => f.section === section).map(field => (
+                      <div key={field.id}>
+                        <dt className="text-[13px] text-gray-500 dark:text-neutral-500">{field.label}</dt>
+                        <dd className="text-[15px] font-medium text-gray-900 dark:text-white mt-0.5">
+                          {field.type === 'boolean' ? (formData[field.id] ? 'Yes' : 'No') : (formData[field.id] || <span className="text-gray-400 italic">Not provided</span>)}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-xl p-5 flex gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
+              <div className="text-sm text-amber-800 dark:text-amber-400">
+                <strong className="font-semibold block mb-1">Legal Disclaimer</strong>
+                This document is generated based on your inputs. It may require review, modification, stamping, notarization, or registration depending on your jurisdiction. We do not fabricate notary information or government stamps.
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-gray-100 dark:border-neutral-800 flex justify-end gap-3">
+              <button onClick={() => setStep(2)} className="px-6 py-2.5 rounded-lg text-[14px] font-semibold text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors">Back</button>
+              <button onClick={handleGenerate} className="bg-[#c6a87c] hover:bg-[#b5986c] text-white px-6 py-2.5 rounded-lg text-[14px] font-semibold transition-colors flex items-center gap-2 shadow-sm">
+                <Sparkles className="w-4 h-4" /> Generate Document
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in">
+            <Loader2 className="w-12 h-12 animate-spin text-[#c6a87c] mb-6" />
+            <h2 className="text-2xl font-serif text-gray-900 dark:text-white mb-2">Drafting Document...</h2>
+            <p className="text-gray-500 dark:text-neutral-400 max-w-sm mx-auto">
+              Our AI is currently drafting your professional document based on your provided information. This will just take a moment.
+            </p>
+          </div>
+        )}
+
+        {step === 5 && selectedSchema && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+            <div className="flex justify-between items-center bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 p-4 rounded-xl sticky top-24 z-10 shadow-sm">
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">{selectedSchema.title}</h3>
+                <p className="text-xs text-gray-500">Drafted successfully. Ready for export.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setStep(2)} className="px-4 py-2 rounded-lg text-[14px] font-medium text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-800 transition-colors">Edit Details</button>
+                <ExportMenu title={selectedSchema.title} content={generatedContent} buttonVariant="solid" />
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-white p-8 md:p-12 border border-gray-200 shadow-sm rounded-xl min-h-[800px] prose prose-gray max-w-none print:shadow-none print:border-none">
+              <ReactMarkdown>{generatedContent}</ReactMarkdown>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

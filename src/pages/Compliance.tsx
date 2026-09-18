@@ -6,6 +6,7 @@ import {
 import { auth } from '../lib/auth';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '../lib/utils';
+import { motion } from "motion/react";
 
 interface Company {
   id: string;
@@ -89,16 +90,16 @@ export function Compliance() {
   const score = calculateScore();
 
   return (
-    <div className="flex flex-col h-full bg-[#f9f9fa] overflow-hidden">
+    <div className="flex flex-col h-full bg-[#f9f9fa] dark:bg-neutral-950 overflow-hidden">
       {/* Header */}
-      <div className="flex-none bg-white border-b border-neutral-200 px-6 py-4">
+      <div className="flex-none bg-white dark:bg-neutral-900 border-b border-neutral-200 px-6 py-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto w-full">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 flex items-center gap-2">
+            <motion.h1 layoutId="page-title" className="text-2xl font-bold tracking-tight text-neutral-900 flex items-center gap-2">
               <ShieldCheck className="h-6 w-6 text-green-600" />
               Compliance Manager
-            </h1>
-            <p className="mt-1 text-sm text-neutral-500">Track due dates, store documents, and get AI guidance.</p>
+            </motion.h1>
+            <motion.p layoutId="page-description" className="mt-1 text-sm text-neutral-500">Track due dates, store documents, and get AI guidance.</motion.p>
           </div>
           
           <div className="flex items-center gap-4">
@@ -111,19 +112,19 @@ export function Compliance() {
             <div className="flex bg-neutral-100 p-1 rounded-lg">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={cn("flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors", activeTab === 'dashboard' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-600 hover:text-neutral-900')}
+                className={cn("flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors", activeTab === 'dashboard' ? 'bg-white dark:bg-neutral-900 text-neutral-900 shadow-sm' : 'text-neutral-600 hover:text-neutral-900')}
               >
                 Dashboard
               </button>
               <button
                 onClick={() => setActiveTab('calendar')}
-                className={cn("flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors", activeTab === 'calendar' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-600 hover:text-neutral-900')}
+                className={cn("flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors", activeTab === 'calendar' ? 'bg-white dark:bg-neutral-900 text-neutral-900 shadow-sm' : 'text-neutral-600 hover:text-neutral-900')}
               >
                 Calendar
               </button>
               <button
                 onClick={() => setActiveTab('vault')}
-                className={cn("flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors", activeTab === 'vault' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-600 hover:text-neutral-900')}
+                className={cn("flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors", activeTab === 'vault' ? 'bg-white dark:bg-neutral-900 text-neutral-900 shadow-sm' : 'text-neutral-600 hover:text-neutral-900')}
               >
                 Vault
               </button>
@@ -145,7 +146,7 @@ export function Compliance() {
             <div className="space-y-6">
               {/* Score & Alerts */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm flex flex-col items-center justify-center text-center col-span-1">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-neutral-200 shadow-sm flex flex-col items-center justify-center text-center col-span-1">
                   <div className="relative mb-2">
                     <svg className="w-32 h-32 transform -rotate-90">
                       <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-neutral-100" />
@@ -159,7 +160,7 @@ export function Compliance() {
                   <p className="text-sm text-neutral-500 mt-1">Good standing. Keep it up!</p>
                 </div>
                 
-                <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm col-span-1 md:col-span-2">
+                <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-neutral-200 shadow-sm col-span-1 md:col-span-2">
                   <h3 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
                     <Bell className="h-5 w-5 text-yellow-500" /> Action Required
                   </h3>
@@ -186,7 +187,7 @@ export function Compliance() {
               </div>
 
               {/* AI Recommendations */}
-              <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
+              <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-neutral-200 shadow-sm">
                 <h3 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-[#c6a87c]" /> Smart Recommendations
                 </h3>
@@ -206,7 +207,7 @@ export function Compliance() {
           )}
 
           {activeTab === 'calendar' && (
-            <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm min-h-[500px]">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-neutral-200 shadow-sm min-h-[500px]">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold text-neutral-900 flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-neutral-400" /> Upcoming Deadlines
@@ -245,7 +246,7 @@ export function Compliance() {
           )}
 
           {activeTab === 'vault' && (
-            <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm min-h-[500px]">
+            <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl border border-neutral-200 shadow-sm min-h-[500px]">
               <h2 className="text-lg font-semibold text-neutral-900 mb-6 flex items-center gap-2">
                 <FileText className="h-5 w-5 text-neutral-400" /> Document Vault
               </h2>
@@ -262,7 +263,7 @@ export function Compliance() {
           )}
 
           {activeTab === 'ai' && (
-            <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm h-[600px] flex flex-col overflow-hidden">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 shadow-sm h-[600px] flex flex-col overflow-hidden">
               <div className="p-4 border-b border-neutral-100 bg-neutral-50/50">
                 <h2 className="font-semibold text-neutral-900 flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-[#c6a87c]" /> AI Compliance Assistant
@@ -272,7 +273,7 @@ export function Compliance() {
               
               <div className="flex-1 overflow-y-auto p-6 bg-neutral-50/30">
                 {aiResponse ? (
-                  <div className="prose prose-sm max-w-none prose-neutral prose-headings:font-serif prose-headings:text-[#c6a87c] bg-white p-6 rounded-xl border border-neutral-100 shadow-sm">
+                  <div className="prose prose-sm max-w-none prose-neutral prose-headings:font-serif prose-headings:text-[#c6a87c] bg-white dark:bg-neutral-900 p-6 rounded-xl border border-neutral-100 shadow-sm">
                     <ReactMarkdown>{aiResponse}</ReactMarkdown>
                   </div>
                 ) : (
@@ -283,7 +284,7 @@ export function Compliance() {
                 )}
               </div>
               
-              <div className="p-4 border-t border-neutral-100 bg-white">
+              <div className="p-4 border-t border-neutral-100 bg-white dark:bg-neutral-900">
                 <form onSubmit={handleAskAI} className="relative max-w-4xl mx-auto">
                   <input
                     type="text"

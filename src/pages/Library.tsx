@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Filter, FileText, Download, MoreHorizontal, Book, BookOpen, Star, Clock } from 'lucide-react';
+import { motion } from "motion/react";
 
 const categories = [
   "All", "Corporate", "Commercial", "Employment", "Real Estate", "IP", "Litigation"
@@ -42,13 +43,13 @@ export function Library() {
   });
 
   return (
-    <div className="flex flex-col h-full bg-white pt-16 md:pt-0">
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 pt-16 md:pt-0">
       {/* Header section */}
-      <div className="px-8 py-6 border-b border-gray-100 bg-white sticky top-0 z-10">
+      <div className="px-8 py-6 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-serif text-gray-900 mb-1">Library</h1>
-            <p className="text-[14px] text-gray-500">Access firm precedents, templates, and reference materials.</p>
+            <motion.h1 layoutId="page-title" className="text-2xl font-serif text-gray-900 dark:text-neutral-100 mb-1">Library</motion.h1>
+            <motion.p layoutId="page-description" className="text-[14px] text-gray-500 dark:text-neutral-400">Access firm precedents, templates, and reference materials.</motion.p>
           </div>
           <div>
             <input 
@@ -60,7 +61,7 @@ export function Library() {
             />
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="bg-black text-white px-4 py-2 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-colors shadow-sm"
+              className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-[14px] font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-sm"
             >
               Upload Document
             </button>
@@ -69,13 +70,13 @@ export function Library() {
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="relative max-w-md w-full">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-gray-400 dark:text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="text"
               placeholder="Search library..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[14px] outline-none focus:border-gray-300 focus:bg-white transition-all text-gray-800 placeholder:text-gray-400"
+              className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-[14px] outline-none focus:border-gray-300 dark:border-neutral-700 focus:bg-white dark:bg-neutral-900 transition-all text-gray-800 dark:text-neutral-200 placeholder:text-gray-400 dark:text-neutral-500"
             />
           </div>
           
@@ -86,8 +87,8 @@ export function Library() {
                 onClick={() => setSelectedCategory(category)}
                 className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[13px] font-medium transition-colors ${
                   selectedCategory === category 
-                    ? "bg-gray-900 text-white" 
-                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    ? "bg-gray-900 dark:bg-gray-100 text-white" 
+                    : "bg-gray-50 dark:bg-neutral-900 text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800"
                 }`}
               >
                 {category}
@@ -98,27 +99,27 @@ export function Library() {
       </div>
 
       {/* Content section */}
-      <div className="flex-1 overflow-y-auto p-8 bg-[#FAFAFA]">
+      <div className="flex-1 overflow-y-auto p-8 bg-[#FAFAFA] dark:bg-neutral-900">
         <div className="max-w-[1200px] mx-auto">
           
           <div className="mb-8">
-            <h2 className="text-[14px] font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <h2 className="text-[14px] font-semibold text-gray-800 dark:text-neutral-200 mb-4 flex items-center gap-2">
               <Star className="w-4 h-4 text-amber-500 fill-amber-500" /> Starred items
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {documents.filter(d => d.starred).map(doc => (
-                <div key={doc.id} className="bg-white border border-gray-200/80 rounded-xl p-4 hover:shadow-md transition-all cursor-pointer group">
+                <div key={doc.id} className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800/80 rounded-xl p-4 hover:shadow-md transition-all cursor-pointer group">
                   <div className="flex items-start justify-between mb-3">
                     <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
                       <FileText className="w-4 h-4" />
                     </div>
-                    <button className="text-gray-400 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="text-gray-400 dark:text-neutral-500 hover:text-gray-900 dark:text-neutral-100 opacity-0 group-hover:opacity-100 transition-opacity">
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
                   </div>
-                  <h3 className="font-semibold text-gray-900 text-[14px] leading-snug mb-1 line-clamp-2">{doc.title}</h3>
-                  <div className="flex items-center gap-2 text-[12px] text-gray-500">
-                    <span className="font-medium px-1.5 py-0.5 rounded bg-gray-100">{doc.category}</span>
+                  <h3 className="font-semibold text-gray-900 dark:text-neutral-100 text-[14px] leading-snug mb-1 line-clamp-2">{doc.title}</h3>
+                  <div className="flex items-center gap-2 text-[12px] text-gray-500 dark:text-neutral-400">
+                    <span className="font-medium px-1.5 py-0.5 rounded bg-gray-100 dark:bg-neutral-800">{doc.category}</span>
                     <span>•</span>
                     <span>{doc.type}</span>
                   </div>
@@ -128,12 +129,12 @@ export function Library() {
           </div>
 
           <div>
-            <h2 className="text-[14px] font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-gray-500" /> All documents
+            <h2 className="text-[14px] font-semibold text-gray-800 dark:text-neutral-200 mb-4 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-gray-500 dark:text-neutral-400" /> All documents
             </h2>
             
-            <div className="bg-white border border-gray-200/80 rounded-xl shadow-sm overflow-hidden">
-              <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-gray-100 bg-gray-50/50 text-[12px] font-semibold text-gray-500 uppercase tracking-wider">
+            <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800/80 rounded-xl shadow-sm overflow-hidden">
+              <div className="grid grid-cols-12 gap-4 px-6 py-3 border-b border-gray-100 dark:border-neutral-800 bg-gray-50 dark:bg-neutral-900/50 text-[12px] font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">
                 <div className="col-span-5">Name</div>
                 <div className="col-span-2">Category</div>
                 <div className="col-span-2">Last Updated</div>
@@ -144,26 +145,26 @@ export function Library() {
               <div className="divide-y divide-gray-100">
                 {filteredDocs.length > 0 ? (
                   filteredDocs.map(doc => (
-                    <div key={doc.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors group cursor-pointer">
+                    <div key={doc.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 dark:bg-neutral-900 transition-colors group cursor-pointer">
                       <div className="col-span-5 flex items-center gap-3">
-                        <FileText className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-                        <span className="text-[14px] font-medium text-gray-900 truncate">{doc.title}</span>
+                        <FileText className="w-4 h-4 text-gray-400 dark:text-neutral-500 group-hover:text-blue-500 transition-colors" />
+                        <span className="text-[14px] font-medium text-gray-900 dark:text-neutral-100 truncate">{doc.title}</span>
                       </div>
                       <div className="col-span-2">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-gray-100 text-gray-600">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[12px] font-medium bg-gray-100 dark:bg-neutral-800 text-gray-600 dark:text-neutral-400">
                           {doc.category}
                         </span>
                       </div>
-                      <div className="col-span-2 text-[13px] text-gray-500">
+                      <div className="col-span-2 text-[13px] text-gray-500 dark:text-neutral-400">
                         {doc.date}
                       </div>
-                      <div className="col-span-2 text-[13px] text-gray-500">
+                      <div className="col-span-2 text-[13px] text-gray-500 dark:text-neutral-400">
                         {doc.updatedBy}
                       </div>
-                      <div className="col-span-1 flex items-center justify-end gap-3 text-[13px] text-gray-500">
+                      <div className="col-span-1 flex items-center justify-end gap-3 text-[13px] text-gray-500 dark:text-neutral-400">
                         <span className="group-hover:hidden">{doc.size}</span>
                         <div className="hidden group-hover:flex items-center gap-2">
-                          <button className="p-1 hover:bg-white rounded text-gray-500 hover:text-gray-900 shadow-sm border border-transparent hover:border-gray-200">
+                          <button className="p-1 hover:bg-white dark:bg-neutral-900 rounded text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:text-neutral-100 shadow-sm border border-transparent hover:border-gray-200 dark:border-neutral-800">
                             <Download className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -171,7 +172,7 @@ export function Library() {
                     </div>
                   ))
                 ) : (
-                  <div className="px-6 py-12 text-center text-gray-500 text-[14px]">
+                  <div className="px-6 py-12 text-center text-gray-500 dark:text-neutral-400 text-[14px]">
                     No documents found matching "{searchQuery}" in {selectedCategory}.
                   </div>
                 )}

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Clock, MessageSquare, Wand2, FileText, MoreHorizontal, Filter, ChevronDown, ChevronUp, User, Bot } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { ExportMenu } from '../components/ExportMenu';
 import { getHistory, HistoryItem, deleteHistoryItem, renameHistoryItem } from '../lib/history';
 import { auth } from '../lib/auth';
+import { motion } from "motion/react";
 
 interface HistoryProps {
   onResume?: (id: string) => void;
@@ -66,13 +68,13 @@ export function History({ onResume }: HistoryProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white pt-16 md:pt-0">
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 pt-16 md:pt-0">
       {/* Header section */}
-      <div className="px-8 py-6 border-b border-gray-100 bg-white sticky top-0 z-10">
+      <div className="px-8 py-6 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-serif text-gray-900 mb-1">History</h1>
-            <p className="text-[14px] text-gray-500">Review your past conversations, workflows, and document analyses.</p>
+            <motion.h1 layoutId="page-title" className="text-2xl font-serif text-gray-900 dark:text-neutral-100 mb-1">History</motion.h1>
+            <motion.p layoutId="page-description" className="text-[14px] text-gray-500 dark:text-neutral-400">Review your past conversations, workflows, and document analyses.</motion.p>
           </div>
           <div className="relative">
             <button 
@@ -80,7 +82,7 @@ export function History({ onResume }: HistoryProps) {
               className={`flex items-center gap-2 border px-4 py-2 rounded-lg text-[14px] font-semibold transition-colors shadow-sm ${
                 isFilterOpen || filterType !== "All" 
                   ? "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100" 
-                  : "border-gray-200 text-gray-700 bg-white hover:bg-gray-50"
+                  : "border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 bg-white dark:bg-neutral-900 hover:bg-gray-50 dark:bg-neutral-900"
               }`}
             >
               <Filter className="w-4 h-4" /> 
@@ -90,7 +92,7 @@ export function History({ onResume }: HistoryProps) {
             {isFilterOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsFilterOpen(false)} />
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-50 py-2 animate-in fade-in slide-in-from-top-2">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 rounded-xl shadow-lg z-50 py-2 animate-in fade-in slide-in-from-top-2">
                   {availableTypes.map(type => (
                     <button
                       key={type}
@@ -98,9 +100,9 @@ export function History({ onResume }: HistoryProps) {
                         setFilterType(type);
                         setIsFilterOpen(false);
                       }}
-                      className="w-full text-left px-4 py-2 text-[14px] flex items-center justify-between hover:bg-gray-50 transition-colors"
+                      className="w-full text-left px-4 py-2 text-[14px] flex items-center justify-between hover:bg-gray-50 dark:bg-neutral-900 transition-colors"
                     >
-                      <span className={filterType === type ? "font-semibold text-gray-900" : "text-gray-600"}>
+                      <span className={filterType === type ? "font-semibold text-gray-900 dark:text-neutral-100" : "text-gray-600 dark:text-neutral-400"}>
                         {type}
                       </span>
                       {filterType === type && <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
@@ -113,30 +115,30 @@ export function History({ onResume }: HistoryProps) {
         </div>
 
         <div className="relative max-w-md w-full">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-gray-400 dark:text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input 
             type="text"
             placeholder="Search history..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-[14px] outline-none focus:border-gray-300 focus:bg-white transition-all text-gray-800 placeholder:text-gray-400"
+            className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-[14px] outline-none focus:border-gray-300 dark:border-neutral-700 focus:bg-white dark:bg-neutral-900 transition-all text-gray-800 dark:text-neutral-200 placeholder:text-gray-400 dark:text-neutral-500"
           />
         </div>
       </div>
 
       {/* Content section */}
-      <div className="flex-1 overflow-y-auto p-8 bg-[#FAFAFA]">
+      <div className="flex-1 overflow-y-auto p-8 bg-[#FAFAFA] dark:bg-neutral-900">
         <div className="max-w-[1000px] mx-auto">
-          <div className="bg-white border border-gray-200/80 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800/80 rounded-xl shadow-sm overflow-hidden">
             <div className="divide-y divide-gray-100">
               {filteredItems.length > 0 ? (
                 filteredItems.map(item => {
                   const Icon = getIcon(item.iconName);
                   const isExpanded = expandedItem === item.id;
                   return (
-                    <div key={item.id} className="border-b border-gray-100 last:border-0">
+                    <div key={item.id} className="border-b border-gray-100 dark:border-neutral-800 last:border-0">
                       <div 
-                        className="flex items-start gap-4 p-5 hover:bg-gray-50 transition-colors cursor-pointer group"
+                        className="flex items-start gap-4 p-5 hover:bg-gray-50 dark:bg-neutral-900 transition-colors cursor-pointer group"
                         onClick={() => {
                           if (onResume && item.type === "Chat") {
                             onResume(item.id);
@@ -157,45 +159,48 @@ export function History({ onResume }: HistoryProps) {
                                 value={editTitle} 
                                 onChange={e => setEditTitle(e.target.value)} 
                                 autoFocus
-                                className="px-2 py-1 border border-gray-300 rounded text-sm w-full max-w-xs focus:outline-none focus:border-blue-500" 
+                                className="px-2 py-1 border border-gray-300 dark:border-neutral-700 rounded text-sm w-full max-w-xs focus:outline-none focus:border-blue-500" 
                               />
                               <button type="button" onClick={(e) => saveEdit(e, item.id)} className="text-sm text-white bg-blue-600 px-2 py-1 rounded">Save</button>
-                              <button type="button" onClick={(e) => { e.stopPropagation(); setEditingId(null); }} className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">Cancel</button>
+                              <button type="button" onClick={(e) => { e.stopPropagation(); setEditingId(null); }} className="text-sm text-gray-600 dark:text-neutral-400 bg-gray-100 dark:bg-neutral-800 px-2 py-1 rounded">Cancel</button>
                             </form>
                           ) : (
-                            <h3 className="text-[15px] font-medium text-gray-900 mb-1.5 truncate flex items-center gap-2 group/title">
+                            <h3 className="text-[15px] font-medium text-gray-900 dark:text-neutral-100 mb-1.5 truncate flex items-center gap-2 group/title">
                               {item.title}
-                              <button onClick={(e) => startEdit(e, item)} className="opacity-0 group-hover/title:opacity-100 text-gray-400 hover:text-blue-600 transition-opacity p-1">
+                              <button onClick={(e) => startEdit(e, item)} className="opacity-0 group-hover/title:opacity-100 text-gray-400 dark:text-neutral-500 hover:text-blue-600 transition-opacity p-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                               </button>
                             </h3>
                           )}
 
-                          <div className="flex items-center gap-3 text-[13px] text-gray-500">
-                            <span className="font-medium bg-white border border-gray-200 px-2 py-0.5 rounded-md shadow-sm">{item.type}</span>
-                            <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                          <div className="flex items-center gap-3 text-[13px] text-gray-500 dark:text-neutral-400">
+                            <span className="font-medium bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 px-2 py-0.5 rounded-md shadow-sm">{item.type}</span>
+                            <span className="w-1 h-1 bg-gray-300 dark:bg-neutral-700 rounded-full"></span>
                             <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {item.date}</span>
                             {item.messages && item.messages.length > 0 && (
-                               <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded text-xs">{item.messages.length} messages</span>
+                               <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-neutral-800 rounded text-xs">{item.messages.length} messages</span>
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 self-center">
-                          <button onClick={(e) => handleDelete(e, item.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete chat">
+                        <div className="flex items-center gap-1 self-center" onClick={(e) => e.stopPropagation()}>
+                          {item.messages && item.messages.length > 0 && (
+                            <ExportMenu title={item.title} content={item.messages.map(msg => `**${msg.role === 'user' ? 'User' : 'Legal Advisories'}**\n\n${msg.content}`).join('\n\n---\n\n')} />
+                          )}
+                          <button onClick={(e) => handleDelete(e, item.id)} className="p-2 text-gray-400 dark:text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete chat">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                           </button>
-                          <button className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
+                          <button className="p-2 text-gray-400 dark:text-neutral-500 hover:text-gray-900 dark:text-neutral-100 hover:bg-gray-100 dark:bg-neutral-800 rounded-lg transition-all">
                             {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                           </button>
                         </div>
                       </div>
                       
                       {isExpanded && item.messages && (
-                        <div className="p-6 bg-gray-50/50 border-t border-gray-100 space-y-6">
+                        <div className="p-6 bg-gray-50 dark:bg-neutral-900/50 border-t border-gray-100 dark:border-neutral-800 space-y-6">
                           {item.messages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                               <div className={`flex max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"} gap-4`}>
-                                <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-gray-200 text-gray-800 rounded-xl" : "bg-black rounded-full"}`}>
+                                <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-gray-200 dark:bg-neutral-700 text-gray-800 dark:text-neutral-200 rounded-xl" : "bg-black rounded-full"}`}>
                                   {msg.role === "user" ? (
                                     auth.currentUser?.photoURL ? (
                                       <img src={auth.currentUser.photoURL} alt="User" className="w-8 h-8 rounded-xl object-cover" referrerPolicy="no-referrer" />
@@ -206,7 +211,7 @@ export function History({ onResume }: HistoryProps) {
                                     )
                                   ) : <span className="text-white font-serif text-[18px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>}
                                 </div>
-                                <div className={`p-4 rounded-2xl ${msg.role === "user" ? "bg-gray-100 text-gray-900" : "bg-white border border-gray-200/80 shadow-sm text-gray-800"}`}>
+                                <div className={`p-4 rounded-2xl ${msg.role === "user" ? "bg-gray-100 dark:bg-neutral-800 text-gray-900 dark:text-neutral-100" : "bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800/80 shadow-sm text-gray-800 dark:text-neutral-200"}`}>
                                   <div className="text-[15px] prose prose-gray max-w-none prose-p:leading-relaxed">
                                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                                   </div>
@@ -221,11 +226,11 @@ export function History({ onResume }: HistoryProps) {
                 })
               ) : (
                 <div className="p-12 text-center flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                    <Search className="w-6 h-6 text-gray-400" />
+                  <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center mb-3">
+                    <Search className="w-6 h-6 text-gray-400 dark:text-neutral-500" />
                   </div>
-                  <h3 className="text-[15px] font-medium text-gray-900 mb-1">No history found</h3>
-                  <p className="text-[14px] text-gray-500 max-w-sm">
+                  <h3 className="text-[15px] font-medium text-gray-900 dark:text-neutral-100 mb-1">No history found</h3>
+                  <p className="text-[14px] text-gray-500 dark:text-neutral-400 max-w-sm">
                     We couldn't find any history items matching "{searchQuery}". Try adjusting your search.
                   </p>
                 </div>

@@ -85,10 +85,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white dark:bg-neutral-900 w-full max-w-md rounded-2xl shadow-xl overflow-hidden relative" onClick={(e) => e.stopPropagation()}>
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors"
+          className="absolute top-4 right-4 p-2 text-gray-400 dark:text-neutral-500 hover:text-gray-900 dark:text-neutral-100 bg-gray-50 dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -96,16 +96,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <div className="p-8">
           {view === 'verification_sent' ? (
             <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-[#c6a87c]/10 text-[#c6a87c] rounded-full flex items-center justify-center mx-auto mb-6">
                 <Mail className="w-8 h-8" />
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900">Check your email</h2>
-              <p className="text-gray-600 text-[15px]">
+              <h2 className="text-2xl font-serif font-medium text-gray-900 dark:text-neutral-100">Check your email</h2>
+              <p className="text-gray-600 dark:text-neutral-400 text-[15px]">
                 We've sent an email to <strong>{email}</strong> with further instructions.
               </p>
               <button
                 onClick={() => setView('login')}
-                className="mt-6 w-full py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
+                className="mt-6 w-full py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-[14px] font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-sm"
               >
                 Back to Login
               </button>
@@ -113,10 +113,13 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           ) : (
             <>
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900">
+                <div className="w-12 h-12 bg-black rounded flex items-center justify-center mx-auto mb-4">
+                  <span className="text-white font-serif text-[28px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
+                </div>
+                <h2 className="text-2xl font-serif font-medium text-gray-900 dark:text-neutral-100">
                   {view === 'login' ? 'Welcome back' : view === 'signup' ? 'Create an account' : 'Reset password'}
                 </h2>
-                <p className="text-gray-500 mt-2 text-[15px]">
+                <p className="text-gray-500 dark:text-neutral-400 mt-2 text-[15px]">
                   {view === 'login' ? 'Enter your details to access your account' : 
                    view === 'signup' ? 'Sign up to get started with Legal Advisories' : 
                    'Enter your email to receive a reset link'}
@@ -133,17 +136,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <form onSubmit={handleEmailAuth} className="space-y-4">
                 {view === 'signup' && (
                   <div className="space-y-1 mb-4">
-                    <label className="text-[13px] font-medium text-gray-700">Full Name</label>
+                    <label className="text-[13px] font-medium text-gray-700 dark:text-neutral-300">Full Name</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        <svg className="w-5 h-5 text-gray-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                       </div>
                       <input
                         type="text"
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[14px] outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                        className="w-full pl-10 pr-3 py-2.5 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-[14px] outline-none focus:bg-white dark:bg-neutral-900 focus:border-[#c6a87c] focus:ring-2 focus:ring-[#c6a87c]/20 transition-all"
                         placeholder="Jane Doe"
                       />
                     </div>
@@ -151,17 +154,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 )}
                 
                 <div className="space-y-1">
-                  <label className="text-[13px] font-medium text-gray-700">Email Address</label>
+                  <label className="text-[13px] font-medium text-gray-700 dark:text-neutral-300">Email Address</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="w-5 h-5 text-gray-400" />
+                      <Mail className="w-5 h-5 text-gray-400 dark:text-neutral-500" />
                     </div>
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[14px] outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                      className="w-full pl-10 pr-3 py-2.5 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-[14px] outline-none focus:bg-white dark:bg-neutral-900 focus:border-[#c6a87c] focus:ring-2 focus:ring-[#c6a87c]/20 transition-all"
                       placeholder="you@company.com"
                     />
                   </div>
@@ -170,12 +173,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 {view !== 'forgot_password' && (
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <label className="text-[13px] font-medium text-gray-700">Password</label>
+                      <label className="text-[13px] font-medium text-gray-700 dark:text-neutral-300">Password</label>
                       {view === 'login' && (
                         <button 
                           type="button" 
                           onClick={() => { setView('forgot_password'); setError(''); }}
-                          className="text-[12px] font-medium text-blue-600 hover:text-blue-700"
+                          className="text-[12px] font-medium text-[#c6a87c] hover:text-[#b5986c] transition-colors"
                         >
                           Forgot password?
                         </button>
@@ -183,20 +186,20 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     </div>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Lock className="w-5 h-5 text-gray-400" />
+                        <Lock className="w-5 h-5 text-gray-400 dark:text-neutral-500" />
                       </div>
                       <input
                         type={showPassword ? "text" : "password"}
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[14px] outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
+                        className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl text-[14px] outline-none focus:bg-white dark:bg-neutral-900 focus:border-[#c6a87c] focus:ring-2 focus:ring-[#c6a87c]/20 transition-all"
                         placeholder="••••••••"
                       />
                       <button 
                         type="button" 
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:text-neutral-400 focus:outline-none"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -213,8 +216,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                       onChange={(e) => setAcceptTerms(e.target.checked)}
                       className="mt-1"
                     />
-                    <label htmlFor="terms" className="text-[12px] text-gray-600 leading-tight">
-                      I accept the <a href="#" className="text-gray-900 font-medium hover:underline">Terms of Service</a> and <a href="#" className="text-gray-900 font-medium hover:underline">Privacy Policy</a>
+                    <label htmlFor="terms" className="text-[12px] text-gray-600 dark:text-neutral-400 leading-tight">
+                      I accept the <a href="#" className="text-gray-900 dark:text-neutral-100 font-medium hover:underline">Terms of Service</a> and <a href="#" className="text-gray-900 dark:text-neutral-100 font-medium hover:underline">Privacy Policy</a>
                     </label>
                   </div>
                 )}
@@ -222,7 +225,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-black dark:bg-white text-white dark:text-black rounded-xl text-[14px] font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed mt-2 flex items-center justify-center gap-2"
                 >
                   {loading ? 'Please wait...' : view === 'login' ? 'Sign in' : view === 'signup' ? 'Create account' : 'Send reset link'}
                   {!loading && <ArrowRight className="w-4 h-4" />}
@@ -233,17 +236,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <>
                   <div className="relative my-8">
                     <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200"></div>
+                      <div className="w-full border-t border-gray-200 dark:border-neutral-800"></div>
                     </div>
                     <div className="relative flex justify-center text-[13px]">
-                      <span className="bg-white px-4 text-gray-500 font-medium">OR CONTINUE WITH</span>
+                      <span className="bg-white dark:bg-neutral-900 px-4 text-gray-500 dark:text-neutral-400 font-medium">OR CONTINUE WITH</span>
                     </div>
                   </div>
 
                   <button
                     onClick={handleGoogleSignIn}
                     disabled={loading}
-                    className="w-full py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                    className="w-full py-2.5 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 rounded-xl text-[14px] font-semibold hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                   >
                     <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -256,23 +259,23 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 </>
               )}
 
-              <div className="mt-8 text-center text-[13px] text-gray-500">
+              <div className="mt-8 text-center text-[13px] text-gray-500 dark:text-neutral-400">
                 {view === 'login' ? (
                   <>
                     Don't have an account?{' '}
-                    <button onClick={() => { setView('signup'); setError(''); }} className="text-gray-900 font-medium hover:underline">
+                    <button onClick={() => { setView('signup'); setError(''); }} className="text-gray-900 dark:text-neutral-100 font-medium hover:underline">
                       Sign up
                     </button>
                   </>
                 ) : view === 'signup' ? (
                   <>
                     Already have an account?{' '}
-                    <button onClick={() => { setView('login'); setError(''); }} className="text-gray-900 font-medium hover:underline">
+                    <button onClick={() => { setView('login'); setError(''); }} className="text-gray-900 dark:text-neutral-100 font-medium hover:underline">
                       Sign in
                     </button>
                   </>
                 ) : (
-                  <button onClick={() => { setView('login'); setError(''); }} className="text-gray-900 font-medium hover:underline">
+                  <button onClick={() => { setView('login'); setError(''); }} className="text-gray-900 dark:text-neutral-100 font-medium hover:underline">
                     Back to login
                   </button>
                 )}

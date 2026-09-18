@@ -1,44 +1,24 @@
 import fs from 'fs';
 
-let content = fs.readFileSync('server.ts', 'utf8');
+let content = fs.readFileSync('src/pages/Dashboard.tsx', 'utf8');
 
-const regexDashboard = /app\.get\("\/api\/user\/dashboard", requireAuth, async \(req: AuthRequest, res\) => \{[\s\S]*?res\.json\(\{\n      plan: userData\?\.plan \|\| 'Free',[\s\S]*?\}\);\n  \} catch \(error: any\)/m;
+// 1. Change the action buttons row to justify-start on mobile and use smaller gaps
+content = content.replace(
+  /<div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 sm:gap-6 text-\[14px\] font-semibold text-gray-600">/,
+  `<div className="flex flex-wrap items-center justify-start gap-x-4 gap-y-3 sm:gap-6 text-[14px] font-semibold text-gray-600">`
+);
 
-const newDashboard = `app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
-  try {
-    const userId = req.user?.uid;
-    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+// 2. Change the Ask Legal Advisories button container to not have huge top margin on mobile, maybe gap-4
+content = content.replace(
+  /<div className="flex items-center justify-center sm:justify-start gap-5 w-full sm:w-auto mt-2 sm:mt-0">/,
+  `<div className="flex items-center justify-start gap-5 w-full sm:w-auto mt-4 sm:mt-0">`
+);
 
-    const userRef = adminDb.collection('users').doc(userId);
-    const userDoc = await userRef.get();
-    const userData = userDoc.exists ? userDoc.data() : { plan: 'Free' };
-    
-    const plan = userData?.plan || 'Free';
-    const isLawyer = plan === 'Lawyer' || plan === 'Pro' || plan === 'Premium';
-    const isIndividual = plan === 'Individual';
-    const period = isIndividual ? new Date().toISOString().substring(0, 7) : new Date().toISOString().split('T')[0];
+// 3. For the pills below, maybe keep them centered but ensure they look good, or make them scrollable horizontally on mobile?
+// Let's just make them justify-center with gap-2
+content = content.replace(
+  /<div className="flex flex-wrap items-center justify-center gap-3 mt-8">/,
+  `<div className="flex flex-wrap items-center justify-center gap-2 mt-6">`
+);
 
-    const usageDoc = await userRef.collection('usage').doc(period).get();
-    const memUsage = usageCache.get(userId)?.history[period];
-    const usageData = memUsage || (usageDoc.exists ? usageDoc.data() : { chat: 0, doc: 0 });
-    
-    const billingSnapshot = await userRef.collection('billing_history').orderBy('created_at', 'desc').limit(5).get();
-    const billingHistory = billingSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    const docsSnapshot = await adminDb.collection('documents').where('userId', '==', userId).orderBy('created_at', 'desc').limit(5).get();
-    const savedDocs = docsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    res.json({
-      plan: plan,
-      usage: usageData,
-      billingHistory,
-      savedDocs,
-      limits: {
-        chat: isLawyer ? -1 : (isIndividual ? 500 : 20),
-        doc: isLawyer ? -1 : (isIndividual ? 100 : 3)
-      }
-    });
-  } catch (error: any)`;
-
-content = content.replace(regexDashboard, newDashboard);
-fs.writeFileSync('server.ts', content);
+fs.writeFileSync('src/pages/Dashboard.tsx', content);

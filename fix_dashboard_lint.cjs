@@ -1,43 +1,10 @@
 const fs = require('fs');
+let content = fs.readFileSync('src/pages/Dashboard.tsx', 'utf8');
 
-let code = fs.readFileSync('src/pages/Dashboard.tsx', 'utf-8');
+// Remove the faulty useEffect
+content = content.replace(
+  /useEffect\(\(\) => \{\s+if \(chatHistory\.length === 0 && user\?\.uid\) \{\s+fetch\('\/api\/suggestions', \{\s+headers: \{ 'Authorization': `Bearer \$\{auth\.currentUser\?\.accessToken \|\| ''\}` \}\s+\}\)\s+\.then\(res => res\.json\(\)\)\s+\.then\(data => \{\s+if \(data && \(data\.templates \|\| data\.precedents\)\) \{\s+setKnowledgeSuggestions\(data\);\s+\}\s+\}\)\s+\.catch\(err => console\.error\("Failed to load knowledge graph", err\)\);\s+\}\s+\}, \[chatHistory\.length, user\?\.uid\]\);/,
+  ''
+);
 
-const oldCatch = `    } catch (error: any) {
-      console.error(error);
-      const errorMsg = { role: 'model' as const, content: \`**Error:** Failed to connect to the Legal Advisories backend.\\n\\nDetails: \${error.message}\` };
-      setChatHistory(prev => [...prev, errorMsg]);
-      if (currentHistoryId) {
-        updateHistoryItemMessages(currentHistoryId, [...chatHistory, userMessage, errorMsg]);
-      }
-    } finally {`;
-
-const newCatch = `    } catch (error: any) {
-      console.error(error);
-      const errorMsg = { role: 'model' as const, content: \`**Error:** Failed to connect to the Legal Advisories backend.\\n\\nDetails: \${error.message}\` };
-      setChatHistory(prev => {
-        const newHistory = [...prev, errorMsg];
-        if (currentHistoryId) {
-          updateHistoryItemMessages(currentHistoryId, newHistory);
-        }
-        return newHistory;
-      });
-    } finally {`;
-
-code = code.replace(oldCatch, newCatch);
-
-const oldSuccess = `      const data = await res.json();
-      const modelMsg = { role: 'model' as const, content: data.reply || "Error parsing response." };
-      setChatHistory(prev => [...prev, modelMsg]);
-      updateHistoryItemMessages(hId, [...chatHistory, userMessage, modelMsg]);`;
-
-const newSuccess = `      const data = await res.json();
-      const modelMsg = { role: 'model' as const, content: data.reply || "Error parsing response." };
-      setChatHistory(prev => {
-        const newHistory = [...prev, modelMsg];
-        updateHistoryItemMessages(hId, newHistory);
-        return newHistory;
-      });`;
-
-code = code.replace(oldSuccess, newSuccess);
-
-fs.writeFileSync('src/pages/Dashboard.tsx', code);
+fs.writeFileSync('src/pages/Dashboard.tsx', content);

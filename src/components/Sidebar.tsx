@@ -63,10 +63,10 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
 
   if (!isOpen) {
     return (
-      <aside className="hidden md:flex w-[60px] bg-[#F9F9FA] flex-col items-center py-4 h-screen text-gray-800 border-r border-gray-200/80 transition-all flex-shrink-0 z-40">
+      <aside className="hidden md:flex w-[60px] bg-[#F9F9FA] dark:bg-neutral-950 flex-col items-center py-4 h-full text-gray-800 dark:text-neutral-200 border-r border-gray-200 dark:border-neutral-800/80 transition-all flex-shrink-0 z-40">
         <button 
           onClick={onToggle}
-          className="text-gray-400 hover:text-gray-700 transition-colors p-1.5 rounded-lg hover:bg-gray-100"
+          className="text-gray-400 dark:text-neutral-500 hover:text-gray-700 dark:text-neutral-300 transition-colors p-1.5 rounded-lg hover:bg-gray-100 dark:bg-neutral-800"
           title="Expand Sidebar"
         >
           <SidebarIcon className="w-5 h-5" />
@@ -83,14 +83,14 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
         onClick={onToggle}
       />
       
-      <aside className="fixed md:static inset-y-0 left-0 z-50 w-[260px] bg-[#F9F9FA] flex flex-col h-screen text-gray-800 border-r border-gray-200/80 transition-all flex-shrink-0">
+      <aside className="fixed md:static inset-y-0 left-0 z-50 w-[260px] bg-[#F9F9FA] dark:bg-neutral-950 flex flex-col h-full text-gray-800 dark:text-neutral-200 border-r border-gray-200 dark:border-neutral-800/80 transition-all flex-shrink-0">
         <div className="flex-1 overflow-y-auto min-h-0 p-4 custom-scrollbar">
         {/* Top Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="relative" ref={workspaceRef}>
             <button 
               onClick={() => setIsWorkspaceOpen(!isWorkspaceOpen)}
-              className="flex items-center gap-2 hover:bg-gray-100 p-1.5 -ml-1.5 rounded-lg transition-colors group"
+              className="flex items-center gap-2 hover:bg-gray-100 dark:bg-neutral-800 p-1.5 -ml-1.5 rounded-lg transition-colors group"
             >
               <motion.div 
                 key={`logo-${currentPage}`}
@@ -106,7 +106,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
                 initial={{ opacity: 0, x: -5 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
-                className="text-[16px] font-bold text-[#0F172A] tracking-tight whitespace-nowrap truncate max-w-[140px]"
+                className="text-[16px] font-bold text-[#0F172A] dark:text-neutral-100 tracking-tight whitespace-nowrap truncate max-w-[140px]"
               >
                 {user?.displayName || "Legal Advisories"}
               </motion.span>
@@ -115,21 +115,21 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             
             {/* Workspace Dropdown */}
             {isWorkspaceOpen && (
-              <div className="absolute top-full left-0 mt-1 w-56 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-xl py-2 z-50">
-                <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                  <div className="text-[12px] text-gray-500 font-medium mb-1">{user?.email || "Account"}</div>
+              <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-xl py-2 z-50">
+                <div className="px-4 py-2 border-b border-gray-100 dark:border-neutral-800 mb-1">
+                  <div className="text-[12px] text-gray-500 dark:text-neutral-400 font-medium mb-1">{user?.email || "Account"}</div>
                   <div className="flex items-center gap-2">
                     <div className="w-5 h-5 bg-[#1C2333] rounded flex items-center justify-center text-white text-[10px] font-semibold">
                       {user?.displayName ? user.displayName.substring(0, 2).toUpperCase() : "U"}
                     </div>
-                    <span className="text-[13px] font-semibold text-gray-900">{user?.displayName || "User"}</span>
+                    <span className="text-[13px] font-semibold text-gray-900 dark:text-neutral-100">{user?.displayName || "User"}</span>
                   </div>
                 </div>
                 <div className="px-2">
                 </div>
-                <div className="border-t border-gray-100 mt-1 pt-1 px-2">
-                  <button className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 rounded-lg text-gray-700 text-[13px]">
-                    <Plus className="w-4 h-4 text-gray-400" />
+                <div className="border-t border-gray-100 dark:border-neutral-800 mt-1 pt-1 px-2">
+                  <button className="w-full flex items-center gap-2 px-2 py-1.5 hover:bg-gray-50 dark:bg-neutral-800 rounded-lg text-gray-700 dark:text-neutral-300 text-[13px]">
+                    <Plus className="w-4 h-4 text-gray-400 dark:text-neutral-500" />
                     Create workspace
                   </button>
                   <button 
@@ -149,7 +149,7 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
           
           <button 
             onClick={onToggle}
-            className="text-gray-400 hover:text-gray-700 transition-colors p-1 rounded-lg hover:bg-gray-100"
+            className="text-gray-400 dark:text-neutral-500 hover:text-gray-700 dark:text-neutral-300 transition-colors p-1 rounded-lg hover:bg-gray-100 dark:bg-neutral-800"
             title="Collapse Sidebar"
           >
             <SidebarIcon className="w-[18px] h-[18px]" />
@@ -159,13 +159,13 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
         {/* Create Button */}
         <button 
           onClick={() => { onPageChange("create"); if (onChatSelect) onChatSelect(null); if (window.innerWidth < 768) onToggle(); }}
-          className="w-full flex items-center justify-between bg-white border border-gray-200 shadow-sm hover:shadow transition-shadow rounded-xl px-3 py-2 text-[14px] font-semibold text-gray-800 mb-6"
+          className="w-full flex items-center justify-between bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 shadow-sm hover:shadow transition-shadow rounded-xl px-3 py-2 text-[14px] font-semibold text-gray-800 dark:text-neutral-200 mb-6"
         >
           <div className="flex items-center gap-2">
             <Plus className="w-[18px] h-[18px]" />
             Create
           </div>
-          <span className="text-gray-400 font-serif font-normal italic">⌘K</span>
+          <span className="text-gray-400 dark:text-neutral-500 font-serif font-normal italic">⌘K</span>
         </button>
 
         {/* Navigation */}
@@ -174,10 +174,10 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             onClick={() => { onPageChange("dashboard"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "dashboard" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "dashboard" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <Wand2 className={cn("w-[18px] h-[18px]", currentPage === "dashboard" ? "text-gray-900" : "text-gray-500")} />
+            <Wand2 className={cn("w-[18px] h-[18px]", currentPage === "dashboard" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             Assistant
           </button>
 
@@ -186,10 +186,10 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
               onClick={() => { onPageChange("vault"); if (window.innerWidth < 768) onToggle(); }}
               className={cn(
                 "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-                currentPage.startsWith("vault") ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+                currentPage.startsWith("vault") ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
               )}
             >
-              <Folder className={cn("w-[18px] h-[18px]", currentPage.startsWith("vault") ? "text-gray-900" : "text-gray-500")} />
+              <Folder className={cn("w-[18px] h-[18px]", currentPage.startsWith("vault") ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
               Vault
             </button>
           </div>
@@ -198,10 +198,10 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             onClick={() => { onPageChange("workflows"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "workflows" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "workflows" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <Network className={cn("w-[18px] h-[18px]", currentPage === "workflows" ? "text-gray-900" : "text-gray-500")} />
+            <Network className={cn("w-[18px] h-[18px]", currentPage === "workflows" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             Workflows
           </button>
 
@@ -209,10 +209,10 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             onClick={() => { onPageChange("history"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "history" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "history" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <Clock className={cn("w-[18px] h-[18px]", currentPage === "history" ? "text-gray-900" : "text-gray-500")} />
+            <Clock className={cn("w-[18px] h-[18px]", currentPage === "history" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             History
           </button>
 
@@ -220,10 +220,10 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             onClick={() => { onPageChange("shared-threads"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "shared-threads" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "shared-threads" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <Share2 className={cn("w-[18px] h-[18px]", currentPage === "shared-threads" ? "text-gray-900" : "text-gray-500")} />
+            <Share2 className={cn("w-[18px] h-[18px]", currentPage === "shared-threads" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             Shared Threads
           </button>
 
@@ -231,20 +231,20 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             onClick={() => { onPageChange("library"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "library" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "library" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <BookOpen className={cn("w-[18px] h-[18px]", currentPage === "library" ? "text-gray-900" : "text-gray-500")} />
+            <BookOpen className={cn("w-[18px] h-[18px]", currentPage === "library" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             Library
           </button>
           <button 
             onClick={() => { onPageChange("document-analysis"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "document-analysis" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "document-analysis" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <FileText className={cn("w-[18px] h-[18px]", currentPage === "document-analysis" ? "text-gray-900" : "text-gray-500")} />
+            <FileText className={cn("w-[18px] h-[18px]", currentPage === "document-analysis" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             Document Analysis
           </button>
 
@@ -252,10 +252,10 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             onClick={() => { onPageChange("knowledge"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "knowledge" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "knowledge" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <Database className={cn("w-[18px] h-[18px]", currentPage === "knowledge" ? "text-gray-900" : "text-gray-500")} />
+            <Database className={cn("w-[18px] h-[18px]", currentPage === "knowledge" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             Knowledge
           </button>
 
@@ -263,10 +263,10 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             onClick={() => { onPageChange("guidance"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "guidance" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "guidance" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <FileText className={cn("w-[18px] h-[18px]", currentPage === "guidance" ? "text-gray-900" : "text-gray-500")} />
+            <FileText className={cn("w-[18px] h-[18px]", currentPage === "guidance" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             Guidance
           </button>
 
@@ -274,42 +274,42 @@ export function Sidebar({ currentPage, onPageChange, isOpen, onToggle, onLogout,
             onClick={() => { onPageChange("tips"); if (window.innerWidth < 768) onToggle(); }}
             className={cn(
               "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-              currentPage === "tips" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+              currentPage === "tips" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
             )}
           >
-            <Lightbulb className={cn("w-[18px] h-[18px]", currentPage === "tips" ? "text-gray-900" : "text-gray-500")} />
+            <Lightbulb className={cn("w-[18px] h-[18px]", currentPage === "tips" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
             Tips
           </button>
         </nav>
       </div>
 
-      <div className="mt-auto p-4 space-y-1 border-t border-gray-200/60">
+      <div className="mt-auto p-4 space-y-1 border-t border-gray-200 dark:border-neutral-800/60">
         <button 
           onClick={() => { onPageChange("help"); onToggle(); }}
           className={cn(
             "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-            currentPage === "help" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+            currentPage === "help" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
           )}
         >
-          <HelpCircle className={cn("w-[18px] h-[18px]", currentPage === "help" ? "text-gray-900" : "text-gray-500")} />
+          <HelpCircle className={cn("w-[18px] h-[18px]", currentPage === "help" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
           Help
         </button>
         <button 
           onClick={() => { onPageChange("options"); onToggle(); }}
           className={cn(
             "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[14px] font-medium transition-colors",
-            currentPage === "options" ? "bg-white shadow-sm border border-gray-100 text-gray-900 font-semibold" : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900"
+            currentPage === "options" ? "bg-white dark:bg-neutral-900 shadow-sm border border-gray-100 dark:border-neutral-800 text-gray-900 dark:text-neutral-100 font-semibold" : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100"
           )}
         >
-          <Settings className={cn("w-[18px] h-[18px]", currentPage === "options" ? "text-gray-900" : "text-gray-500")} />
+          <Settings className={cn("w-[18px] h-[18px]", currentPage === "options" ? "text-gray-900 dark:text-neutral-100" : "text-gray-500 dark:text-neutral-400")} />
           Settings
         </button>
         
-        <div className="pt-4 mt-4 border-t border-gray-200/60 px-3 flex flex-wrap gap-x-3 gap-y-1">
-          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'terms' }))} className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Terms</button>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'privacy' }))} className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Privacy</button>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'disclaimer' }))} className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Disclaimer</button>
-          <a href="mailto:support@legaladvisories.example.com" className="text-[11px] text-gray-400 hover:text-gray-700 transition-colors">Contact</a>
+        <div className="pt-4 mt-4 border-t border-gray-200 dark:border-neutral-800/60 px-3 flex flex-wrap gap-x-3 gap-y-1">
+          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'terms' }))} className="text-[11px] text-gray-400 dark:text-neutral-500 hover:text-gray-700 dark:text-neutral-300 transition-colors">Terms</button>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'privacy' }))} className="text-[11px] text-gray-400 dark:text-neutral-500 hover:text-gray-700 dark:text-neutral-300 transition-colors">Privacy</button>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('navigate', { detail: 'disclaimer' }))} className="text-[11px] text-gray-400 dark:text-neutral-500 hover:text-gray-700 dark:text-neutral-300 transition-colors">Disclaimer</button>
+          <a href="mailto:support@legaladvisories.example.com" className="text-[11px] text-gray-400 dark:text-neutral-500 hover:text-gray-700 dark:text-neutral-300 transition-colors">Contact</a>
         </div>
       </div>
     </aside>

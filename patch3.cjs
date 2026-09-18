@@ -1,14 +1,6 @@
 const fs = require('fs');
-let content = fs.readFileSync('src/pages/Billing.tsx', 'utf8');
+let content = fs.readFileSync('src/pages/Dashboard.tsx', 'utf-8');
 
-content = content.replace(
-  '{renderPrice(isYearly ? 4790 : 499)}',
-  '{renderPrice(isYearly ? 4790 : 499, isYearly ? "plan_starter_yearly" : "plan_starter_monthly")}'
-);
-
-content = content.replace(
-  '{renderPrice(isYearly ? 19190 : 1999)}',
-  '{renderPrice(isYearly ? 19190 : 1999, isYearly ? "plan_pro_yearly" : "plan_pro_monthly")}'
-);
-
-fs.writeFileSync('src/pages/Billing.tsx', content);
+// There's a trailing syntax error, likely due to an unclosed block or misplaced bracket.
+// I will just use Prettier to format it and see if it's a syntax error.
+fs.writeFileSync('src/pages/Dashboard.tsx', content);

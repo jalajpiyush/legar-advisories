@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Settings, User, Bell, Shield, Key, Database, Globe, Monitor, CreditCard } from 'lucide-react';
 import { User as FirebaseUser, db } from '../lib/auth';
 import { doc, getDoc, collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-import { Billing } from './Billing';
+import { motion } from "motion/react";
+
 
 const optionTabs = [
   { id: "overview", label: "Account Dashboard", icon: Monitor },
@@ -27,62 +28,31 @@ export function Options({ user, onUpdate }: OptionsProps) {
     const fetchDashboard = async () => {
       if (activeTab === 'overview' && user) {
         try {
-          // Fetch user data directly from Firestore client side
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          const userData = userDoc.exists() ? userDoc.data() : { plan: 'Free' };
-          
-          let rawPlan = userData?.plan || 'Free';
-          let plan = 'Free';
-          const str = String(rawPlan).toLowerCase().trim();
-          if (str.includes('lawyer') || str.includes('pro') || str.includes('enterprise')) plan = 'Lawyer';
-          else if (str.includes('individual')) plan = 'Individual';
-          
-          const isLawyer = plan === 'Lawyer';
-          const isIndividual = plan === 'Individual';
-          
-          const now = new Date();
-          const todayStr = now.toISOString().split('T')[0];
-          const monthStr = todayStr.substring(0, 7);
-      
-          let chatUsedToday = Number(userData?.chatUsedToday) || 0;
-          let chatUsedMonth = Number(userData?.chatUsedMonth) || 0;
-          let documentUsedToday = Number(userData?.documentUsedToday) || 0;
-          let documentUsedMonth = Number(userData?.documentUsedMonth) || 0;
-      
-          if (userData?.lastChatDate !== todayStr) chatUsedToday = 0;
-          if (userData?.lastDocDate !== todayStr) documentUsedToday = 0;
-          if (userData?.lastChatMonth !== monthStr) chatUsedMonth = 0;
-          if (userData?.lastDocMonth !== monthStr) documentUsedMonth = 0;
-          
-          let billingHistory: any[] = [];
           try {
             const token = await user.getIdToken();
             const res = await fetch("/api/user/profile", { headers: { Authorization: `Bearer ${token}` } });
             if (res.ok) {
               const data = await res.json();
-              if (data.history) billingHistory = data.history.slice(0, 5);
+              
+              let savedDocs: any[] = [];
+              try {
+                const docsSnap = await getDocs(query(collection(db, 'documents'), where('userId', '==', user.uid), orderBy('created_at', 'desc'), limit(5)));
+                savedDocs = docsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+              } catch(e) {}
+              
+              setDashboardData({
+                plan: data.plan,
+                usage: data.usage,
+                limits: data.limits,
+                billingHistory: data.history ? data.history.slice(0, 5) : [],
+                savedDocs
+              });
+            } else {
+               console.error("Failed to fetch profile");
             }
-          } catch(e) {}
-          
-          let savedDocs: any[] = [];
-          try {
-            const docsSnap = await getDocs(query(collection(db, 'documents'), where('userId', '==', user.uid), orderBy('created_at', 'desc'), limit(5)));
-            savedDocs = docsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-          } catch(e) {}
-          
-          setDashboardData({
-            plan: plan,
-            usage: {
-              chat: isIndividual ? chatUsedMonth : chatUsedToday,
-              doc: isIndividual ? documentUsedMonth : documentUsedToday
-            },
-            billingHistory,
-            savedDocs,
-            limits: {
-              chat: isLawyer ? -1 : (isIndividual ? 500 : 20),
-              doc: isLawyer ? -1 : (isIndividual ? 100 : 3)
-            }
-          });
+          } catch(e) {
+             console.error("Error fetching profile", e);
+          }
         } catch (err) {
           console.error('Error fetching dashboard data:', err);
         }
@@ -95,7 +65,24 @@ export function Options({ user, onUpdate }: OptionsProps) {
   const [firstName, setFirstName] = useState(user?.displayName?.split(" ")[0] || "Jane");
   const [lastName, setLastName] = useState(user?.displayName?.split(" ").slice(1).join(" ") || "Doe");
   const [email, setEmail] = useState(user?.email || "jane@whitford.com");
-  const [theme, setTheme] = useState("System Default");
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("legal_advisories_theme") || "System Default";
+  });
+  
+  React.useEffect(() => {
+    localStorage.setItem("legal_advisories_theme", theme);
+    if (theme === "Dark") {
+      document.documentElement.classList.add("dark");
+    } else if (theme === "Light") {
+      document.documentElement.classList.remove("dark");
+    } else {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    }
+  }, [theme]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -138,19 +125,19 @@ export function Options({ user, onUpdate }: OptionsProps) {
   }, [user]);
 
   return (
-    <div className="flex flex-col h-full bg-white pt-16 md:pt-0">
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 pt-16 md:pt-0">
       {/* Header section */}
-      <div className="px-8 py-6 border-b border-gray-100 bg-white sticky top-0 z-10">
+      <div className="px-8 py-6 border-b border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-2xl font-serif text-gray-900 mb-1">Settings</h1>
-            <p className="text-[14px] text-gray-500">Manage your account settings and preferences.</p>
+            <motion.h1 layoutId="page-title" className="text-2xl font-serif text-gray-900 dark:text-neutral-100 mb-1">Settings</motion.h1>
+            <motion.p layoutId="page-description" className="text-[14px] text-gray-500 dark:text-neutral-400">Manage your account settings and preferences.</motion.p>
           </div>
         </div>
       </div>
 
       {/* Content section */}
-      <div className="flex-1 overflow-y-auto bg-[#FAFAFA]">
+      <div className="flex-1 overflow-y-auto bg-[#FAFAFA] dark:bg-neutral-900">
         <div className="max-w-[1000px] mx-auto p-8 flex flex-col md:flex-row gap-8">
           
           {/* Sidebar Tabs */}
@@ -160,14 +147,20 @@ export function Options({ user, onUpdate }: OptionsProps) {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    if (tab.id === 'plan') {
+                      window.dispatchEvent(new CustomEvent('navigate', { detail: 'billing' }));
+                    } else {
+                      setActiveTab(tab.id);
+                    }
+                  }}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-colors ${
                     activeTab === tab.id
-                      ? "bg-white text-blue-600 shadow-sm border border-gray-200/80"
-                      : "text-gray-600 hover:bg-gray-100/50 hover:text-gray-900 border border-transparent"
+                      ? "bg-white dark:bg-neutral-900 text-blue-600 shadow-sm border border-gray-200 dark:border-neutral-800/80"
+                      : "text-gray-600 dark:text-neutral-400 hover:bg-gray-100 dark:bg-neutral-800/50 hover:text-gray-900 dark:text-neutral-100 border border-transparent"
                   }`}
                 >
-                  <Icon className={`w-[18px] h-[18px] ${activeTab === tab.id ? "text-blue-600" : "text-gray-400"}`} />
+                  <Icon className={`w-[18px] h-[18px] ${activeTab === tab.id ? "text-blue-600" : "text-gray-400 dark:text-neutral-500"}`} />
                   {tab.label}
                 </button>
               );
@@ -175,43 +168,43 @@ export function Options({ user, onUpdate }: OptionsProps) {
           </div>
 
           {/* Tab Content */}
-          <div className="flex-1 bg-white border border-gray-200/80 rounded-2xl p-8 shadow-sm">
+          <div className="flex-1 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800/80 rounded-2xl p-8 shadow-sm">
                         {activeTab === "overview" && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Account Dashboard</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 border-b border-gray-100 dark:border-neutral-800 pb-4">Account Dashboard</h2>
                 {dashboardData ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Current Plan & Usage */}
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-4">Current Plan</h3>
-                      <div className="text-3xl font-bold text-blue-600 mb-2">{dashboardData.plan}</div>
-                      <button onClick={() => setActiveTab('plan')} className="text-sm text-blue-500 hover:underline">Manage Subscription</button>
+                    <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-4">Current Plan</h3>
+                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">{dashboardData.plan}</div>
+                      <button onClick={() => setActiveTab('plan')} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">Manage Subscription</button>
                     </div>
 
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                    <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-4">
                         {dashboardData.plan === 'Free' ? "Today's Usage" : "Monthly Usage"}
                       </h3>
                       <div className="space-y-4">
                         <div>
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600">AI Chats</span>
-                            <span className="font-medium text-gray-900">
+                            <span className="text-gray-600 dark:text-neutral-400">AI Chats</span>
+                            <span className="font-medium text-gray-900 dark:text-neutral-100">
                               {dashboardData.usage?.chat || 0} / {dashboardData.limits.chat === -1 ? 'Unlimited' : dashboardData.limits.chat}
                             </span>
                           </div>
-                          <div className="w-full bg-gray-100 rounded-full h-2">
+                          <div className="w-full bg-gray-100 dark:bg-neutral-800 rounded-full h-2">
                             <div className="bg-blue-600 h-2 rounded-full" style={{ width: dashboardData.limits.chat === -1 ? '100%' : `${Math.min(((dashboardData.usage?.chat || 0) / dashboardData.limits.chat) * 100, 100)}%` }}></div>
                           </div>
                         </div>
                         <div>
                           <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-600">Document Analyses</span>
-                            <span className="font-medium text-gray-900">
+                            <span className="text-gray-600 dark:text-neutral-400">Document Analyses</span>
+                            <span className="font-medium text-gray-900 dark:text-neutral-100">
                               {dashboardData.usage?.doc || 0} / {dashboardData.limits.doc === -1 ? 'Unlimited' : dashboardData.limits.doc}
                             </span>
                           </div>
-                          <div className="w-full bg-gray-100 rounded-full h-2">
+                          <div className="w-full bg-gray-100 dark:bg-neutral-800 rounded-full h-2">
                             <div className="bg-blue-600 h-2 rounded-full" style={{ width: dashboardData.limits.doc === -1 ? '100%' : `${Math.min(((dashboardData.usage?.doc || 0) / dashboardData.limits.doc) * 100, 100)}%` }}></div>
                           </div>
                         </div>
@@ -219,12 +212,12 @@ export function Options({ user, onUpdate }: OptionsProps) {
                     </div>
 
                     {/* Payment History */}
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm col-span-1 md:col-span-2">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent Payments</h3>
+                    <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm col-span-1 md:col-span-2">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-4">Recent Payments</h3>
                       {dashboardData.billingHistory && dashboardData.billingHistory.length > 0 ? (
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm text-left text-gray-500">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                          <table className="w-full text-sm text-left text-gray-500 dark:text-neutral-400">
+                            <thead className="text-xs text-gray-700 dark:text-neutral-300 uppercase bg-gray-50 dark:bg-neutral-800 border-b">
                               <tr>
                                 <th className="px-4 py-3">Date</th>
                                 <th className="px-4 py-3">Plan</th>
@@ -247,17 +240,17 @@ export function Options({ user, onUpdate }: OptionsProps) {
                           </table>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-500">No payment history found.</p>
+                        <p className="text-sm text-gray-500 dark:text-neutral-400">No payment history found.</p>
                       )}
                     </div>
 
                     {/* Saved Documents */}
-                    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm col-span-1 md:col-span-2">
-                      <h3 className="text-sm font-semibold text-gray-900 mb-4">Saved Documents</h3>
+                    <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm col-span-1 md:col-span-2">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-4">Saved Documents</h3>
                       {dashboardData.savedDocs && dashboardData.savedDocs.length > 0 ? (
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm text-left text-gray-500">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
+                          <table className="w-full text-sm text-left text-gray-500 dark:text-neutral-400">
+                            <thead className="text-xs text-gray-700 dark:text-neutral-300 uppercase bg-gray-50 dark:bg-neutral-800 border-b">
                               <tr>
                                 <th className="px-4 py-3">Date</th>
                                 <th className="px-4 py-3">Title</th>
@@ -269,7 +262,7 @@ export function Options({ user, onUpdate }: OptionsProps) {
                               {dashboardData.savedDocs.map((doc: any) => (
                                 <tr key={doc.id} className="border-b">
                                   <td className="px-4 py-3">{new Date(doc.created_at).toLocaleDateString()}</td>
-                                  <td className="px-4 py-3 font-medium text-gray-900">{doc.title || "Untitled Document"}</td>
+                                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-neutral-100">{doc.title || "Untitled Document"}</td>
                                   <td className="px-4 py-3">{doc.type || "Analysis"}</td>
                                   <td className="px-4 py-3">
                                     <button className="text-blue-600 hover:underline">View</button>
@@ -280,22 +273,22 @@ export function Options({ user, onUpdate }: OptionsProps) {
                           </table>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-500">No saved documents found.</p>
+                        <p className="text-sm text-gray-500 dark:text-neutral-400">No saved documents found.</p>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-500">Loading dashboard...</div>
+                  <div className="text-sm text-gray-500 dark:text-neutral-400">Loading dashboard...</div>
                 )}
               </div>
             )}
 
             {activeTab === "account" && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Account Profile</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 border-b border-gray-100 dark:border-neutral-800 pb-4">Account Profile</h2>
                 
                 <div className="flex items-center gap-6">
-                  <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-2xl font-medium overflow-hidden">
+                  <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center text-gray-400 dark:text-neutral-500 text-2xl font-medium overflow-hidden">
                     <img 
                       src={user?.photoURL || 'https://upload.wikimedia.org/wikipedia/commons/b/b3/Paul_Graham_%28cropped%29.jpg'} 
                       alt="Profile" 
@@ -303,25 +296,25 @@ export function Options({ user, onUpdate }: OptionsProps) {
                     />
                   </div>
                   <div>
-                    <button className="bg-white border border-gray-200 text-gray-800 px-4 py-2 rounded-lg text-[13px] font-semibold hover:bg-gray-50 transition-colors shadow-sm mb-2">
+                    <button className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 text-gray-800 dark:text-neutral-200 px-4 py-2 rounded-lg text-[13px] font-semibold hover:bg-gray-50 dark:bg-neutral-800 transition-colors shadow-sm mb-2">
                       Change Avatar
                     </button>
-                    <p className="text-[12px] text-gray-500">JPG, GIF or PNG. 1MB max.</p>
+                    <p className="text-[12px] text-gray-500 dark:text-neutral-400">JPG, GIF or PNG. 1MB max.</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
                   <div className="space-y-2">
-                    <label className="text-[13px] font-medium text-gray-700">First Name</label>
-                    <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 transition-colors" />
+                    <label className="text-[13px] font-medium text-gray-700 dark:text-neutral-300">First Name</label>
+                    <input type="text" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full px-3 py-2 border border-gray-200 dark:border-neutral-800 rounded-lg text-[14px] outline-none focus:border-blue-500 transition-colors" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[13px] font-medium text-gray-700">Last Name</label>
-                    <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 transition-colors" />
+                    <label className="text-[13px] font-medium text-gray-700 dark:text-neutral-300">Last Name</label>
+                    <input type="text" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full px-3 py-2 border border-gray-200 dark:border-neutral-800 rounded-lg text-[14px] outline-none focus:border-blue-500 transition-colors" />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <label className="text-[13px] font-medium text-gray-700">Email Address</label>
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 transition-colors" />
+                    <label className="text-[13px] font-medium text-gray-700 dark:text-neutral-300">Email Address</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2 border border-gray-200 dark:border-neutral-800 rounded-lg text-[14px] outline-none focus:border-blue-500 transition-colors" />
                   </div>
                 </div>
 
@@ -335,7 +328,7 @@ export function Options({ user, onUpdate }: OptionsProps) {
                   <button 
                     onClick={handleSaveChanges}
                     disabled={isSaving}
-                    className="w-full sm:w-auto bg-black text-white px-8 py-2.5 rounded-lg text-[14px] font-semibold hover:bg-gray-800 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-black dark:bg-white text-white dark:text-black px-8 py-2.5 rounded-lg text-[14px] font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isSaving ? (
                       <>
@@ -352,12 +345,12 @@ export function Options({ user, onUpdate }: OptionsProps) {
 
             {activeTab === "appearance" && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Appearance Settings</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 border-b border-gray-100 dark:border-neutral-800 pb-4">Appearance Settings</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between py-2">
                     <div>
-                      <h3 className="text-[14px] font-medium text-gray-900">Theme Preference</h3>
-                      <p className="text-[13px] text-gray-500">Select your preferred color theme.</p>
+                      <h3 className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">Theme Preference</h3>
+                      <p className="text-[13px] text-gray-500 dark:text-neutral-400">Select your preferred color theme.</p>
                     </div>
                     <select 
                       value={theme}
@@ -365,7 +358,7 @@ export function Options({ user, onUpdate }: OptionsProps) {
                         const newTheme = e.target.value;
                         setTheme(newTheme);
                       }}
-                      className="px-3 py-2 border border-gray-200 rounded-lg text-[14px] outline-none focus:border-blue-500 bg-white"
+                      className="px-3 py-2 border border-gray-200 dark:border-neutral-800 rounded-lg text-[14px] outline-none focus:border-blue-500 bg-white dark:bg-neutral-900"
                     >
                       <option value="System Default">System Default</option>
                       <option value="Light">Light</option>
@@ -378,36 +371,36 @@ export function Options({ user, onUpdate }: OptionsProps) {
 
             {activeTab === "notifications" && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Notification Preferences</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 border-b border-gray-100 dark:border-neutral-800 pb-4">Notification Preferences</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between py-3 border-b border-gray-50">
                     <div>
-                      <h3 className="text-[14px] font-medium text-gray-900">Email Notifications</h3>
-                      <p className="text-[13px] text-gray-500">Receive daily summaries and important alerts via email.</p>
+                      <h3 className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">Email Notifications</h3>
+                      <p className="text-[13px] text-gray-500 dark:text-neutral-400">Receive daily summaries and important alerts via email.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" defaultChecked />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-neutral-900 after:border-gray-300 dark:border-neutral-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                   <div className="flex items-center justify-between py-3 border-b border-gray-50">
                     <div>
-                      <h3 className="text-[14px] font-medium text-gray-900">Push Notifications</h3>
-                      <p className="text-[13px] text-gray-500">Get real-time alerts in your browser.</p>
+                      <h3 className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">Push Notifications</h3>
+                      <p className="text-[13px] text-gray-500 dark:text-neutral-400">Get real-time alerts in your browser.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-neutral-900 after:border-gray-300 dark:border-neutral-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                   <div className="flex items-center justify-between py-3">
                     <div>
-                      <h3 className="text-[14px] font-medium text-gray-900">Marketing Emails</h3>
-                      <p className="text-[13px] text-gray-500">Receive offers, product updates, and news.</p>
+                      <h3 className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">Marketing Emails</h3>
+                      <p className="text-[13px] text-gray-500 dark:text-neutral-400">Receive offers, product updates, and news.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-neutral-900 after:border-gray-300 dark:border-neutral-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                 </div>
@@ -416,40 +409,36 @@ export function Options({ user, onUpdate }: OptionsProps) {
 
             {activeTab === "privacy" && (
               <div className="space-y-6">
-                <h2 className="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-4">Privacy & Security</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-neutral-100 border-b border-gray-100 dark:border-neutral-800 pb-4">Privacy & Security</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between py-3 border-b border-gray-50">
                     <div>
-                      <h3 className="text-[14px] font-medium text-gray-900">Data Sharing</h3>
-                      <p className="text-[13px] text-gray-500">Allow anonymous data collection to improve the product.</p>
+                      <h3 className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">Data Sharing</h3>
+                      <p className="text-[13px] text-gray-500 dark:text-neutral-400">Allow anonymous data collection to improve the product.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      <div className="w-11 h-6 bg-gray-200 dark:bg-neutral-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-neutral-900 after:border-gray-300 dark:border-neutral-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
                   <div className="flex items-center justify-between py-3 border-b border-gray-50">
                     <div>
-                      <h3 className="text-[14px] font-medium text-gray-900">Two-Factor Authentication (2FA)</h3>
-                      <p className="text-[13px] text-gray-500">Add an extra layer of security to your account.</p>
+                      <h3 className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">Two-Factor Authentication (2FA)</h3>
+                      <p className="text-[13px] text-gray-500 dark:text-neutral-400">Add an extra layer of security to your account.</p>
                     </div>
-                    <button className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-[13px] font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                    <button className="px-4 py-2 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 text-[13px] font-medium rounded-lg hover:bg-gray-50 dark:bg-neutral-800 transition-colors">
                       Enable 2FA
                     </button>
                   </div>
                   <div className="py-3">
                     <h3 className="text-[14px] font-medium text-red-600 mb-1">Danger Zone</h3>
-                    <p className="text-[13px] text-gray-500 mb-3">Permanently delete your account and all data.</p>
+                    <p className="text-[13px] text-gray-500 dark:text-neutral-400 mb-3">Permanently delete your account and all data.</p>
                     <button className="px-4 py-2 bg-red-50 text-red-600 border border-red-100 text-[13px] font-medium rounded-lg hover:bg-red-100 transition-colors">
                       Delete Account
                     </button>
                   </div>
                 </div>
               </div>
-            )}
-
-            {activeTab === "plan" && (
-              <Billing embedded={true} />
             )}
           </div>
         </div>

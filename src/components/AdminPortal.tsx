@@ -56,7 +56,7 @@ export function AdminPortal() {
 
   if (loading) {
     return (
-      <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex items-center justify-center space-x-3 text-gray-500">
+      <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm flex items-center justify-center space-x-3 text-gray-500 dark:text-neutral-400">
         <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
         <span className="text-sm font-medium">Loading Admin Portal metrics...</span>
       </div>
@@ -82,7 +82,7 @@ export function AdminPortal() {
   const docLimit = planStatus?.limits?.docLimit;
 
   return (
-    <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-xl border border-slate-200 space-y-6">
+    <div className="bg-white dark:bg-neutral-900 text-slate-900 rounded-2xl p-6 shadow-xl border border-slate-200 space-y-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
@@ -93,7 +93,7 @@ export function AdminPortal() {
       {/* Primary Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Current Plan */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+        <div className="bg-white dark:bg-neutral-900 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Current Plan</p>
           <div className="mt-2 flex items-center justify-between gap-2">
             <span className="text-xl font-black text-slate-900 uppercase tracking-wide">{plan}</span>
@@ -109,7 +109,7 @@ export function AdminPortal() {
         </div>
 
         {/* Subscription Status */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+        <div className="bg-white dark:bg-neutral-900 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Subscription Status</p>
           <div className="mt-2 flex items-center gap-2">
             <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${subStatus === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
@@ -119,7 +119,7 @@ export function AdminPortal() {
         </div>
 
         {/* Usage Stats (Chats & Docs) */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
+        <div className="bg-white dark:bg-neutral-900 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
           <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Usage Counters</p>
           <div className="mt-2 space-y-1.5 text-xs">
             <div className="flex items-center justify-between gap-2">

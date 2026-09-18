@@ -154,20 +154,20 @@ export function LegalChat() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto p-6">
-      <div className="bg-[#121214] border border-gray-800 rounded-xl flex-1 flex flex-col overflow-hidden">
+      <div className="bg-[#121214] border border-gray-800 dark:border-neutral-200 rounded-xl flex-1 flex flex-col overflow-hidden">
         
         {/* Header */}
-        <div className="border-b border-gray-800 p-4 flex items-center justify-between bg-gray-900/50">
+        <div className="border-b border-gray-800 dark:border-neutral-200 p-4 flex items-center justify-between bg-gray-900 dark:bg-gray-100/50">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
               <Shield className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-gray-100">Legal Advisories Counsel</h2>
-              <p className="text-xs text-gray-500">Connected to Local Secure Model</p>
+              <p className="text-xs text-gray-500 dark:text-neutral-400">Connected to Local Secure Model</p>
             </div>
           </div>
-          <button onClick={() => setMessages([messages[0]])} className="p-2 hover:bg-gray-800 rounded-lg text-gray-400 transition-colors" title="Reset Conversation">
+          <button onClick={() => setMessages([messages[0]])} className="p-2 hover:bg-gray-800 rounded-lg text-gray-400 hover:text-gray-200 transition-colors" title="Reset Conversation">
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
@@ -182,7 +182,7 @@ export function LegalChat() {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div className={`flex max-w-[80%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-gray-200 text-gray-800 rounded-xl ml-3" : "bg-black rounded-full mr-3"}`}>
+                <div className={`w-8 h-8 flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-gray-200 dark:bg-neutral-700 text-gray-800 dark:text-neutral-200 rounded-xl ml-3" : "bg-black rounded-full mr-3"}`}>
                   {msg.role === "user" ? (
                     auth.currentUser?.photoURL ? (
                       <img src={auth.currentUser.photoURL} alt="User" className="w-8 h-8 rounded-xl object-cover" referrerPolicy="no-referrer" />
@@ -194,7 +194,7 @@ export function LegalChat() {
                   ) : <span className="text-white font-serif text-[18px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>}
                 </div>
                 <div 
-                  className={`p-4 rounded-2xl ${msg.role === "user" ? "bg-indigo-600 text-white" : "bg-gray-800/80 text-gray-200 border border-gray-700/50"}`}>
+                  className={`p-4 rounded-2xl ${msg.role === "user" ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-200 border border-gray-700/50"}`}>
                   <div className="text-sm prose prose-invert max-w-none">
                     <ReactMarkdown>{msg.content}</ReactMarkdown>
                   </div>
@@ -213,7 +213,7 @@ export function LegalChat() {
                 <div className="w-8 h-8 flex items-center justify-center shrink-0 bg-black rounded-full mr-3">
                   <span className="text-white font-serif text-[18px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-gray-800/80 text-gray-200 border border-gray-700/50">
+                <div className="p-4 rounded-2xl bg-gray-800 text-gray-200 border border-gray-700/50">
                   <div className="flex space-x-2">
                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
                     <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
@@ -227,7 +227,7 @@ export function LegalChat() {
         </div>
 
         {/* Input area */}
-        <div className="p-4 bg-gray-900/50 border-t border-gray-800">
+        <div className="p-4 bg-gray-900 dark:bg-gray-100/50 border-t border-gray-800 dark:border-neutral-200">
           <form onSubmit={handleSend} className="relative flex items-center">
             <input
               type="text"
@@ -246,7 +246,7 @@ export function LegalChat() {
             </button>
           </form>
           <div className="text-center mt-2">
-             <span className="text-[10px] text-gray-600 uppercase tracking-widest font-mono">Legal Advisories responses are for research purposes, not legal advice.</span>
+             <span className="text-[10px] text-gray-600 dark:text-neutral-400 uppercase tracking-widest font-mono">Legal Advisories responses are for research purposes, not legal advice.</span>
           </div>
         </div>
       </div>

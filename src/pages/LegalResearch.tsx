@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Search, BookOpen, Scale, FileText, Bookmark, Bell, FileDown, Loader2, Sparkles, ChevronRight, Library } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { auth } from '../lib/auth';
+import { motion } from "motion/react";
 
 export function LegalResearch() {
   const [activeTab, setActiveTab] = useState<'ai' | 'acts' | 'cases' | 'updates'>('ai');
@@ -45,40 +46,40 @@ export function LegalResearch() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#f9f9fa] overflow-hidden">
+    <div className="flex flex-col h-full bg-[#f9f9fa] dark:bg-neutral-950 overflow-hidden">
       {/* Header */}
-      <div className="flex-none bg-white border-b border-neutral-200 px-6 py-4 dark:bg-neutral-900 dark:border-neutral-800">
+      <div className="flex-none bg-white dark:bg-neutral-900 border-b border-neutral-200 px-6 py-4 dark:bg-neutral-900 dark:border-neutral-800">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto w-full">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white flex items-center gap-2">
+            <motion.h1 layoutId="page-title" className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-white flex items-center gap-2">
               <Scale className="h-6 w-6 text-[#c6a87c]" />
               Legal Advisories Research
-            </h1>
-            <p className="mt-1 text-sm text-neutral-500">Search laws, analyze cases, and generate comprehensive research reports.</p>
+            </motion.h1>
+            <motion.p layoutId="page-description" className="mt-1 text-sm text-neutral-500">Search laws, analyze cases, and generate comprehensive research reports.</motion.p>
           </div>
           
           <div className="flex bg-neutral-100 p-1 rounded-lg dark:bg-neutral-800">
             <button
               onClick={() => setActiveTab('ai')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'ai' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'ai' ? 'bg-white dark:bg-neutral-900 text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
             >
               <Sparkles className="h-4 w-4" /> Research
             </button>
             <button
               onClick={() => setActiveTab('acts')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'acts' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'acts' ? 'bg-white dark:bg-neutral-900 text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
             >
               <BookOpen className="h-4 w-4" /> Bare Acts
             </button>
             <button
               onClick={() => setActiveTab('cases')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'cases' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'cases' ? 'bg-white dark:bg-neutral-900 text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
             >
               <Library className="h-4 w-4" /> Case Laws
             </button>
             <button
               onClick={() => setActiveTab('updates')}
-              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'updates' ? 'bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
+              className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'updates' ? 'bg-white dark:bg-neutral-900 text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-white' : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'}`}
             >
               <Bell className="h-4 w-4" /> Updates
             </button>
@@ -93,7 +94,7 @@ export function LegalResearch() {
             <div className="flex flex-col h-full gap-6 lg:flex-row">
               {/* Search Panel */}
               <div className="w-full lg:w-1/3 flex flex-col gap-4">
-                <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800">
                   <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4">Research Query</h2>
                   <form onSubmit={handleResearch} className="flex flex-col gap-4">
                     <textarea
@@ -113,7 +114,7 @@ export function LegalResearch() {
                   </form>
                 </div>
                 
-                <div className="bg-white p-5 rounded-2xl border border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 flex-1">
+                <div className="bg-white dark:bg-neutral-900 p-5 rounded-2xl border border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 flex-1">
                   <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
                     <Bookmark className="h-4 w-4 text-[#c6a87c]" />
                     Saved Research
@@ -127,7 +128,7 @@ export function LegalResearch() {
 
               {/* Report Panel */}
               <div className="w-full lg:w-2/3 flex flex-col">
-                <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 flex-1 flex flex-col overflow-hidden">
+                <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 shadow-sm dark:bg-neutral-900 dark:border-neutral-800 flex-1 flex flex-col overflow-hidden">
                   <div className="flex items-center justify-between border-b border-neutral-100 p-4 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50">
                     <h2 className="font-medium text-neutral-900 dark:text-white flex items-center gap-2">
                       <FileText className="h-5 w-5 text-neutral-400" />
@@ -171,7 +172,7 @@ export function LegalResearch() {
           )}
 
           {activeTab === 'acts' && (
-            <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 dark:bg-neutral-900 dark:border-neutral-800 min-h-full">
+            <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 shadow-sm p-6 dark:bg-neutral-900 dark:border-neutral-800 min-h-full">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-neutral-900 dark:text-white">Bare Acts Library</h2>
                 <div className="relative">
@@ -183,7 +184,7 @@ export function LegalResearch() {
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {['Constitution of India', 'Bharatiya Nyaya Sanhita (BNS)', 'Bharatiya Nagarik Suraksha Sanhita (BNSS)', 'Bharatiya Sakshya Adhiniyam (BSA)', 'Indian Contract Act, 1872', 'Companies Act, 2013', 'Consumer Protection Act, 2019', 'Digital Personal Data Protection Act, 2023', 'Income Tax Act, 1961'].map(act => (
                   <div key={act} className="group flex items-start gap-4 p-4 rounded-xl border border-neutral-100 hover:border-[#c6a87c]/30 hover:shadow-sm transition-all cursor-pointer bg-neutral-50/50">
-                    <div className="bg-white p-2.5 rounded-lg shadow-sm border border-neutral-100 text-[#c6a87c]">
+                    <div className="bg-white dark:bg-neutral-900 p-2.5 rounded-lg shadow-sm border border-neutral-100 text-[#c6a87c]">
                       <BookOpen className="h-5 w-5" />
                     </div>
                     <div>
@@ -197,7 +198,7 @@ export function LegalResearch() {
           )}
 
           {activeTab === 'cases' && (
-             <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 dark:bg-neutral-900 dark:border-neutral-800 min-h-full flex flex-col items-center justify-center text-center">
+             <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 shadow-sm p-6 dark:bg-neutral-900 dark:border-neutral-800 min-h-full flex flex-col items-center justify-center text-center">
                 <Library className="h-12 w-12 text-neutral-300 mb-4" />
                 <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Case Law Database</h2>
                 <p className="text-neutral-500 max-w-md">Search across Supreme Court, High Court, and Tribunal orders. Full case law integration is coming in the next update.</p>
@@ -205,7 +206,7 @@ export function LegalResearch() {
           )}
 
           {activeTab === 'updates' && (
-             <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6 dark:bg-neutral-900 dark:border-neutral-800 min-h-full">
+             <div className="bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-200 shadow-sm p-6 dark:bg-neutral-900 dark:border-neutral-800 min-h-full">
                 <h2 className="text-xl font-bold text-neutral-900 dark:text-white mb-6">Recent Legal Updates</h2>
                 <div className="space-y-4 max-w-3xl">
                   {[

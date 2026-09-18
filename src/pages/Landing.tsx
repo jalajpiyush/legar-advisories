@@ -21,21 +21,21 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
   }, []);
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-black/10 selection:text-black overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-neutral-900 font-sans selection:bg-black/10 selection:text-black overflow-x-hidden">
       {/* Top Banner */}
-      <div className="bg-black text-white text-[13px] py-2.5 px-4 flex justify-center items-center gap-1.5 font-medium tracking-wide border-b border-white/10 z-50 relative flex-wrap text-center">
+      <div className="bg-black text-white text-[11px] sm:text-[13px] py-2.5 px-4 flex justify-center items-center gap-1.5 font-medium tracking-wide border-b border-white/10 z-50 relative flex-wrap text-center">
         Legal Advisories Agents execute legal work end-to-end <a href="#talk-terms" className="underline underline-offset-4 hover:text-gray-300 ml-1">Learn more</a>
       </div>
 
       {/* Navbar */}
       <nav className={`left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'fixed top-0 bg-black/80 backdrop-blur-md py-4' : 'absolute bg-transparent py-4 md:py-6'}`}>
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-12 flex items-center justify-between">
           <div className="flex items-center gap-12">
-            <div className="flex items-center gap-4 cursor-pointer" onClick={onEnter}>
-              <div className="w-10 h-10 bg-white rounded flex items-center justify-center">
-                <span className="text-black font-serif text-[22px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
+            <div className="flex items-center gap-2 md:gap-4 cursor-pointer" onClick={onEnter}>
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-black rounded flex items-center justify-center shrink-0">
+                <span className="text-white font-serif text-[18px] md:text-[22px] font-bold leading-none select-none" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>L</span>
               </div>
-              <div className="text-[28px] font-serif tracking-tight text-white leading-[1.1]">
+              <div className="text-[20px] md:text-[28px] font-serif tracking-tight text-white leading-[1.1]">
                 Legal<br/>Advisories
               </div>
             </div>
@@ -49,18 +49,18 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
                   Platform <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'platform' && "rotate-180")} />
                 </button>
                 <div className={cn(
-                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  "absolute top-full left-0 mt-2 bg-white dark:bg-neutral-900 text-black dark:text-neutral-100 border border-gray-100 dark:border-neutral-800 rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
                   activeDropdown === 'platform' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
                 )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Legal Drafting</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Document Automation</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Knowledge Management</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Compliance Engine</a>
-                    <div className="border-t my-1"></div>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Overview</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Agents</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Vault</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Legal Drafting</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Document Automation</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Knowledge Management</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Compliance Engine</a>
+                    <div className="border-t border-gray-100 dark:border-neutral-800 my-1"></div>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Overview</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Agents</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Vault</a>
                   </div>
                 </div>
               </div>
@@ -72,14 +72,14 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
                   Solutions <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'solutions' && "rotate-180")} />
                 </button>
                 <div className={cn(
-                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  "absolute top-full left-0 mt-2 bg-white dark:bg-neutral-900 text-black dark:text-neutral-100 border border-gray-100 dark:border-neutral-800 rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
                   activeDropdown === 'solutions' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
                 )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Case Management</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Contract Drafting</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Due Diligence</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Legal Analytics</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Case Management</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Contract Drafting</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Due Diligence</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Legal Analytics</a>
                   </div>
                 </div>
               </div>
@@ -91,13 +91,13 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
                   Customers <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'customers' && "rotate-180")} />
                 </button>
                 <div className={cn(
-                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  "absolute top-full left-0 mt-2 bg-white dark:bg-neutral-900 text-black dark:text-neutral-100 border border-gray-100 dark:border-neutral-800 rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
                   activeDropdown === 'customers' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
                 )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Law Firms</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">In-House Teams</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Government</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Law Firms</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">In-House Teams</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Government</a>
                   </div>
                 </div>
               </div>
@@ -109,13 +109,13 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
                   Security <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'security' && "rotate-180")} />
                 </button>
                 <div className={cn(
-                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  "absolute top-full left-0 mt-2 bg-white dark:bg-neutral-900 text-black dark:text-neutral-100 border border-gray-100 dark:border-neutral-800 rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
                   activeDropdown === 'security' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
                 )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">SOC 2 Compliance</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Data Privacy</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Infrastructure</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">SOC 2 Compliance</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Data Privacy</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Infrastructure</a>
                   </div>
                 </div>
               </div>
@@ -127,13 +127,13 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
                   Resources <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'resources' && "rotate-180")} />
                 </button>
                 <div className={cn(
-                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  "absolute top-full left-0 mt-2 bg-white dark:bg-neutral-900 text-black dark:text-neutral-100 border border-gray-100 dark:border-neutral-800 rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
                   activeDropdown === 'resources' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
                 )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Documentation</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Blog</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Webinars</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Documentation</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Blog</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Webinars</a>
                   </div>
                 </div>
               </div>
@@ -145,28 +145,31 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
                   Company <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", activeDropdown === 'company' && "rotate-180")} />
                 </button>
                 <div className={cn(
-                  "absolute top-full left-0 mt-2 bg-white text-black rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
+                  "absolute top-full left-0 mt-2 bg-white dark:bg-neutral-900 text-black dark:text-neutral-100 border border-gray-100 dark:border-neutral-800 rounded-lg shadow-xl p-4 w-56 z-50 transition-all duration-200",
                   activeDropdown === 'company' ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0"
                 )}>
                   <div className="flex flex-col gap-3">
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">About Us</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Careers</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Contact</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 transition-colors">Legal</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">About Us</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Careers</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Contact</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); handleLogin(); }} className="text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors">Legal</a>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <button 
-              className="px-5 py-2 border border-white/40 text-white rounded-[4px] text-[15px] font-medium hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 md:px-5 md:py-2 border border-white/40 text-white rounded-[4px] text-[13px] md:text-[15px] font-medium hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleLogin}
             >
               Login
             </button>
-            <button className="px-6 py-2 bg-white text-black rounded-[4px] text-[15px] font-medium hover:bg-gray-100 transition-colors" onClick={(e) => { e.preventDefault(); if (onContactSales) onContactSales(); else onEnter(); }}>
+            <button 
+              className="px-3 py-1.5 md:px-6 md:py-2 bg-white dark:bg-white text-black dark:text-black rounded-[4px] text-[12px] md:text-[15px] font-medium hover:bg-gray-100 dark:hover:bg-gray-200 transition-colors whitespace-nowrap shadow-sm" 
+              onClick={(e) => { e.preventDefault(); if (onContactSales) onContactSales(); else onEnter(); }}
+            >
               Request a Demo
             </button>
           </div>
@@ -193,7 +196,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="text-[4rem] md:text-[6rem] font-serif text-white leading-[1.05] tracking-tight mb-8"
+              className="text-[3.5rem] sm:text-[4rem] md:text-[6rem] font-serif text-white leading-[1.05] tracking-tight mb-8"
             >
               Practice Made Perfect
             </motion.h1>
@@ -202,7 +205,7 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-              className="text-[22px] md:text-[26px] text-white/95 font-light leading-[1.4] mb-12 max-w-xl"
+              className="text-[18px] sm:text-[22px] md:text-[26px] text-white/95 font-light leading-[1.4] mb-12 max-w-xl"
             >
               Today's top law firms and in-house legal teams trust Legal Advisories to elevate their craft and navigate complexity.
             </motion.p>
@@ -212,7 +215,10 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             >
-              <button className="bg-white text-black text-[17px] font-medium px-8 py-4 rounded-sm hover:bg-gray-100 transition-colors" onClick={(e) => { e.preventDefault(); if (onContactSales) onContactSales(); else onEnter(); }}>
+              <button 
+                className="bg-white dark:bg-white text-black dark:text-black text-[15px] sm:text-[17px] font-medium px-6 sm:px-8 py-3 sm:py-4 rounded-sm hover:bg-gray-100 dark:hover:bg-gray-200 transition-colors shadow-sm" 
+                onClick={(e) => { e.preventDefault(); if (onContactSales) onContactSales(); else onEnter(); }}
+              >
                 Request a Demo
               </button>
             </motion.div>
@@ -222,46 +228,46 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
       </div>
 
       {/* Prompt UI Section */}
-      <div className="bg-[#FAFAFA] py-24 border-b border-gray-100">
+      <div className="bg-[#FAFAFA] dark:bg-neutral-900 py-24 border-b border-gray-100 dark:border-neutral-800">
         <div className="max-w-[1000px] mx-auto px-6">
-          <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-200 p-2 overflow-hidden mx-auto">
-             <div className="bg-[#F9FAFB] rounded-lg p-6 md:p-8 border border-gray-100">
-               <p className="text-[19px] md:text-[21px] leading-relaxed text-[#1F1F1F] mb-12 font-medium">
+          <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-200 dark:border-neutral-800 p-2 overflow-hidden mx-auto">
+             <div className="bg-[#F9FAFB] dark:bg-neutral-800/80 rounded-lg p-6 md:p-8 border border-gray-100 dark:border-neutral-700">
+               <p className="text-[19px] md:text-[21px] leading-relaxed text-[#1F1F1F] dark:text-neutral-100 mb-12 font-medium">
                  I represent Acme Corp in the attached lawsuit. Research the strongest pieces of evidence in my client's favor and draft an email that summarizes key allegations and highlights the strongest pieces of evidence in our defense.
                </p>
                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                  <div className="flex items-center gap-5">
-                   <button className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-[15px] font-medium">
+                   <button className="flex items-center gap-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-100 transition-colors text-[15px] font-medium">
                      <Paperclip className="w-[18px] h-[18px]" /> Files
                    </button>
                    
-                   <button className="flex items-center gap-2 text-gray-900 transition-colors text-[15px] font-medium bg-white px-3 py-1.5 rounded-md shadow-sm border border-gray-200">
+                   <button className="flex items-center gap-2 text-gray-900 dark:text-neutral-100 transition-colors text-[15px] font-medium bg-white dark:bg-neutral-800 px-3 py-1.5 rounded-md shadow-sm border border-gray-200 dark:border-neutral-700">
                      <Building2 className="w-[18px] h-[18px]" /> Sources
                    </button>
-                   <button className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-[15px] font-medium">
+                   <button className="flex items-center gap-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-neutral-100 transition-colors text-[15px] font-medium">
                      <Sparkles className="w-[18px] h-[18px]" /> Improve
                    </button>
                  </div>
                  <div className="flex items-center gap-4 self-end sm:self-auto">
-                    <button className="text-gray-400 hover:text-gray-600 transition-colors p-2">
+                    <button className="text-gray-400 dark:text-neutral-400 hover:text-gray-600 dark:hover:text-neutral-200 transition-colors p-2">
                       <SlidersHorizontal className="w-5 h-5" />
                     </button>
-                    <button className="bg-black text-white p-3 rounded-lg hover:bg-gray-800 transition-colors shadow-md">
+                    <button className="bg-black dark:bg-white text-white dark:text-black p-3 rounded-lg hover:bg-gray-800 dark:hover:bg-neutral-200 transition-colors shadow-md">
                       <ArrowRight className="w-5 h-5" />
                     </button>
                  </div>
                </div>
              </div>
              <div className="flex flex-wrap items-center gap-3 mt-4 px-2 pb-2">
-               <button className="flex items-center gap-2.5 text-[14px] font-medium border border-gray-200 text-gray-700 px-5 py-2 rounded-full hover:bg-gray-50 transition-colors shadow-sm">
+               <button className="flex items-center gap-2.5 text-[14px] font-medium border border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 px-5 py-2 rounded-full hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors shadow-sm">
                  <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full-full"></div>
+                    <div className="w-2 h-2 bg-white dark:bg-neutral-900 rounded-full"></div>
                  </div>
-                 Ask Legal Advisories® <span className="text-gray-400 font-light ml-1">+</span>
+                 Ask Legal Advisories® <span className="text-gray-400 dark:text-neutral-500 font-light ml-1">+</span>
                </button>
-               <button className="flex items-center gap-2.5 text-[14px] font-medium border border-gray-200 text-gray-700 px-5 py-2 rounded-full hover:bg-gray-50 transition-colors shadow-sm">
+               <button className="flex items-center gap-2.5 text-[14px] font-medium border border-gray-200 dark:border-neutral-800 text-gray-700 dark:text-neutral-300 px-5 py-2 rounded-full hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors shadow-sm">
                  <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-[11px] text-white font-bold">m</div>
-                 iManage <span className="text-gray-400 font-light ml-1">+</span>
+                 iManage <span className="text-gray-400 dark:text-neutral-500 font-light ml-1">+</span>
                </button>
              </div>
           </div>
@@ -269,56 +275,82 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
       </div>
 
       {/* Main Content Sections */}
-      <div className="bg-white py-32 text-center">
-        <h2 className="text-[3rem] md:text-[3.5rem] font-serif text-[#1F1F1F] mb-6 tracking-tight">Legal Advisories for Enterprise.</h2>
-        <p className="text-[20px] md:text-[24px] text-[#1F1F1F] max-w-3xl mx-auto font-sans font-medium mb-32 leading-snug">
-          Our Legal Advisories platform reviews, analyses, and finalises contracts in the<br className="hidden md:block" />time it takes to finish this sentence.
-        </p>
+      <div className="bg-white dark:bg-neutral-950 py-16 md:py-32 text-center transition-colors">
+        <motion.h2 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="text-[3rem] md:text-[3.5rem] font-serif text-[#1F1F1F] dark:text-white mb-6 tracking-tight">Legal Advisories for Enterprise.</motion.h2>
+        <motion.p 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-100px" }}
+          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+          className="text-[20px] md:text-[24px] text-[#1F1F1F] dark:text-neutral-300 max-w-3xl mx-auto font-sans font-medium mb-16 md:mb-32 leading-snug">
+          Our Legal Advisories platform reviews, analyses, and finalises contracts in the{" "}
+          <br className="hidden md:block" />
+          time it takes to finish this sentence.
+        </motion.p>
 
         {/* Talk Terms Section */}
-        <div id="talk-terms" className="max-w-[1200px] mx-auto px-6 flex flex-col lg:flex-row items-center gap-16 text-left mb-40">
+        <motion.div 
+          id="talk-terms" 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-[1200px] mx-auto px-6 flex flex-col lg:flex-row items-center gap-16 text-left mb-20 md:mb-40">
           <div className="flex-1">
-            <h3 className="text-[2.5rem] md:text-[3rem] font-serif text-[#1F1F1F] mb-6 tracking-tight">Talk Terms.</h3>
-            <p className="text-[20px] md:text-[24px] text-[#1F1F1F] font-medium leading-[1.3] mb-6">
-              Talk to Robin about your documents in<br className="hidden md:block" />searchable conversations.
+            <h3 className="text-[2.5rem] md:text-[3rem] font-serif text-[#1F1F1F] dark:text-white mb-6 tracking-tight">Talk Terms.</h3>
+            <p className="text-[20px] md:text-[24px] text-[#1F1F1F] dark:text-neutral-200 font-medium leading-[1.3] mb-6">
+              Talk to Legal Advisories about your documents in{" "}
+              <br className="hidden md:block" />
+              searchable conversations.
             </p>
-            <p className="text-[17px] md:text-[19px] text-[#4A4A4A] leading-[1.6]">
-              Our Chat features let you hash out the fine print with Legal Advisories<br className="hidden md:block" />and teammates in one secure, searchable thread — so<br className="hidden md:block" />questions, clarifications, and lightbulb moments about<br className="hidden md:block" />your documents never get lost in your inbox again.
+            <p className="text-[17px] md:text-[19px] text-[#4A4A4A] dark:text-neutral-400 leading-[1.6]">
+              Our Chat features let you hash out the fine print with Legal Advisories{" "}
+              <br className="hidden md:block" />
+              and teammates in one secure, searchable thread — so{" "}
+              <br className="hidden md:block" />
+              questions, clarifications, and lightbulb moments about{" "}
+              <br className="hidden md:block" />
+              your documents never get lost in your inbox again.
             </p>
           </div>
           
           {/* Mock Chat UI */}
-          <div className="flex-1 w-full bg-[#F5F3ED] rounded-xl border border-gray-200/60 shadow-sm overflow-hidden text-sm">
+          <div className="flex-1 w-full bg-[#F5F3ED] dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden text-sm">
             {/* Chat Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200/60 bg-transparent">
-              <div className="flex items-center gap-2 text-gray-700 font-medium">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-neutral-800 bg-transparent">
+              <div className="flex items-center gap-2 text-gray-700 dark:text-neutral-200 font-medium">
                 New Chat <Edit3 className="w-3.5 h-3.5 ml-1" />
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 bg-white/50 px-3 py-1 rounded-full border border-gray-200/50 text-[13px] text-gray-600">
+                <div className="flex items-center gap-2 bg-white dark:bg-neutral-800 px-3 py-1 rounded-full border border-gray-200 dark:border-neutral-700 text-[13px] text-gray-600 dark:text-neutral-300">
                   124 Documents <Plus className="w-3.5 h-3.5 ml-1" />
                 </div>
                 <div className="flex -space-x-2">
-                  <div className="w-7 h-7 rounded-full bg-blue-100 border-2 border-[#F5F3ED] overflow-hidden"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
-                  <div className="w-7 h-7 rounded-full bg-green-100 border-2 border-[#F5F3ED] overflow-hidden"><img src="https://ui-avatars.com/api/?name=Admin&background=random" /></div>
-                  <div className="w-7 h-7 rounded-full bg-white border-2 border-[#F5F3ED] flex items-center justify-center text-[10px] text-gray-500 font-medium">+4</div>
+                  <div className="w-7 h-7 rounded-full bg-blue-100 border-2 border-[#F5F3ED] dark:border-neutral-900 overflow-hidden"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
+                  <div className="w-7 h-7 rounded-full bg-green-100 border-2 border-[#F5F3ED] dark:border-neutral-900 overflow-hidden"><img src="https://ui-avatars.com/api/?name=Admin&background=random" /></div>
+                  <div className="w-7 h-7 rounded-full bg-white dark:bg-neutral-800 border-2 border-[#F5F3ED] dark:border-neutral-900 flex items-center justify-center text-[10px] text-gray-500 dark:text-neutral-400 font-medium">+4</div>
                 </div>
-                <button className="p-1 hover:bg-black/5 rounded-full ml-1"><X className="w-4 h-4 text-gray-500" /></button>
+                <button className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-full ml-1"><X className="w-4 h-4 text-gray-500 dark:text-neutral-400" /></button>
               </div>
             </div>
             
             {/* Chat Body */}
             <div className="p-6 space-y-5">
-              {/* Robin Msg */}
+              {/* AI Msg */}
               <div className="flex gap-4 items-start">
-                <div className="w-7 h-7 rounded-full bg-[#2A2A2A] flex items-center justify-center flex-shrink-0 text-white mt-1">
-                  <span className="text-[14px] font-bold leading-none select-none">₹</span>
+                <div className="w-7 h-7 rounded-full bg-[#2A2A2A] dark:bg-neutral-700 flex items-center justify-center flex-shrink-0 text-white mt-1">
+                  <span className="text-[14px] font-bold leading-none select-none font-serif">L</span>
                 </div>
                 <div className="space-y-3 flex-1">
-                  <div className="bg-white p-3.5 rounded-2xl rounded-tl-sm text-gray-800 shadow-sm inline-block border border-gray-100">
+                  <div className="bg-white dark:bg-neutral-800 p-3.5 rounded-2xl rounded-tl-sm text-gray-800 dark:text-neutral-100 shadow-sm inline-block border border-gray-100 dark:border-neutral-700">
                     Great, let's chat about the new documents you shared.
                   </div>
-                  <div className="bg-white p-3.5 rounded-2xl rounded-tl-sm text-gray-800 shadow-sm inline-block border border-gray-100">
+                  <div className="bg-white dark:bg-neutral-800 p-3.5 rounded-2xl rounded-tl-sm text-gray-800 dark:text-neutral-100 shadow-sm inline-block border border-gray-100 dark:border-neutral-700">
                     How can I help?
                   </div>
                 </div>
@@ -326,44 +358,44 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
 
               {/* User Msg */}
               <div className="flex justify-end gap-3">
-                 <div className="bg-[#EAE8E2] p-3.5 rounded-2xl rounded-tr-sm text-gray-800 inline-block">
+                 <div className="bg-[#EAE8E2] dark:bg-neutral-800 p-3.5 rounded-2xl rounded-tr-sm text-gray-800 dark:text-neutral-100 inline-block border border-transparent dark:border-neutral-700">
                     What are the different laws that govern each contract?
                  </div>
-                 <div className="w-7 h-7 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
+                 <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-neutral-700 flex-shrink-0 overflow-hidden"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
               </div>
 
-              {/* Robin Msg */}
+              {/* AI Msg */}
               <div className="flex gap-4 items-start">
-                <div className="w-7 h-7 rounded-full bg-[#2A2A2A] flex items-center justify-center flex-shrink-0 text-white mt-1">
-                  <span className="text-[14px] font-bold leading-none select-none">₹</span>
+                <div className="w-7 h-7 rounded-full bg-[#2A2A2A] dark:bg-neutral-700 flex items-center justify-center flex-shrink-0 text-white mt-1">
+                  <span className="text-[14px] font-bold leading-none select-none font-serif">L</span>
                 </div>
                 <div className="flex-1">
-                  <div className="bg-white p-4 rounded-2xl rounded-tl-sm text-[#1F1F1F] shadow-sm inline-block border border-gray-100 text-[13px] leading-relaxed">
+                  <div className="bg-white dark:bg-neutral-800 p-4 rounded-2xl rounded-tl-sm text-[#1F1F1F] dark:text-neutral-100 shadow-sm inline-block border border-gray-100 dark:border-neutral-700 text-[13px] leading-relaxed">
                     There are 84 jurisdictions specified in the documents. Here are the top 5:<br/>
-                    United Kingdom (56) <span className="inline-block px-1 bg-gray-100 rounded text-[10px] text-gray-500 mx-0.5">1</span><br/>
-                    United States of America (24) <span className="inline-block px-1 bg-gray-100 rounded text-[10px] text-gray-500 mx-0.5">2</span><span className="inline-block px-1 bg-gray-100 rounded text-[10px] text-gray-500 mx-0.5">3</span><span className="inline-block px-1 bg-gray-100 rounded text-[10px] text-gray-500 mx-0.5">4</span><br/>
-                    France (20) <span className="inline-block px-1 bg-gray-100 rounded text-[10px] text-gray-500 mx-0.5">4</span><br/>
-                    Germany (14) <span className="inline-block px-1 bg-gray-100 rounded text-[10px] text-gray-500 mx-0.5">5</span><span className="inline-block px-1 bg-gray-100 rounded text-[10px] text-gray-500 mx-0.5">6</span><br/>
-                    Singapore (8) <span className="inline-block px-1 bg-gray-100 rounded text-[10px] text-gray-500 mx-0.5">7</span>
+                    United Kingdom (56) <span className="inline-block px-1 bg-gray-100 dark:bg-neutral-700 rounded text-[10px] text-gray-500 dark:text-neutral-300 mx-0.5">1</span><br/>
+                    United States of America (24) <span className="inline-block px-1 bg-gray-100 dark:bg-neutral-700 rounded text-[10px] text-gray-500 dark:text-neutral-300 mx-0.5">2</span><span className="inline-block px-1 bg-gray-100 dark:bg-neutral-700 rounded text-[10px] text-gray-500 dark:text-neutral-300 mx-0.5">3</span><span className="inline-block px-1 bg-gray-100 dark:bg-neutral-700 rounded text-[10px] text-gray-500 dark:text-neutral-300 mx-0.5">4</span><br/>
+                    France (20) <span className="inline-block px-1 bg-gray-100 dark:bg-neutral-700 rounded text-[10px] text-gray-500 dark:text-neutral-300 mx-0.5">4</span><br/>
+                    Germany (14) <span className="inline-block px-1 bg-gray-100 dark:bg-neutral-700 rounded text-[10px] text-gray-500 dark:text-neutral-300 mx-0.5">5</span><span className="inline-block px-1 bg-gray-100 dark:bg-neutral-700 rounded text-[10px] text-gray-500 dark:text-neutral-300 mx-0.5">6</span><br/>
+                    Singapore (8) <span className="inline-block px-1 bg-gray-100 dark:bg-neutral-700 rounded text-[10px] text-gray-500 dark:text-neutral-300 mx-0.5">7</span>
                   </div>
                 </div>
               </div>
               
               {/* User Msg */}
               <div className="flex justify-end gap-3">
-                 <div className="bg-[#EAE8E2] p-3.5 rounded-2xl rounded-tr-sm text-gray-800 inline-block text-right max-w-[80%]">
+                 <div className="bg-[#EAE8E2] dark:bg-neutral-800 p-3.5 rounded-2xl rounded-tr-sm text-gray-800 dark:text-neutral-100 inline-block text-right max-w-[80%] border border-transparent dark:border-neutral-700">
                     Are there certain jurisdictions known for data regulations that could cause issues?
                  </div>
-                 <div className="w-7 h-7 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
+                 <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-neutral-700 flex-shrink-0 overflow-hidden"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
               </div>
               
-              {/* Robin Msg */}
+              {/* AI Msg */}
               <div className="flex gap-4 items-start">
-                <div className="w-7 h-7 rounded-full bg-[#2A2A2A] flex items-center justify-center flex-shrink-0 text-white mt-1">
-                  <span className="text-[14px] font-bold leading-none select-none">₹</span>
+                <div className="w-7 h-7 rounded-full bg-[#2A2A2A] dark:bg-neutral-700 flex items-center justify-center flex-shrink-0 text-white mt-1">
+                  <span className="text-[14px] font-bold leading-none select-none font-serif">L</span>
                 </div>
                 <div className="flex-1">
-                  <div className="bg-white p-4 rounded-2xl rounded-tl-sm text-[#1F1F1F] shadow-sm inline-block border border-gray-100 text-[13px] leading-relaxed">
+                  <div className="bg-white dark:bg-neutral-800 p-4 rounded-2xl rounded-tl-sm text-[#1F1F1F] dark:text-neutral-100 shadow-sm inline-block border border-gray-100 dark:border-neutral-700 text-[13px] leading-relaxed">
                     Laws like the EU's General Data Protection Regulation (GDPR) and the California Consumer Privacy Act (CCPA) have "extraterritorial" scope. This means if you collect or process personal data of EU residents, even if your company is based in the US or Asia, you may still be subject to GDPR. Similarly, the CCPA/CPRA can apply to businesses outside California if they process California residents' data and meet certain thresholds.
                   </div>
                 </div>
@@ -371,47 +403,58 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
             </div>
 
             {/* Chat Input */}
-            <div className="p-4 bg-transparent border-t border-gray-200/40">
-              <div className="bg-white rounded-full-full p-2 flex items-center shadow-sm border border-gray-200">
-                <div className="w-7 h-7 rounded-full bg-gray-200 ml-1 overflow-hidden flex-shrink-0"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
-                <input type="text" placeholder="Chat with Robin..." className="flex-1 bg-transparent px-3 outline-none text-[14px] text-gray-700" />
+            <div className="p-4 bg-transparent border-t border-gray-200 dark:border-neutral-800">
+              <div className="bg-white dark:bg-neutral-800 rounded-full p-2 flex items-center shadow-sm border border-gray-200 dark:border-neutral-700">
+                <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-neutral-700 ml-1 overflow-hidden flex-shrink-0"><img src="https://ui-avatars.com/api/?name=User&background=random" /></div>
+                <input type="text" placeholder="Chat with Legal Advisories..." className="flex-1 bg-transparent px-3 outline-none text-[14px] text-gray-700 dark:text-neutral-200 placeholder:text-gray-400 dark:placeholder:text-neutral-500" />
                 <div className="flex items-center gap-1.5 mr-1">
-                  <button className="px-3 py-1.5 bg-[#1F1F1F] text-white text-[12px] font-medium rounded-full">Ask</button>
-                  <button className="px-3 py-1.5 bg-white text-gray-500 text-[12px] font-medium rounded-full border border-gray-200">Research</button>
-                  <button className="w-7 h-7 bg-[#1F1F1F] text-white rounded-full flex items-center justify-center">
+                  <button className="px-3 py-1.5 bg-[#1F1F1F] dark:bg-white text-white dark:text-black text-[12px] font-medium rounded-full hover:bg-black dark:hover:bg-neutral-100 transition-colors">Ask</button>
+                  <button className="px-3 py-1.5 bg-white dark:bg-neutral-700 text-gray-500 dark:text-neutral-300 text-[12px] font-medium rounded-full border border-gray-200 dark:border-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors">Research</button>
+                  <button className="w-7 h-7 bg-[#1F1F1F] dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center hover:bg-black dark:hover:bg-neutral-100 transition-colors">
                     <ArrowUp className="w-4 h-4" />
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Workspaces Section */}
-        <div className="max-w-[1200px] mx-auto px-6 flex flex-col lg:flex-row-reverse items-center gap-16 text-left mb-32">
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-[1200px] mx-auto px-6 flex flex-col lg:flex-row-reverse items-center gap-16 text-left mb-16 md:mb-32">
           <div className="flex-1">
-            <h3 className="text-[2.5rem] md:text-[3rem] font-serif text-[#1F1F1F] mb-6 tracking-tight">Room for many more.</h3>
-            <p className="text-[20px] md:text-[24px] text-[#1F1F1F] font-medium leading-[1.3] mb-6">
-              One workspace, all your moving parts —<br className="hidden md:block" />synced, searchable, and secure.
+            <h3 className="text-[2.5rem] md:text-[3rem] font-serif text-[#1F1F1F] dark:text-white mb-6 tracking-tight">Room for many more.</h3>
+            <p className="text-[20px] md:text-[24px] text-[#1F1F1F] dark:text-neutral-200 font-medium leading-[1.3] mb-6">
+              One workspace, all your moving parts —{" "}
+              <br className="hidden md:block" />
+              synced, searchable, and secure.
             </p>
-            <p className="text-[17px] md:text-[19px] text-[#4A4A4A] leading-[1.6]">
-              Built for legal teams who hate chaos — Workspaces<br className="hidden md:block" />combines structure with flexibility so nothing falls<br className="hidden md:block" />through the cracks.
+            <p className="text-[17px] md:text-[19px] text-[#4A4A4A] dark:text-neutral-400 leading-[1.6]">
+              Built for legal teams who hate chaos — Workspaces{" "}
+              <br className="hidden md:block" />
+              combines structure with flexibility so nothing falls{" "}
+              <br className="hidden md:block" />
+              through the cracks.
             </p>
           </div>
           
           {/* Mock Workspaces UI */}
-          <div className="flex-1 w-full bg-[#FAF9F5] rounded-xl border border-gray-200/80 shadow-sm overflow-hidden p-6 font-sans">
+          <div className="flex-1 w-full bg-[#FAF9F5] dark:bg-neutral-900 rounded-xl border border-gray-200 dark:border-neutral-800 shadow-sm overflow-hidden p-6 font-sans">
              {/* Header */}
              <div className="flex items-center justify-between mb-8">
-               <h4 className="text-[24px] font-serif text-gray-900">Workspaces</h4>
+               <h4 className="text-[24px] font-serif text-gray-900 dark:text-neutral-100">Workspaces</h4>
                <div className="flex items-center gap-2">
-                 <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-[13px] text-gray-600 shadow-sm">
+                 <button className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-full text-[13px] text-gray-600 dark:text-neutral-300 shadow-sm">
                    <Search className="w-3.5 h-3.5" /> Search
                  </button>
-                 <button className="px-4 py-1.5 bg-gray-100 border border-gray-200 rounded-full text-[13px] font-medium text-gray-700 shadow-sm">
+                 <button className="px-4 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-full text-[13px] font-medium text-gray-700 dark:text-neutral-300 shadow-sm">
                    Create Table
                  </button>
-                 <button className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-100 border border-gray-200 rounded-full text-[13px] font-medium text-gray-700 shadow-sm">
+                 <button className="flex items-center gap-1.5 px-4 py-1.5 bg-gray-100 dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-full text-[13px] font-medium text-gray-700 dark:text-neutral-300 shadow-sm">
                    <MessageSquare className="w-3.5 h-3.5" /> Chat
                  </button>
                </div>
@@ -420,35 +463,35 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
              {/* Templates */}
              <div className="mb-8">
                <div className="flex items-center justify-between mb-4">
-                 <div className="text-[13px] text-gray-500 font-medium">Start with a Prompt Set Template</div>
+                 <div className="text-[13px] text-gray-500 dark:text-neutral-400 font-medium">Start with a Prompt Set Template</div>
                  <div className="flex items-center gap-3">
-                   <div className="flex gap-1 text-gray-400">
-                     <span className="cursor-pointer hover:text-gray-600">&lt;</span>
-                     <span className="cursor-pointer hover:text-gray-600">&gt;</span>
+                   <div className="flex gap-1 text-gray-400 dark:text-neutral-500">
+                     <span className="cursor-pointer hover:text-gray-600 dark:hover:text-neutral-300">&lt;</span>
+                     <span className="cursor-pointer hover:text-gray-600 dark:hover:text-neutral-300">&gt;</span>
                    </div>
-                   <span className="text-[12px] font-bold text-gray-900 cursor-pointer">View All</span>
+                   <span className="text-[12px] font-bold text-gray-900 dark:text-neutral-100 cursor-pointer">View All</span>
                  </div>
                </div>
                <div className="flex gap-4 overflow-hidden">
-                 <div className="bg-[#EBE7DF] p-4 rounded-xl min-w-[200px] flex-1 flex flex-col justify-between h-[110px]">
-                   <div className="text-[14px] font-medium text-gray-900">M&A Due Diligence</div>
+                 <div className="bg-[#EBE7DF] dark:bg-neutral-800 p-4 rounded-xl min-w-[200px] flex-1 flex flex-col justify-between h-[110px] border border-transparent dark:border-neutral-700">
+                   <div className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">M&A Due Diligence</div>
                    <div className="flex items-center justify-between text-[11px]">
                      <span className="flex items-center gap-1 text-orange-500 font-medium"><Sparkles className="w-3 h-3 fill-current" /> 20 Prompts</span>
                      <div className="w-5 h-5 rounded-full bg-green-200 text-green-700 flex items-center justify-center font-bold text-[9px]">TL</div>
                    </div>
                  </div>
-                 <div className="bg-[#EBE7DF] p-4 rounded-xl min-w-[200px] flex-1 flex flex-col justify-between h-[110px]">
-                   <div className="text-[14px] font-medium text-gray-900">Tom's GV Legal Analysis</div>
+                 <div className="bg-[#EBE7DF] dark:bg-neutral-800 p-4 rounded-xl min-w-[200px] flex-1 flex flex-col justify-between h-[110px] border border-transparent dark:border-neutral-700">
+                   <div className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">Tom's GV Legal Analysis</div>
                    <div className="flex items-center justify-between text-[11px]">
                      <span className="flex items-center gap-1 text-orange-500 font-medium"><Sparkles className="w-3 h-3 fill-current" /> 20 Prompts</span>
                      <div className="w-5 h-5 rounded-full bg-blue-200 overflow-hidden"><img src="https://ui-avatars.com/api/?name=T&background=random" /></div>
                    </div>
                  </div>
-                 <div className="bg-[#EBE7DF] p-4 rounded-xl min-w-[200px] flex-1 flex flex-col justify-between h-[110px]">
-                   <div className="text-[14px] font-medium text-gray-900">Vendor Agreement Summary Report</div>
+                 <div className="bg-[#EBE7DF] dark:bg-neutral-800 p-4 rounded-xl min-w-[200px] flex-1 flex flex-col justify-between h-[110px] border border-transparent dark:border-neutral-700">
+                   <div className="text-[14px] font-medium text-gray-900 dark:text-neutral-100">Vendor Agreement Summary Report</div>
                    <div className="flex items-center justify-between text-[11px]">
                      <span className="flex items-center gap-1 text-orange-500 font-medium"><Sparkles className="w-3 h-3 fill-current" /> 20 Prompts</span>
-                     <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-gray-600"><Building2 className="w-3 h-3" /></div>
+                     <div className="w-5 h-5 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center text-gray-600 dark:text-neutral-300"><Building2 className="w-3 h-3" /></div>
                    </div>
                  </div>
                </div>
@@ -456,87 +499,107 @@ export function Landing({ onEnter, onContactSales }: { onEnter: () => void; onCo
 
              {/* Active Workspaces List */}
              <div>
-               <div className="text-[13px] text-gray-500 font-medium mb-3">Active Workspaces</div>
+               <div className="text-[13px] text-gray-500 dark:text-neutral-400 font-medium mb-3">Active Workspaces</div>
                <div className="space-y-1">
                  {/* Item 1 */}
-                 <div className="flex items-center justify-between py-2 border-b border-gray-200/50">
+                 <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-neutral-800">
                    <div className="flex items-center gap-3">
-                     <Sparkles className="w-4 h-4 text-gray-500" />
-                     <span className="text-[13px] font-medium text-gray-900">Side Letter Summary</span>
-                     <span className="text-[11px] text-gray-400">Just now</span>
+                     <Sparkles className="w-4 h-4 text-gray-500 dark:text-neutral-400" />
+                     <span className="text-[13px] font-medium text-gray-900 dark:text-neutral-100">Side Letter Summary</span>
+                     <span className="text-[11px] text-gray-400 dark:text-neutral-500">Just now</span>
                    </div>
                    <div className="flex items-center gap-3">
-                     <span className="text-[11px] text-gray-400">Building Table... 24%</span>
-                     <button className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[11px] font-medium shadow-sm">Pause</button>
-                     <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                     <span className="text-[11px] text-gray-400 dark:text-neutral-500">Building Table... 24%</span>
+                     <button className="px-3 py-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 rounded-md text-[11px] font-medium shadow-sm">Pause</button>
+                     <MoreHorizontal className="w-4 h-4 text-gray-400 dark:text-neutral-500" />
                    </div>
                  </div>
                  {/* Item 2 */}
-                 <div className="flex items-center justify-between py-2 border-b border-gray-200/50">
+                 <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-neutral-800">
                    <div className="flex items-center gap-3">
-                     <Sparkles className="w-4 h-4 text-gray-500" />
-                     <span className="text-[13px] font-medium text-gray-900">M&A Diligence Table</span>
-                     <span className="text-[11px] text-gray-400">1h ago</span>
+                     <Sparkles className="w-4 h-4 text-gray-500 dark:text-neutral-400" />
+                     <span className="text-[13px] font-medium text-gray-900 dark:text-neutral-100">M&A Diligence Table</span>
+                     <span className="text-[11px] text-gray-400 dark:text-neutral-500">1h ago</span>
                    </div>
                    <div className="flex items-center gap-3">
-                     <span className="text-[11px] text-gray-400">12 Prompts</span>
-                     <button className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[11px] font-medium shadow-sm">Build Table</button>
-                     <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                     <span className="text-[11px] text-gray-400 dark:text-neutral-500">12 Prompts</span>
+                     <button className="px-3 py-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 rounded-md text-[11px] font-medium shadow-sm">Build Table</button>
+                     <MoreHorizontal className="w-4 h-4 text-gray-400 dark:text-neutral-500" />
                    </div>
                  </div>
                  {/* Item 3 */}
-                 <div className="flex items-center justify-between py-2 border-b border-gray-200/50">
+                 <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-neutral-800">
                    <div className="flex items-center gap-3">
                      <Sparkles className="w-4 h-4 text-orange-500 fill-current" />
-                     <span className="text-[13px] font-medium text-gray-900">LPA Summary</span>
-                     <span className="text-[11px] text-gray-400">5h ago</span>
+                     <span className="text-[13px] font-medium text-gray-900 dark:text-neutral-100">LPA Summary</span>
+                     <span className="text-[11px] text-gray-400 dark:text-neutral-500">5h ago</span>
                    </div>
                    <div className="flex items-center gap-3">
-                     <span className="text-[11px] text-gray-400">20 Prompts</span>
-                     <button className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[11px] font-medium shadow-sm flex items-center gap-1.5"><MessageSquare className="w-3 h-3" /> Chat with Results</button>
-                     <button className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[11px] font-medium shadow-sm">View Results</button>
-                     <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                     <span className="text-[11px] text-gray-400 dark:text-neutral-500">20 Prompts</span>
+                     <button className="px-3 py-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 rounded-md text-[11px] font-medium shadow-sm flex items-center gap-1.5"><MessageSquare className="w-3 h-3" /> Chat with Results</button>
+                     <button className="px-3 py-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 rounded-md text-[11px] font-medium shadow-sm">View Results</button>
+                     <MoreHorizontal className="w-4 h-4 text-gray-400 dark:text-neutral-500" />
                    </div>
                  </div>
                  {/* Item 4 */}
-                 <div className="flex items-center justify-between py-2 border-b border-gray-200/50">
+                 <div className="flex items-center justify-between py-2 border-b border-gray-200 dark:border-neutral-800">
                    <div className="flex items-center gap-3">
-                     <MessageSquare className="w-4 h-4 text-gray-500" />
-                     <span className="text-[13px] font-medium text-gray-900">Chat – LPA Analysis</span>
-                     <span className="text-[11px] text-gray-400">Yesterday</span>
+                     <MessageSquare className="w-4 h-4 text-gray-500 dark:text-neutral-400" />
+                     <span className="text-[13px] font-medium text-gray-900 dark:text-neutral-100">Chat – LPA Analysis</span>
+                     <span className="text-[11px] text-gray-400 dark:text-neutral-500">Yesterday</span>
                    </div>
                    <div className="flex items-center gap-3">
-                     <button className="px-3 py-1 bg-white border border-gray-200 rounded-md text-[11px] font-medium shadow-sm">View Chat</button>
-                     <MoreHorizontal className="w-4 h-4 text-gray-400" />
+                     <button className="px-3 py-1 bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 rounded-md text-[11px] font-medium shadow-sm">View Chat</button>
+                     <MoreHorizontal className="w-4 h-4 text-gray-400 dark:text-neutral-500" />
                    </div>
                  </div>
                </div>
              </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Stats Section */}
-        <div className="max-w-[1000px] mx-auto px-6 flex flex-col md:flex-row justify-between text-left pt-20 mt-10">
-          <div className="mb-10 md:mb-0">
-            <div className="text-[4.5rem] font-serif text-[#1F1F1F] mb-1 leading-none tracking-tight">80%</div>
-            <div className="text-[22px] font-medium text-[#1F1F1F]">Faster review</div>
-          </div>
-          <div className="mb-10 md:mb-0">
-            <div className="text-[4.5rem] font-serif text-[#1F1F1F] mb-1 leading-none tracking-tight">500k+</div>
-            <div className="text-[22px] font-medium text-[#1F1F1F]">Docs processed</div>
-          </div>
-          <div>
-            <div className="text-[4.5rem] font-serif text-[#1F1F1F] mb-1 leading-none tracking-tight">24/7</div>
-            <div className="text-[22px] font-medium text-[#1F1F1F]">Global coverage</div>
-          </div>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, margin: "-50px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-[1000px] mx-auto px-6 flex flex-col md:flex-row justify-between text-left pt-20 mt-10">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+            viewport={{ once: false }}
+            className="mb-10 md:mb-0">
+            <div className="text-[4.5rem] font-serif text-[#1F1F1F] dark:text-white mb-1 leading-none tracking-tight">80%</div>
+            <div className="text-[22px] font-medium text-[#1F1F1F] dark:text-neutral-300">Faster review</div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+            viewport={{ once: false }}
+            className="mb-10 md:mb-0">
+            <div className="text-[4.5rem] font-serif text-[#1F1F1F] dark:text-white mb-1 leading-none tracking-tight">500k+</div>
+            <div className="text-[22px] font-medium text-[#1F1F1F] dark:text-neutral-300">Docs processed</div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
+            viewport={{ once: false }}
+            className="mb-10 md:mb-0">
+            <div className="text-[4.5rem] font-serif text-[#1F1F1F] dark:text-white mb-1 leading-none tracking-tight">24/7</div>
+            <div className="text-[22px] font-medium text-[#1F1F1F] dark:text-neutral-300">Global coverage</div>
+          </motion.div>
+        </motion.div>
       </div>
       
       {/* Home Page Disclaimer */}
       <div className="max-w-[1000px] mx-auto px-6 pt-12 pb-8">
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex gap-4">
-          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-amber-900 leading-relaxed">
+        <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl p-5 flex gap-4">
+          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
             <strong>Legal Advisories is an advanced legal research and document assistance platform.</strong> It provides informational and educational content only and is not a substitute for advice from a qualified lawyer. Using this platform does not create an advocate-client relationship. Always consult a licensed legal professional before making important legal decisions.
           </p>
         </div>

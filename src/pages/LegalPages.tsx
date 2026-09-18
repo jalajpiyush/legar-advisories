@@ -9,13 +9,13 @@ interface LegalPageProps {
 
 function LegalLayout({ onBack, title, children }: LegalPageProps) {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-neutral-900">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <button onClick={onBack} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-8 transition-colors">
+        <button onClick={onBack} className="flex items-center gap-2 text-sm text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:text-neutral-100 mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </button>
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">{title}</h1>
-        <div className="prose prose-sm md:prose-base prose-blue max-w-none text-gray-700">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-neutral-100 mb-8">{title}</h1>
+        <div className="prose prose-sm md:prose-base prose-blue max-w-none text-gray-700 dark:text-neutral-300">
           {children}
         </div>
       </div>

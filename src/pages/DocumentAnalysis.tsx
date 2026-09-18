@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileText, File, FileImage, Download, Search, AlertTriangle, Check, Loader2, ListPlus, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { auth } from '../lib/auth';
+import { motion } from "motion/react";
 
 
 export function DocumentAnalysis() {
@@ -123,14 +124,14 @@ export function DocumentAnalysis() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white relative">
+    <div className="flex-1 flex flex-col h-full bg-white dark:bg-neutral-900 relative">
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-gray-50/80 to-transparent pointer-events-none" />
       
       <div className="flex-1 overflow-y-auto px-6 py-8 relative z-10 custom-scrollbar">
         <div className="max-w-4xl mx-auto space-y-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Document Analysis</h1>
-            <p className="text-gray-500 mt-1">Upload a legal document (PDF, DOCX, Image) for OCR, extraction, and semantic analysis.</p>
+            <motion.h1 layoutId="page-title" className="text-2xl font-bold text-gray-900 dark:text-neutral-100 tracking-tight">Document Analysis</motion.h1>
+            <p className="text-gray-500 dark:text-neutral-400 mt-1">Upload a legal document (PDF, DOCX, Image) for OCR, extraction, and semantic analysis.</p>
           </div>
 
           <div className="bg-amber-50/80 border border-amber-200/60 rounded-xl p-4 flex gap-3 items-start">
@@ -142,27 +143,27 @@ export function DocumentAnalysis() {
 
           {!file ? (
             <div 
-              className="border-2 border-dashed border-gray-200 rounded-xl p-12 flex flex-col items-center justify-center bg-gray-50/50 hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer group"
+              className="border-2 border-dashed border-gray-200 dark:border-neutral-800 rounded-xl p-12 flex flex-col items-center justify-center bg-gray-50 dark:bg-neutral-900/50 hover:bg-gray-50 dark:bg-neutral-900 hover:border-gray-300 dark:border-neutral-700 transition-colors cursor-pointer group"
               onClick={() => fileInputRef.current?.click()}
             >
               <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept=".pdf,.docx,.png,.jpg,.jpeg" />
-              <div className="w-16 h-16 bg-white border border-gray-200 rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shadow-sm">
+              <div className="w-16 h-16 bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-full flex items-center justify-center mb-4 group-hover:scale-105 transition-transform shadow-sm">
                 <Upload className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Upload document</h3>
-              <p className="text-gray-500 mt-2 text-center max-w-sm">Drag and drop or click to upload PDF, DOCX, or Image files. OCR will be automatically applied to images.</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100">Upload document</h3>
+              <p className="text-gray-500 dark:text-neutral-400 mt-2 text-center max-w-sm">Drag and drop or click to upload PDF, DOCX, or Image files. OCR will be automatically applied to images.</p>
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+              <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                       <FileText className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">{file.name}</h3>
-                      <p className="text-sm text-gray-500">
+                      <h3 className="font-semibold text-gray-900 dark:text-neutral-100">{file.name}</h3>
+                      <p className="text-sm text-gray-500 dark:text-neutral-400">
                         {analyzing ? (
                           <span className="flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin" /> Processing document & extracting vectors...</span>
                         ) : (
@@ -172,27 +173,27 @@ export function DocumentAnalysis() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => handleExport('md')} disabled={analyzing} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-sm flex items-center gap-2 transition-colors disabled:opacity-50">
+                    <button onClick={() => handleExport('md')} disabled={analyzing} className="px-4 py-2 bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 font-medium rounded-lg text-sm flex items-center gap-2 transition-colors disabled:opacity-50">
                       <Download className="w-4 h-4" /> Download Report
                     </button>
                   </div>
                 </div>
 
                 {!analyzing && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-100 dark:border-neutral-800">
                     <div className="space-y-6">
                       <div>
-                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">AI Summary</h4>
-                        <div className="prose prose-sm text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-lg">
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-neutral-100 uppercase tracking-wider mb-3">AI Summary</h4>
+                        <div className="prose prose-sm text-gray-700 dark:text-neutral-300 leading-relaxed bg-gray-50 dark:bg-neutral-900 p-4 rounded-lg">
                           <ReactMarkdown>{summary}</ReactMarkdown>
                         </div>
                       </div>
                       
                       <div>
-                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Extracted Clauses</h4>
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-neutral-100 uppercase tracking-wider mb-3">Extracted Clauses</h4>
                         <ul className="space-y-2">
                           {clauses.map((c, i) => (
-                            <li key={i} className="flex items-start gap-2 text-sm text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            <li key={i} className="flex items-start gap-2 text-sm text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 p-3 rounded-lg border border-gray-100 dark:border-neutral-800">
                               <ListPlus className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
                               <span>{c}</span>
                             </li>
@@ -201,10 +202,10 @@ export function DocumentAnalysis() {
                       </div>
                       {explanations.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Legal Language Explained</h4>
+                          <h4 className="text-sm font-bold text-gray-900 dark:text-neutral-100 uppercase tracking-wider mb-3">Legal Language Explained</h4>
                           <ul className="space-y-2">
                             {explanations.map((e, i) => (
-                              <li key={i} className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                              <li key={i} className="text-sm text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900 p-3 rounded-lg border border-gray-100 dark:border-neutral-800">
                                 <strong>{e.term}</strong>: {e.explanation}
                               </li>
                             ))}
@@ -214,7 +215,7 @@ export function DocumentAnalysis() {
                       
                       {improvements.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                          <h4 className="text-sm font-bold text-gray-900 dark:text-neutral-100 uppercase tracking-wider mb-3 flex items-center gap-2">
                             <Sparkles className="w-4 h-4 text-green-500" />
                             Suggested Improvements
                           </h4>
@@ -232,7 +233,7 @@ export function DocumentAnalysis() {
                     
                     <div className="space-y-6">
                       <div>
-                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-neutral-100 uppercase tracking-wider mb-3 flex items-center gap-2">
                           <AlertTriangle className="w-4 h-4 text-amber-500" />
                           Risk Detection
                         </h4>
@@ -246,9 +247,9 @@ export function DocumentAnalysis() {
                         </ul>
                       </div>
                       
-                      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                        <div className="p-4 bg-gray-50 border-b border-gray-200">
-                          <h4 className="text-sm font-bold text-gray-900">Ask Document</h4>
+                      <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-xl overflow-hidden shadow-sm">
+                        <div className="p-4 bg-gray-50 dark:bg-neutral-900 border-b border-gray-200 dark:border-neutral-800">
+                          <h4 className="text-sm font-bold text-gray-900 dark:text-neutral-100">Ask Document</h4>
                         </div>
                         <div className="p-4 space-y-4">
                           <div className="flex gap-2">
@@ -257,12 +258,12 @@ export function DocumentAnalysis() {
                               value={question}
                               onChange={e => setQuestion(e.target.value)}
                               placeholder="E.g. What is the governing law?"
-                              className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 transition-colors"
+                              className="flex-1 bg-gray-50 dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 transition-colors"
                             />
                             <button 
                               onClick={handleAsk}
                               disabled={!question.trim() || asking}
-                              className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-50"
+                              className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors flex items-center gap-2 disabled:opacity-50"
                             >
                               {asking ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                             </button>
@@ -283,7 +284,7 @@ export function DocumentAnalysis() {
               <div className="flex justify-center">
                 <button 
                   onClick={() => { setFile(null); setDocId(null); setSummary(''); setClauses([]); setRisks([]); setExplanations([]); setImprovements([]); setAnswer(''); setQuestion(''); }}
-                  className="text-gray-500 hover:text-gray-900 text-sm font-medium transition-colors"
+                  className="text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:text-neutral-100 text-sm font-medium transition-colors"
                 >
                   Analyze another document
                 </button>

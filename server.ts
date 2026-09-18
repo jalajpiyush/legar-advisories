@@ -1,8 +1,9 @@
+import fs from 'fs';
+import path from 'path';
 declare global {
   var memoryPayments: Map<string, any>;
 }
 import express from "express";
-import path from "path";
 import { createServer as createViteServer } from "vite";
 import nodemailer from "nodemailer";
 import Razorpay from "razorpay";
@@ -23,7 +24,8 @@ import {
 import { generateAndStorePdf } from "./src/services/pdfService";
 
 
-import { GoogleGenAI } from "@google/genai";
+import { WebSocketServer } from "ws";
+import { GoogleGenAI, LiveServerMessage, Modality } from "@google/genai";
 import OpenAI from "openai";
 import multer from "multer";
 import mammoth from "mammoth";
@@ -224,7 +226,7 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
         return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing. Please add at least one to your environment variables." });
       }
 
-      const systemInstruction = "You are an expert AI Legal Assistant. Your task is to analyze legal documents. Provide the output strictly in JSON format. The JSON should contain the following keys: 'summary' (string), 'risks' (array of strings), 'important_clauses' (array of strings), 'explanations' (array of objects with 'term' and 'explanation'), and 'improvements' (array of strings).";
+      const systemInstruction = "You are an expert AI Legal Assistant. Your task is to analyze legal documents. Provide the output strictly in JSON format. The JSON should contain the following keys: 'summary' (string), 'risks' (array of strings), 'important_clauses' (array of strings), 'explanations' (array of objects with 'term' and 'explanation'), and 'improvements' (array of strings). CRITICAL PERSONA INSTRUCTION: You are an assertive, confident legal advisor. Do not use generic disclaimers refusing to give legal advice or stating 'I am an AI, not a lawyer'. Always provide direct, actionable legal strategies, solutions, and advice as a professional lawyer would. Do not refuse to provide a legal solution. Always focus on giving the best possible legal strategy. CRITICAL INSTRUCTION: You must always address the user respectfully as 'Sir' in all your responses and interactions.";
       let analysisResult = null;
       
       if (geminiKey) {
@@ -254,7 +256,7 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
         const response = await openai.chat.completions.create({
           model: "gpt-4o",
           messages: [
-            { role: "system", content: systemInstruction },
+            { role: "system", content: systemInstruction + (req.user?.uid ? await getUserMemory(req.user.uid) : "") },
             { role: "user", content: `Analyze this legal document:\n\n${text.substring(0, 15000)}`}
           ],
           response_format: { type: "json_object" }
@@ -341,7 +343,216 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
     }
   });
 
-  app.post("/api/chat", optionalAuth, requirePlan('free', { usageType: 'chat' }), async (req: AuthRequest, res) => {
+
+  app.post("/api/draft-document", optionalAuth, requirePlan('free', { usageType: 'doc' }), async (req: AuthRequest, res) => {
+    try {
+      const { schema, formData } = req.body;
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
+      const openaiKey = process.env.OPENAI_API_KEY;
+
+      if (!geminiKey && !openaiKey) {
+        return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing." });
+      }
+
+      const prompt = `You are an expert AI Legal Draftsman. Draft a professional legal document based on the following schema and user-provided data.
+Schema: ${schema.title} - ${schema.description}
+User Data: ${JSON.stringify(formData, null, 2)}
+
+Instructions:
+1. Write the document in professional legal language.
+2. Incorporate the provided data naturally. DO NOT use placeholders like [Name] if the data is provided. If data is missing but required for execution, you may leave standard blanks (e.g., "_______") or notary blocks.
+3. Format the document nicely using Markdown. Use clear headings, paragraphs, and numbered lists where appropriate.
+4. CRITICAL: Output ONLY the markdown content of the drafted document. Begin your response IMMEDIATELY with the # Document Title. Do NOT output any introductory text, pleasantries, conversational filler, or concluding remarks under ANY circumstances.`;
+
+      let answer = null;
+      if (geminiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: prompt
+          });
+          answer = response.text;
+        } catch (e: any) {
+          console.error("Gemini failed for drafting:", e);
+          if (!openaiKey) throw e;
+        }
+      }
+
+      if (!answer && openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: prompt }]
+        });
+        answer = response.choices[0].message.content;
+      }
+
+      res.json({ document: answer });
+    } catch (e: any) {
+      console.error("Draft endpoint error:", e);
+      res.status(500).json({ error: e.message || "Failed to draft document" });
+    }
+  });
+
+  app.post("/api/extract-fields", optionalAuth, requirePlan('free', { usageType: 'chat' }), async (req: AuthRequest, res) => {
+    try {
+      const { prompt, schema } = req.body;
+      const openaiKeyTemp = process.env.OPENAI_API_KEY;
+      const geminiKey = openaiKeyTemp ? null : process.env.GEMINI_API_KEY;
+      const openaiKey = process.env.OPENAI_API_KEY;
+
+      if (!geminiKey && !openaiKey) {
+        return res.status(500).json({ error: "API Keys are missing." });
+      }
+
+      const aiPrompt = `You are an AI assistant helping to pre-fill a form for a legal document.
+The user provided this request: "${prompt}"
+
+The document schema is: ${schema.title}
+Fields available:
+${schema.fields.map((f: any) => `- ${f.id} (${f.type}): ${f.label}`).join('\n')}
+
+Extract the relevant information from the user's request and map it to the field IDs.
+Return a JSON object where keys are field IDs and values are the extracted text. If a field's information is not present in the prompt, DO NOT include that key in the JSON. Output ONLY valid JSON.`;
+
+      let answer = null;
+      if (geminiKey) {
+        try {
+          const ai = new GoogleGenAI({ apiKey: geminiKey });
+          const response = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: aiPrompt,
+            config: { responseMimeType: "application/json" }
+          });
+          answer = JSON.parse(response.text || "{}");
+        } catch (e: any) {
+          console.error("Gemini failed for extraction:", e);
+          if (!openaiKey) throw e;
+        }
+      }
+
+      if (!answer && openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        const response = await openai.chat.completions.create({
+          model: "gpt-4o",
+          messages: [{ role: "user", content: aiPrompt }],
+          response_format: { type: "json_object" }
+        });
+        answer = JSON.parse(response.choices[0].message.content || "{}");
+      }
+
+      res.json({ extractedData: answer || {} });
+    } catch (e: any) {
+      console.error("Extraction endpoint error:", e);
+      res.status(500).json({ error: e.message || "Failed to extract fields" });
+    }
+  });
+
+  
+app.post("/api/feedback", async (req, res) => {
+  try {
+    const { message, isPositive, reason, customReason, sessionId } = req.body;
+    
+    const feedbackEntry = {
+      message,
+      isPositive,
+      reason: reason || null,
+      customReason: customReason || null,
+      sessionId: sessionId || "anonymous",
+      timestamp: new Date().toISOString()
+    };
+    
+    // Write to a local JSONL file for easy export and fine-tuning
+    const filePath = path.join(process.cwd(), 'training_feedback.jsonl');
+    fs.appendFileSync(filePath, JSON.stringify(feedbackEntry) + '\n');
+    
+    // Also try to write to Firestore, but don't fail if it doesn't work
+    try {
+      if (adminDb) {
+        await adminDb.collection("training_feedback").add(feedbackEntry);
+      }
+    } catch (dbError) {
+      console.log("Could not write to Firestore (likely missing permissions), but saved to local file:", dbError.message);
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Feedback error:", error);
+    res.status(500).json({ error: "Failed to submit feedback" });
+  }
+});
+
+
+async function getUserMemory(userId: string) {
+    if (!userId) return "";
+    try {
+        const snapshot = await adminDb.collection('training_data')
+            .where('userId', '==', userId)
+            .orderBy('timestamp', 'desc')
+            .limit(10)
+            .get();
+        if (snapshot.empty) return "";
+        let memoryText = "\n\n--- CONTINUOUS LEARNING MEMORY (FINE-TUNING DATASET) ---\n";
+        memoryText += "The following are past interactions logged in the training dataset for this user's custom LLM. Use this historical context to maintain memory and continuity across sessions:\n\n";
+        
+        const docs = snapshot.docs.reverse();
+        docs.forEach(doc => {
+            const data = doc.data();
+            memoryText += `User: ${data.prompt}\nModel: ${data.response.substring(0, 500)}\n\n`; // truncate long responses
+        });
+        memoryText += "--- END CONTINUOUS LEARNING MEMORY ---\n\n";
+        return memoryText;
+    } catch (e) {
+        console.error("Failed to fetch user memory", e);
+        return "";
+    }
+}
+
+
+async function updateKnowledgeGraph(userId: string, prompt: string, responseText: string, geminiKey: string | null | undefined) {
+    if (!geminiKey) return;
+    try {
+        const { GoogleGenAI } = require("@google/genai");
+        const ai = new GoogleGenAI({ apiKey: geminiKey });
+        const extractPrompt = `Extract legal concepts, cited precedents (e.g. specific case laws, acts), and document templates (e.g. Rent Agreement, NDA, Notice) from this interaction. Return JSON strictly with keys: "concepts", "precedents", "templates". Arrays of strings.\n\nUser: ${prompt}\nAI: ${responseText.substring(0, 1500)}`;
+        const aiResponse = await ai.models.generateContent({
+            model: "gemini-3.1-flash-lite",
+            contents: extractPrompt,
+            config: { responseMimeType: "application/json" }
+        });
+        const data = JSON.parse(aiResponse.text || "{}");
+        
+        const docRef = adminDb.collection('knowledge_graphs').doc(userId);
+        const doc = await docRef.get();
+        let existing = doc.exists ? doc.data() : { concepts: [], precedents: [], templates: [] };
+        
+        const merge = (arr1: any, arr2: any) => Array.from(new Set([...(arr1||[]), ...(arr2||[])])).slice(0, 15);
+        
+        await docRef.set({
+            concepts: merge(existing?.concepts, data.concepts),
+            precedents: merge(existing?.precedents, data.precedents),
+            templates: merge(existing?.templates, data.templates),
+            updatedAt: Date.now()
+        });
+    } catch (e) {
+        console.error("Failed to update knowledge graph", e);
+    }
+}
+
+app.get("/api/suggestions", optionalAuth, async (req: AuthRequest, res) => {
+    if (!req.user?.uid) return res.json({ templates: [], precedents: [] });
+    try {
+        const doc = await adminDb.collection('knowledge_graphs').doc(req.user.uid).get();
+        if (!doc.exists) return res.json({ templates: [], precedents: [] });
+        return res.json(doc.data());
+    } catch (e) {
+        return res.json({ templates: [], precedents: [] });
+    }
+});
+
+app.post("/api/chat", optionalAuth, requirePlan('free', { usageType: 'chat' }), async (req: AuthRequest, res) => {
     try {
       let { messages, files } = req.body;
       
@@ -371,7 +582,58 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
         return res.status(500).json({ error: "Both GEMINI_API_KEY and OPENAI_API_KEY are missing. Please add at least one to your environment variables." });
       }
 
-      const systemInstruction = "You are Legal Advisories, an advanced legal AI assistant designed to help lawyers, legal professionals, and the public. You have a built-in PDF generation capability. When a user asks to generate, make, or download a PDF, you MUST output a JSON object in this exact format: {\"action\": \"generate_pdf\", \"title\": \"[Title of the document]\"}. DO NOT output any other text when responding to a PDF generation request. If you are drafting a document, provide the text as normal.";
+      const systemInstruction = `You are Legal Advisories, an advanced legal AI assistant designed to help lawyers, legal professionals, and the public.
+
+IMPORTANT: You are an expert in Indian Law, including the transition to the new criminal law framework (Bharatiya Nyaya Sanhita - BNS, Bharatiya Nagarik Suraksha Sanhita - BNSS, and Bharatiya Sakshya Adhiniyam - BSA replacing IPC, CrPC, IEA). Use authoritative sources such as India Code, Supreme Court/High Court judgments, and Central/State legislation.
+
+For any general legal query, you MUST structure your response strictly as follows:
+**Legal Issue:** [Identify the core issue]
+**Applicable Law:** [Relevant Acts, Sections, e.g., Section 138 NI Act, or BNS/BNSS]
+**Key Requirements:** [What needs to be proven or fulfilled]
+**Limitation/Timeline:** [Time limits, limitation periods]
+**Recommended Next Steps:** [Practical advice]
+**Documents Required:** [Necessary evidence/documents]
+*Important: Exact applicability depends on the facts and dates provided.*
+
+Before giving a final legal answer, you MUST ask for missing facts. 
+
+EXAMPLE OF GOOD BEHAVIOR:
+User: My landlord is refusing to return my security deposit.
+Response: Based on the information provided, this appears to be a dispute concerning recovery of a security deposit.
+
+Before determining the appropriate remedy, I need:
+1. State/city where the property is located
+2. Date the tenancy ended
+3. Amount of security deposit
+4. Whether the lease agreement specifies a refund period
+5. Whether the landlord gave any reason for withholding the deposit
+6. Whether you have already sent a written demand
+
+Once these details are available, I can identify the potentially applicable law and the appropriate recovery route.
+
+IMPORTANT: SMART DOCUMENT GENERATION WORKFLOW
+When a user asks you to create, draft, or generate a legal document (e.g., affidavit, notice, agreement), you MUST NOT immediately generate the document with placeholders like [Name] or [Date].
+Instead, you must engage in a BILATERAL CONVERSATION to collect the required information.
+1. Identify the document type.
+2. Ask the user for the necessary details to fill out the document (e.g., names, addresses, dates, reasons, jurisdiction).
+3. INSTEAD of asking for details conversationally, you MUST output a structured JSON form to collect the data. Use the exact following JSON block format at the very end of your message. Do not use Markdown formatting outside this block for the questions, just provide a polite short message followed by this block:
+\`\`\`json
+{
+  "type": "dynamic_form",
+  "title": "Required Details for [Document Name]",
+  "fields": [
+    {"id": "fullName", "label": "Full Name", "type": "text"},
+    {"id": "reason", "label": "Reason", "type": "textarea"}
+  ]
+}
+\`\`\`
+Supported field types are "text", "textarea", and "date".
+4. Wait for the user to provide the details via the form submission in their next message.
+5. Once you have collected the facts and are ready to generate the final document, you MUST ONLY output the raw document text. YOU MUST NOT add ANY conversational filler before or after the document. Do not say "Thank you for the clarification" or "I will now proceed with drafting" or "Here is your draft". Begin your response IMMEDIATELY with the Document Title (e.g., # RENT AGREEMENT). Your entire output must consist solely of the document text and look exactly like a printed legal document.
+
+You also have a built-in PDF generation capability. When a user explicitly asks to export to PDF, generate a PDF, or download a PDF of a document you have already drafted, you MUST output a JSON object in this exact format: {"action": "generate_pdf", "title": "[Title of the document]"}. DO NOT output any other text when responding to a PDF generation request.
+
+CRITICAL PERSONA INSTRUCTION: You are an assertive, confident legal advisor. Do not use generic disclaimers refusing to give legal advice or stating 'I am an AI, not a lawyer'. Always provide direct, actionable legal strategies, solutions, and advice as a professional lawyer would. Do not refuse to provide a legal solution. Always focus on giving the best possible legal strategy. CRITICAL INSTRUCTION: You must always address the user respectfully as 'Sir' in all your responses and interactions.`;
 
       // Try Gemini first if available
       if (geminiKey) {
@@ -383,14 +645,48 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
             parts: [{ text: m.content }]
           }));
           
+          let activeSystemInstruction = systemInstruction;
+          if (req.user?.uid) {
+             const userMemory = await getUserMemory(req.user.uid);
+             activeSystemInstruction += userMemory;
+          }
+          let tools = undefined;
+          
+          if (messages.length > 0) {
+            const lastMsg = messages[messages.length - 1].content || "";
+            if (lastMsg.includes("[Selected Sources:")) {
+               if (lastMsg.includes("Web search")) {
+                  tools = [{ googleSearch: {} }];
+               }
+               if (lastMsg.includes("EDGAR")) {
+                  activeSystemInstruction += "\n\nIMPORTANT: The user has selected EDGAR as a source. Prioritize searching sec.gov for financial filings. Use the web search tool to search site:sec.gov if necessary.";
+                  tools = [{ googleSearch: {} }];
+               }
+               if (lastMsg.includes("iManage")) {
+                  activeSystemInstruction += "\n\nIMPORTANT: The user has selected iManage. Since you do not have direct access to their iManage instance yet, acknowledge that you are searching iManage and provide a comprehensive legal response.";
+               }
+            }
+          }
+
           const response = await ai.models.generateContent({
             model: "gemini-3.1-flash-lite",
             contents: formattedMessages,
             config: {
-              systemInstruction
+              systemInstruction: activeSystemInstruction,
+              tools
             }
           });
-          return res.json({ message: { content: response.text } });
+          const assistantResponse = response.text || "";
+          const userPrompt = messages.length > 0 ? messages[messages.length - 1].content : "";
+          if (userPrompt && assistantResponse && req.user?.uid) {
+             adminDb.collection('training_data').add({
+                userId: req.user.uid,
+                prompt: userPrompt,
+                response: assistantResponse,
+                timestamp: Date.now()
+             }).catch(err => console.error("Error saving training data:", err));
+          }
+          return res.json({ message: { content: assistantResponse } });
         } catch (e: any) {
           const isGeminiRateLimit = e?.message && (e.message.includes("429") || e.message.includes("Quota") || e.message.includes("exhausted") || e.message.includes("Too Many Requests") || e.message.includes("404"));
           if (!isGeminiRateLimit) {
@@ -416,7 +712,17 @@ const checkAndIncrementUsage = async (userId: string | undefined, type: 'chat' |
           model: "gpt-4o",
           messages: formattedMessages
         });
-        return res.json({ message: { content: response.choices[0].message.content } });
+        const assistantResponse = response.choices[0].message.content || "";
+        const userPrompt = messages.length > 0 ? messages[messages.length - 1].content : "";
+        if (userPrompt && assistantResponse && req.user?.uid) {
+             adminDb.collection('training_data').add({
+                userId: req.user.uid,
+                prompt: userPrompt,
+                response: assistantResponse,
+                timestamp: Date.now()
+             }).catch(err => console.error("Error saving training data:", err));
+        }
+        return res.json({ message: { content: assistantResponse } });
       }
 
     } catch (error: any) {
@@ -608,38 +914,50 @@ app.get("/api/user/dashboard", requireAuth, async (req: AuthRequest, res) => {
   // Get User Profile & History
   app.get("/api/user/profile", requireAuth, async (req: AuthRequest, res) => {
     try {
-  
       const userId = req.user?.uid;
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
-      let profile = null;
-      let history: any[] = [];
+      const { plan, subscriptionStatus, userData } = await getUserPlanAndStatus(userId);
+      const isLawyer = plan === 'lawyer';
+      const isIndividual = plan === 'individual';
       
-      try {
-        const userDoc = await adminDb.collection('users').doc(userId).get();
-        profile = userDoc.exists ? userDoc.data() : null;
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+      const monthStr = todayStr.substring(0, 7);
+      
+      let chatUsedToday = Number(userData.chatUsedToday) || 0;
+      let chatUsedMonth = Number(userData.chatUsedMonth) || 0;
+      let documentUsedToday = Number(userData.documentUsedToday) || 0;
+      let documentUsedMonth = Number(userData.documentUsedMonth) || 0;
+      
+      if (userData.lastChatDate !== todayStr) chatUsedToday = 0;
+      if (userData.lastChatMonth !== monthStr) chatUsedMonth = 0;
+      if (userData.lastDocDate !== todayStr) documentUsedToday = 0;
+      if (userData.lastDocMonth !== monthStr) documentUsedMonth = 0;
 
+      let history: any[] = [];
+      try {
         const historySnapshot = await adminDb.collection('users').doc(userId).collection('billing_history').orderBy('created_at', 'desc').get();
         history = historySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      } catch (dbError) {
-        // silently use fallback
-        profile = {
-          plan: "Free",
-          subscription_status: "active"
-        };
-        history = [
-          {
-            id: "mock_inv_1",
-            amount: 0,
-            status: "paid",
-            created_at: Date.now()
-          }
-        ];
+      } catch (e) {
+        history = [];
       }
-
-      res.json({ profile, history });
-    } catch (error: any) {
-      console.error("Profile Fetch Error:", error);
+      
+      res.json({
+        profile: userData,
+        plan: plan === 'lawyer' ? 'Lawyer' : (plan === 'individual' ? 'Individual' : 'Free'),
+        usage: {
+          chat: isIndividual ? chatUsedMonth : chatUsedToday,
+          doc: isIndividual ? documentUsedMonth : documentUsedToday
+        },
+        limits: {
+          chat: isLawyer ? -1 : (isIndividual ? 500 : 20),
+          doc: isLawyer ? -1 : (isIndividual ? 100 : 3)
+        },
+        history
+      });
+    } catch (error) {
+      console.error("Profile API Error:", error);
       res.status(500).json({ error: "Failed to fetch profile" });
     }
   });
@@ -1427,8 +1745,89 @@ Marketing Opt-in: ${marketing_opt_in ? 'Yes' : 'No'}
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Legal Advisories AI Server running on port ${PORT}`);
+  });
+
+  const wss = new WebSocketServer({ server, path: '/live' });
+
+  wss.on("connection", async (clientWs, req) => {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) {
+      console.error("[VOICE] Gemini API Key missing");
+      clientWs.close(1011, "No Gemini Key");
+      return;
+    }
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+    let session: any = null;
+    let sessionPromise = ai.live.connect({
+      model: "gemini-3.1-flash-live-preview",
+      config: {
+        responseModalities: [Modality.AUDIO],
+        speechConfig: {
+          voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zephyr" } }
+        },
+        systemInstruction: `You are Legal Advisories, an advanced legal AI assistant. You explain legal concepts clearly and conversationally.
+IMPORTANT: SMART DOCUMENT GENERATION
+When a user asks you to create or draft a legal document (e.g., affidavit, notice, agreement), DO NOT immediately dictate a document with placeholders like [Name]. 
+Instead, engage in a bilateral conversation. Ask the user for the necessary details (names, dates, reasons, jurisdiction) one by one or in small batches. Wait for them to answer. Only dictate the final document once you have collected the facts.
+
+CRITICAL PERSONA INSTRUCTION: You are an assertive, confident legal advisor. Do not use generic disclaimers refusing to give legal advice or stating 'I am an AI, not a lawyer'. Always provide direct, actionable legal strategies, solutions, and advice as a professional lawyer would. Do not refuse to provide a legal solution. Always focus on giving the best possible legal strategy. CRITICAL INSTRUCTION: You must always address the user respectfully as 'Sir' in all your responses and interactions.`,
+      },
+      callbacks: {
+        onmessage: (message: LiveServerMessage) => {
+          const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+          if (audio && clientWs.readyState === 1) {
+            clientWs.send(JSON.stringify({ audio }));
+          }
+          if (message.serverContent?.interrupted && clientWs.readyState === 1) {
+            clientWs.send(JSON.stringify({ interrupted: true }));
+          }
+        },
+        onerror: (error) => {
+          console.error("[VOICE] Live session error", error);
+          if (clientWs.readyState === 1) clientWs.send(JSON.stringify({ error: "Live session error" }));
+        },
+        onclose: () => {
+           console.log("[VOICE] Live session closed");
+           if (clientWs.readyState === 1) clientWs.close();
+        }
+      }
+    }).then(s => {
+       console.log("[VOICE] Live session connected");
+       session = s;
+       return s;
+    }).catch(e => {
+       console.error("[VOICE] Error connecting to live api:", e);
+       if (clientWs.readyState === 1) clientWs.close();
+       throw e;
+    });
+
+    clientWs.on("message", (data) => {
+      try {
+        const msg = JSON.parse(data.toString());
+        sessionPromise.then((sess) => {
+          if (!sess) return;
+          if (msg.audio) {
+            sess.sendRealtimeInput({
+               audio: { data: msg.audio, mimeType: "audio/pcm;rate=16000" }
+            });
+          }
+          if (msg.clientContent) {
+             sess.sendRealtimeInput({
+               text: msg.clientContent
+             });
+          }
+        }).catch(() => {});
+      } catch (e) {
+         console.error("[VOICE] Error parsing ws message", e);
+      }
+    });
+
+    clientWs.on("close", () => {
+       console.log("[VOICE] Client disconnected");
+       session?.close();
+    });
   });
 }
 
